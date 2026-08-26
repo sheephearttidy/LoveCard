@@ -1,3 +1,9 @@
+"""
+模型包初始化模块
+
+统一导出数据库实例 db 和所有 ORM 模型类，
+外部可通过 from model import User, Card 等方式引用。
+"""
 from model.db import db
 from model.User import User
 from model.Card import Card
