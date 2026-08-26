@@ -1,3 +1,5 @@
 .venv/
-migrations
-app/uploads
+__pycache__/
+migrations/
+uploads/
+.idea/

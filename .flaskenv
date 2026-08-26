@@ -1,1 +1,1 @@
-FLASK_APP=migrate_manager
+FLASK_APP=app

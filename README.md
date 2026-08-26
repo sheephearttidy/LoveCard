@@ -19,35 +19,35 @@
 
 ```
 LoveCards/
-├── app/
-│   ├── app.py                  # Flask 应用入口，注册蓝图、初始化扩展
-│   ├── config.py               # 应用配置（数据库、密钥、Session 等）
-│   ├── model/                  # 数据模型
-│   │   ├── db.py               # SQLAlchemy 实例
-│   │   ├── User.py             # 用户模型
-│   │   ├── Card.py             # 卡片模型
-│   │   ├── Comment.py          # 评论模型
-│   │   ├── Good.py             # 点赞模型
-│   │   ├── Tags.py             # 标签模型
-│   │   ├── TagsMap.py          # 标签映射模型
-│   │   ├── Images.py           # 图片模型
-│   │   ├── BanRecord.py        # 封禁记录模型
-│   │   ├── DeletedUser.py      # 已注销用户归档模型
-│   │   └── System.py           # 系统配置模型
-│   ├── route/                  # 路由蓝图
-│   │   ├── public.py           # 前台页面路由
-│   │   ├── auth.py             # 认证路由（登录/注册/登出）
-│   │   ├── admin.py            # 后台管理路由
-│   │   └── api.py              # RESTful API 路由（/api/v1）
-│   ├── templates/              # Jinja2 模板
-│   │   ├── public/             # 前台页面模板
-│   │   └── admin/              # 后台管理模板
-│   ├── static/                 # 静态资源（CSS/JS）
-│   ├── utils/                  # 工具函数
-│   │   └── upload.py           # 文件上传工具
-│   └── system/                 # 系统模块
-├── init_db.py                  # 数据库初始化脚本（建表、创建管理员）
-├── migrate_manager.py          # Flask-Migrate 迁移入口
+├── app.py                      # Flask 应用入口，注册蓝图、初始化扩展
+├── config.py                   # 应用配置（数据库、密钥、Session 等）
+├── wsgi.py                     # 生产环境入口（Gunicorn: wsgi:application）
+├── model/                      # 数据模型
+│   ├── db.py                   # SQLAlchemy 实例
+│   ├── User.py                 # 用户模型
+│   ├── Card.py                 # 卡片模型
+│   ├── Comment.py              # 评论模型
+│   ├── Good.py                 # 点赞模型
+│   ├── Tags.py                 # 标签模型
+│   ├── TagsMap.py              # 标签映射模型
+│   ├── Images.py               # 图片模型
+│   ├── BanRecord.py            # 封禁记录模型
+│   ├── DeletedUser.py          # 已注销用户归档模型
+│   └── System.py               # 系统配置模型
+├── route/                      # 路由蓝图
+│   ├── public.py               # 前台页面路由
+│   ├── auth.py                 # 认证路由（登录/注册/登出）
+│   ├── admin.py                # 后台管理路由
+│   └── api.py                  # RESTful API 路由（/api/v1）
+├── templates/                  # Jinja2 模板
+│   ├── public/                 # 前台页面模板
+│   └── admin/                  # 后台管理模板
+├── static/                     # 静态资源（CSS/JS）
+├── utils/                      # 工具函数
+│   └── upload.py               # 文件上传工具
+├── system/                     # 系统模块
+├── uploads/                    # 用户上传文件目录（运行时创建）
+├── migrate_manager.py          # Flask-Migrate 迁移入口 + 管理员初始化
 ├── requirements.txt            # Python 依赖
 ├── API.md                      # API 接口文档
 ├── .flaskenv                   # Flask 环境变量
@@ -234,7 +234,7 @@ pip install -r requirements.txt
 
 ### 3. 配置数据库
 
-编辑 `app/config.py`，修改数据库连接信息：
+编辑 `config.py`，修改数据库连接信息：
 
 ```python
 DB_USER = 'your_username'
@@ -242,6 +242,12 @@ DB_PASSWORD = 'your_password'
 DB_HOST = '127.0.0.1'
 DB_PORT = 3306
 DB_NAME = 'lovecard'
+```
+
+同时修改 `SECRET_KEY` 为安全随机值：
+
+```python
+SECRET_KEY = '使用 python -c "import secrets; print(secrets.token_hex(32))" 生成'
 ```
 
 ### 4. 初始化数据库
@@ -252,25 +258,34 @@ flask db migrate
 flask db upgrade
 ```
 
-或使用初始化脚本（自动建表并创建管理员账号）：
+然后创建初始管理员账号：
 
 ```bash
-python init_db.py
+python migrate_manager.py
 ```
 
 默认管理员：用户名 `admin`，密码 `admin`，角色超级管理员。
 
 ### 5. 启动应用
 
+**开发环境：**
+
 ```bash
-flask run
+flask run --port 8000
+```
+
+**生产环境（Gunicorn）：**
+
+```bash
+pip install gunicorn
+gunicorn -b 0.0.0.0:8000 -w 4 app:app
 ```
 
 应用默认运行在 `http://127.0.0.1:8000`。
 
 ## 文件上传
 
-- 上传目录：`app/uploads/`
+- 上传目录：`uploads/`（运行时自动创建）
 - 支持格式：png, jpg, jpeg, gif, webp, svg
 - 最大文件大小：16 MB
 - 文件命名规则：`{日期}_{8位随机hex}.{扩展名}`
