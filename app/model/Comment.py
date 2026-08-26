@@ -15,6 +15,7 @@ from model.db import db
 class Comment(db.Model):
     """评论模型，用户对卡片等内容的评论"""
     __tablename__ = 'comments'
+    __table_args__ = {'mysql_charset': 'utf8mb4', 'mysql_collate': 'utf8mb4_general_ci'}
 
     # 主键，自增
     id = mapped_column(db.Integer, primary_key=True, autoincrement=True)

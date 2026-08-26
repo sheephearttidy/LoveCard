@@ -1,0 +1,96 @@
+{% extends "admin/base.html" %}
+
+{% block title %}已注销用户{% endblock %}
+{% block page_title %}已注销用户{% endblock %}
+
+{% block content %}
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+    <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700">
+        <h2 class="font-semibold text-gray-800 dark:text-white"><i class="fas fa-user-slash text-gray-400 dark:text-gray-500 mr-2"></i>已注销用户</h2>
+    </div>
+
+    {% if deleted_users %}
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead class="bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-xs uppercase">
+                <tr>
+                    <th class="px-5 py-3 text-left">原ID</th>
+                    <th class="px-5 py-3 text-left">用户名</th>
+                    <th class="px-5 py-3 text-left">邮箱</th>
+                    <th class="px-5 py-3 text-center">卡片数</th>
+                    <th class="px-5 py-3 text-center">评论数</th>
+                    <th class="px-5 py-3 text-center">获赞数</th>
+                    <th class="px-5 py-3 text-center">冷静期</th>
+                    <th class="px-5 py-3 text-left">申请时间</th>
+                    <th class="px-5 py-3 text-center">操作</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50 dark:divide-gray-700">
+                {% for du in deleted_users %}
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
+                    <td class="px-5 py-3 text-gray-400 dark:text-gray-500">{{ du.original_id }}</td>
+                    <td class="px-5 py-3">
+                        {% if du.roles_id and 0 in du.roles_id %}
+                        <span class="text-red-500 dark:text-red-400 font-semibold">{{ du.username }}</span>
+                        {% elif du.roles_id and 1 in du.roles_id %}
+                        <span class="text-blue-500 dark:text-blue-400 font-semibold">{{ du.username }}</span>
+                        {% else %}
+                        <span class="text-gray-700 dark:text-gray-300">{{ du.username }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-5 py-3 text-gray-500 dark:text-gray-400 text-xs">{{ du.email }}</td>
+                    <td class="px-5 py-3 text-center text-gray-600 dark:text-gray-300">{{ du.cards_count }}</td>
+                    <td class="px-5 py-3 text-center text-gray-600 dark:text-gray-300">{{ du.comments_count }}</td>
+                    <td class="px-5 py-3 text-center text-gray-600 dark:text-gray-300">{{ du.goods_count }}</td>
+                    <td class="px-5 py-3 text-center">
+                        {% if du.is_cooling_off %}
+                        <span class="bg-yellow-50 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 px-2 py-0.5 rounded text-xs">
+                            <i class="fas fa-clock mr-1"></i>剩余 {{ du.remaining_hours }}h
+                        </span>
+                        {% else %}
+                        <span class="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-2 py-0.5 rounded text-xs">已过期</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-5 py-3 text-gray-400 dark:text-gray-500 text-xs whitespace-nowrap">{{ du.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td class="px-5 py-3 text-center">
+                        <div class="flex items-center justify-center space-x-1">
+                            {% if du.is_cooling_off %}
+                            <form method="post" action="/admin/deleted_users/{{ du.id }}/restore">
+                                <button type="submit" class="px-2 py-1 bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded hover:opacity-80 transition text-xs" title="恢复账号" onclick="return confirm('确认恢复该用户？冷静期内恢复将还原账号状态。')">
+                                    <i class="fas fa-rotate-left"></i>
+                                </button>
+                            </form>
+                            {% endif %}
+                            <form method="post" action="/admin/deleted_users/{{ du.id }}/purge" onsubmit="return confirm('确认永久删除该用户的所有数据？此操作不可撤销！')">
+                                <button type="submit" class="px-2 py-1 bg-red-50 dark:bg-red-900/30 text-red-500 rounded hover:opacity-80 transition text-xs" title="永久删除">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if pagination and pagination.pages > 1 %}
+    <div class="px-6 py-4 border-t border-gray-100 dark:border-gray-700 flex justify-center items-center space-x-2">
+        {% if pagination.has_prev %}
+        <a href="/admin/deleted_users?page={{ pagination.prev_num }}" class="px-3 py-1.5 border border-gray-200 dark:border-gray-600 rounded-lg text-sm text-gray-600 dark:text-gray-300 hover:border-blue-300 transition">上一页</a>
+        {% endif %}
+        <span class="text-xs text-gray-400 dark:text-gray-500">{{ pagination.page }} / {{ pagination.pages }}</span>
+        {% if pagination.has_next %}
+        <a href="/admin/deleted_users?page={{ pagination.next_num }}" class="px-3 py-1.5 border border-gray-200 dark:border-gray-600 rounded-lg text-sm text-gray-600 dark:text-gray-300 hover:border-blue-300 transition">下一页</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="px-6 py-16 text-center text-gray-300 dark:text-gray-600">
+        <i class="fas fa-user-slash text-4xl mb-3"></i>
+        <p>暂无已注销用户</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

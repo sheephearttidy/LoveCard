@@ -1,0 +1,261 @@
+{% extends "admin/base.html" %}
+
+{% block title %}用户管理{% endblock %}
+{% block page_title %}用户管理{% endblock %}
+
+{% block content %}
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+    <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700">
+        <form method="get" class="flex flex-col sm:flex-row sm:items-center gap-3">
+            <div class="flex flex-wrap items-center gap-2">
+                <a href="/admin/users"
+                   class="px-3 py-1.5 rounded-lg text-sm font-medium transition
+                          {% if status_filter is none and role_filter is none %}bg-blue-500 text-white{% else %}bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600{% endif %}">
+                    全部
+                </a>
+                <a href="/admin/users?status=0"
+                   class="px-3 py-1.5 rounded-lg text-sm font-medium transition
+                          {% if status_filter == 0 and role_filter is none %}bg-green-500 text-white{% else %}bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600{% endif %}">
+                    正常
+                </a>
+                <a href="/admin/users?status=1"
+                   class="px-3 py-1.5 rounded-lg text-sm font-medium transition
+                          {% if status_filter == 1 and role_filter is none %}bg-red-500 text-white{% else %}bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600{% endif %}">
+                    封禁
+                </a>
+                <a href="/admin/users?role=0"
+                   class="px-3 py-1.5 rounded-lg text-sm font-medium transition
+                          {% if role_filter == 0 %}bg-red-500 text-white{% else %}bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600{% endif %}">
+                    超管
+                </a>
+                <a href="/admin/users?role=1"
+                   class="px-3 py-1.5 rounded-lg text-sm font-medium transition
+                          {% if role_filter == 1 %}bg-blue-500 text-white{% else %}bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600{% endif %}">
+                    管理员
+                </a>
+                <a href="/admin/users?role=2"
+                   class="px-3 py-1.5 rounded-lg text-sm font-medium transition
+                          {% if role_filter == 2 %}bg-gray-500 text-white{% else %}bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600{% endif %}">
+                    普通用户
+                </a>
+            </div>
+            <div class="flex items-center gap-2 sm:ml-auto">
+                <input type="text" name="search" value="{{ search or '' }}" placeholder="搜索用户名/邮箱/编号/手机..."
+                       class="px-3 py-1.5 border border-gray-200 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 w-56">
+                {% if status_filter is not none %}
+                <input type="hidden" name="status" value="{{ status_filter }}">
+                {% endif %}
+                {% if role_filter is not none %}
+                <input type="hidden" name="role" value="{{ role_filter }}">
+                {% endif %}
+                <button type="submit" class="px-3 py-1.5 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition">
+                    <i class="fas fa-search"></i>
+                </button>
+                {% if pagination %}
+                <span class="text-xs text-gray-400 dark:text-gray-500 ml-2">共 {{ pagination.total }} 人</span>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    {% if users %}
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead class="bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-xs uppercase">
+                <tr>
+                    <th class="px-5 py-3 text-left">ID</th>
+                    <th class="px-5 py-3 text-left">编号</th>
+                    <th class="px-5 py-3 text-left">用户名</th>
+                    <th class="px-5 py-3 text-left">邮箱</th>
+                    <th class="px-5 py-3 text-left">手机</th>
+                    <th class="px-5 py-3 text-center">角色</th>
+                    <th class="px-5 py-3 text-center">状态</th>
+                    <th class="px-5 py-3 text-left">注册时间</th>
+                    <th class="px-5 py-3 text-center">操作</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50 dark:divide-gray-700">
+                {% for user in users %}
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
+                    <td class="px-5 py-3 text-gray-400 dark:text-gray-500">{{ user.id }}</td>
+                    <td class="px-5 py-3 text-gray-500 dark:text-gray-400 font-mono text-xs">{{ user.number }}</td>
+                    <td class="px-5 py-3">
+                        <div class="flex items-center space-x-2">
+                            {% if user.avatar %}
+                            <img src="{{ user.avatar }}" class="w-7 h-7 rounded-full object-cover" alt="">
+                            {% else %}
+                            <div class="w-7 h-7 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+                                <i class="fas fa-user text-blue-400 text-xs"></i>
+                            </div>
+                            {% endif %}
+                            {% if user.roles_id and 0 in user.roles_id %}
+                            <span class="text-red-500 dark:text-red-400 font-semibold">{{ user.username }}</span>
+                            {% elif user.roles_id and 1 in user.roles_id %}
+                            <span class="text-blue-500 dark:text-blue-400 font-semibold">{{ user.username }}</span>
+                            {% else %}
+                            <span class="text-gray-700 dark:text-gray-300">{{ user.username }}</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td class="px-5 py-3 text-gray-500 dark:text-gray-400 text-xs">{{ user.email }}</td>
+                    <td class="px-5 py-3 text-gray-500 dark:text-gray-400 text-xs">{{ user.phone or '-' }}</td>
+                    <td class="px-5 py-3 text-center">
+                        {% if user.roles_id %}
+                            {% if 0 in user.roles_id %}
+                            <span class="bg-red-50 dark:bg-red-900/30 text-red-500 px-2 py-0.5 rounded text-xs">超管</span>
+                            {% elif 1 in user.roles_id %}
+                            <span class="bg-blue-50 dark:bg-blue-900/30 text-blue-500 px-2 py-0.5 rounded text-xs">管理员</span>
+                            {% else %}
+                            <span class="bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 px-2 py-0.5 rounded text-xs">用户</span>
+                            {% endif %}
+                        {% else %}
+                        <span class="bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 px-2 py-0.5 rounded text-xs">用户</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-5 py-3 text-center">
+                        {% if user.status == 0 %}
+                        <span class="bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 px-2 py-0.5 rounded text-xs">正常</span>
+                        {% else %}
+                        <span class="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-2 py-0.5 rounded text-xs">封禁</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-5 py-3 text-gray-400 dark:text-gray-500 text-xs whitespace-nowrap">{{ user.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td class="px-5 py-3 text-center">
+                        <div class="flex items-center justify-center space-x-1">
+                            {% if user.id != current_user.id %}
+                            {% if current_user.is_super_admin %}
+                            <form method="post" action="/admin/users/{{ user.id }}/set_role" class="inline">
+                                <select name="role" onchange="if(this.value){this.form.submit()}" class="text-xs border border-gray-200 dark:border-gray-600 rounded px-1 py-0.5 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 focus:outline-none">
+                                    {% if user.roles_id and 0 in user.roles_id %}
+                                    <option value="super_admin" selected>超管</option>
+                                    {% else %}
+                                    <option value="super_admin">超管</option>
+                                    {% endif %}
+                                    {% if user.roles_id and 1 in user.roles_id %}
+                                    <option value="admin" selected>管理员</option>
+                                    {% else %}
+                                    <option value="admin">管理员</option>
+                                    {% endif %}
+                                    {% if user.roles_id and user.roles_id and 2 in user.roles_id or not user.roles_id or (user.roles_id and 0 not in user.roles_id and 1 not in user.roles_id) %}
+                                    <option value="user" selected>用户</option>
+                                    {% else %}
+                                    <option value="user">用户</option>
+                                    {% endif %}
+                                </select>
+                            </form>
+                            {% endif %}
+                            {% if user.status == 0 %}
+                            <button type="button" onclick="showBanModal({{ user.id }}, '{{ user.username }}')" class="px-2 py-1 bg-red-50 dark:bg-red-900/30 text-red-500 rounded hover:opacity-80 transition text-xs" title="封禁">
+                                <i class="fas fa-ban"></i>
+                            </button>
+                            {% else %}
+                            <form method="post" action="/admin/users/{{ user.id }}/unban">
+                                <button type="submit" class="px-2 py-1 bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded hover:opacity-80 transition text-xs" title="解封">
+                                    <i class="fas fa-unlock"></i>
+                                </button>
+                            </form>
+                            {% endif %}
+                            <form method="post" action="/admin/users/{{ user.id }}/delete" onsubmit="return confirm('确认删除该用户？')">
+                                <button type="submit" class="px-2 py-1 bg-red-50 dark:bg-red-900/30 text-red-500 rounded hover:opacity-80 transition text-xs" title="删除">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                            {% else %}
+                            <span class="text-xs text-gray-300 dark:text-gray-600">-</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if pagination and pagination.pages > 1 %}
+    <div class="px-6 py-4 border-t border-gray-100 dark:border-gray-700 flex justify-center items-center space-x-1">
+        {% if pagination.has_prev %}
+        <a href="/admin/users?page=1{% if search %}&search={{ search }}{% endif %}{% if status_filter is not none %}&status={{ status_filter }}{% endif %}{% if role_filter is not none %}&role={{ role_filter }}{% endif %}" class="px-2 py-1 border border-gray-200 dark:border-gray-600 rounded text-sm text-gray-600 dark:text-gray-300 hover:border-blue-300 transition">首页</a>
+        <a href="/admin/users?page={{ pagination.prev_num }}{% if search %}&search={{ search }}{% endif %}{% if status_filter is not none %}&status={{ status_filter }}{% endif %}{% if role_filter is not none %}&role={{ role_filter }}{% endif %}" class="px-2 py-1 border border-gray-200 dark:border-gray-600 rounded text-sm text-gray-600 dark:text-gray-300 hover:border-blue-300 transition">上一页</a>
+        {% endif %}
+
+        {% set start_page = [1, pagination.page - 2]|max %}
+        {% set end_page = [pagination.pages, pagination.page + 2]|min %}
+        {% for p in range(start_page, end_page + 1) %}
+        {% if p == pagination.page %}
+        <span class="px-2.5 py-1 bg-blue-500 text-white rounded text-sm">{{ p }}</span>
+        {% else %}
+        <a href="/admin/users?page={{ p }}{% if search %}&search={{ search }}{% endif %}{% if status_filter is not none %}&status={{ status_filter }}{% endif %}{% if role_filter is not none %}&role={{ role_filter }}{% endif %}" class="px-2.5 py-1 border border-gray-200 dark:border-gray-600 rounded text-sm text-gray-600 dark:text-gray-300 hover:border-blue-300 transition">{{ p }}</a>
+        {% endif %}
+        {% endfor %}
+
+        {% if pagination.has_next %}
+        <a href="/admin/users?page={{ pagination.next_num }}{% if search %}&search={{ search }}{% endif %}{% if status_filter is not none %}&status={{ status_filter }}{% endif %}{% if role_filter is not none %}&role={{ role_filter }}{% endif %}" class="px-2 py-1 border border-gray-200 dark:border-gray-600 rounded text-sm text-gray-600 dark:text-gray-300 hover:border-blue-300 transition">下一页</a>
+        <a href="/admin/users?page={{ pagination.pages }}{% if search %}&search={{ search }}{% endif %}{% if status_filter is not none %}&status={{ status_filter }}{% endif %}{% if role_filter is not none %}&role={{ role_filter }}{% endif %}" class="px-2 py-1 border border-gray-200 dark:border-gray-600 rounded text-sm text-gray-600 dark:text-gray-300 hover:border-blue-300 transition">末页</a>
+        {% endif %}
+        <span class="text-xs text-gray-400 dark:text-gray-500 ml-2">{{ pagination.page }} / {{ pagination.pages }}</span>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="px-6 py-16 text-center text-gray-300 dark:text-gray-600">
+        <i class="fas fa-users text-4xl mb-3"></i>
+        <p>暂无用户</p>
+    </div>
+    {% endif %}
+</div>
+
+<div id="banModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 w-full max-w-md mx-4 p-6">
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4"><i class="fas fa-ban text-red-500 mr-2"></i>封禁用户</h3>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">封禁用户：<span id="banUsername" class="font-semibold text-gray-700 dark:text-gray-200"></span></p>
+        <form id="banForm" method="post" action="">
+            <div class="mb-3">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">封禁原因 <span class="text-red-500">*</span></label>
+                <textarea name="ban_reason" rows="3" required placeholder="请填写封禁原因..." class="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"></textarea>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">标签 <span class="text-gray-400 text-xs">(逗号分隔，如: 违规,刷屏)</span></label>
+                <input type="text" name="ban_tags" placeholder="违规,刷屏,广告..." class="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <div class="flex flex-wrap gap-1.5 mt-2">
+                    <button type="button" onclick="addTag('违规')" class="px-2 py-0.5 bg-red-50 dark:bg-red-900/30 text-red-500 rounded text-xs hover:opacity-80 transition">违规</button>
+                    <button type="button" onclick="addTag('刷屏')" class="px-2 py-0.5 bg-orange-50 dark:bg-orange-900/30 text-orange-500 rounded text-xs hover:opacity-80 transition">刷屏</button>
+                    <button type="button" onclick="addTag('广告')" class="px-2 py-0.5 bg-yellow-50 dark:bg-yellow-900/30 text-yellow-500 rounded text-xs hover:opacity-80 transition">广告</button>
+                    <button type="button" onclick="addTag('恶意')" class="px-2 py-0.5 bg-purple-50 dark:bg-purple-900/30 text-purple-500 rounded text-xs hover:opacity-80 transition">恶意</button>
+                    <button type="button" onclick="addTag('骚扰')" class="px-2 py-0.5 bg-pink-50 dark:bg-pink-900/30 text-pink-500 rounded text-xs hover:opacity-80 transition">骚扰</button>
+                    <button type="button" onclick="addTag('诈骗')" class="px-2 py-0.5 bg-red-50 dark:bg-red-900/30 text-red-500 rounded text-xs hover:opacity-80 transition">诈骗</button>
+                </div>
+            </div>
+            <div class="flex justify-end space-x-2">
+                <button type="button" onclick="hideBanModal()" class="px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition">取消</button>
+                <button type="submit" class="px-4 py-2 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 transition">确认封禁</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function showBanModal(userId, username) {
+    document.getElementById('banUsername').textContent = username;
+    document.getElementById('banForm').action = '/admin/users/' + userId + '/ban';
+    var modal = document.getElementById('banModal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+}
+function hideBanModal() {
+    var modal = document.getElementById('banModal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+}
+function addTag(tag) {
+    var input = document.querySelector('#banForm input[name=ban_tags]');
+    var current = input.value.split(',').map(function(s){return s.trim()}).filter(Boolean);
+    if (current.indexOf(tag) === -1) {
+        current.push(tag);
+        input.value = current.join(',');
+    }
+}
+document.getElementById('banModal').addEventListener('click', function(e) {
+    if (e.target === this) hideBanModal();
+});
+</script>
+{% endblock %}

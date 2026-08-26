@@ -12,7 +12,7 @@ DB_HOST = '127.0.0.1'
 DB_PORT = 3306
 DB_NAME = 'lovecard'
 SQLALCHEMY_DATABASE_URI = (
-    f'mysql+{DB_DRIVER}://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
+    f'mysql+{DB_DRIVER}://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?charset=utf8mb4'
 )
 
 JSON_AS_ASCII = False # 中文乱码解决

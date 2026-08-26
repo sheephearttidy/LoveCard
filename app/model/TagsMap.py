@@ -16,6 +16,7 @@ from model.db import db
 class TagsMap(db.Model):
     """标签映射模型，记录条目与标签的多对多关系"""
     __tablename__ = 'tags_map'
+    __table_args__ = {'mysql_charset': 'utf8mb4', 'mysql_collate': 'utf8mb4_general_ci'}
 
     # 主键，自增
     id = mapped_column(db.Integer, primary_key=True, autoincrement=True)

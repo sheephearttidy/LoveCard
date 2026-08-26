@@ -15,6 +15,7 @@ from model.db import db
 class Images(db.Model):
     """图片模型，记录条目关联的图片"""
     __tablename__ = 'images'
+    __table_args__ = {'mysql_charset': 'utf8mb4', 'mysql_collate': 'utf8mb4_general_ci'}
 
     # 主键，自增
     id = mapped_column(db.Integer, primary_key=True, autoincrement=True)

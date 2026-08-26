@@ -14,6 +14,7 @@ from model.db import db
 class Good(db.Model):
     """点赞模型，记录用户对条目的点赞"""
     __tablename__ = 'good'
+    __table_args__ = {'mysql_charset': 'utf8mb4', 'mysql_collate': 'utf8mb4_general_ci'}
 
     # 主键，自增
     id = mapped_column(db.Integer, primary_key=True, autoincrement=True)

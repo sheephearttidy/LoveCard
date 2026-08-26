@@ -16,6 +16,7 @@ from model.db import db
 class User(db.Model, UserMixin):
     """用户模型，继承 UserMixin 以支持 Flask-Login"""
     __tablename__ = 'users'
+    __table_args__ = {'mysql_charset': 'utf8mb4', 'mysql_collate': 'utf8mb4_general_ci'}
 
     # 主键，自增
     id = mapped_column(db.Integer, primary_key=True, autoincrement=True)
@@ -34,8 +35,8 @@ class User(db.Model, UserMixin):
     password = mapped_column(db.String(255), nullable=False)
     # 账号状态：0=正常，其他值=禁用等
     status = mapped_column(db.Integer, nullable=False, default=0)
-    # 角色 ID 列表，JSON 格式存储，如 [0, 1, 2] 表示拥有多个角色
-    roles_id = mapped_column(db.JSON, nullable=True)
+    # 角色 ID 列表，JSON 格式存储：0=超级管理员, 1=管理员, 2=普通用户
+    roles_id = mapped_column(db.JSON, nullable=False, default=list)
 
     # 创建时间，记录首次插入时间
     created_at = mapped_column(db.DateTime, nullable=False, default=datetime.now)
@@ -48,6 +49,26 @@ class User(db.Model, UserMixin):
     def is_active(self):
         """覆盖 UserMixin 的 is_active，根据 status 判断账号是否可用"""
         return self.status == 0
+
+    @property
+    def is_super_admin(self):
+        """判断是否为超级管理员（roles_id 包含 0）"""
+        roles = self.roles_id
+        if roles is None:
+            return False
+        if isinstance(roles, int):
+            return roles == 0
+        return 0 in roles
+
+    @property
+    def is_admin(self):
+        """判断是否为管理员（roles_id 包含 0 或 1）"""
+        roles = self.roles_id
+        if roles is None:
+            return False
+        if isinstance(roles, int):
+            return roles in [0, 1]
+        return any(r in [0, 1] for r in roles)
 
     def set_password(self, raw_password):
         """将明文密码哈希后存储，不应直接保存明文密码"""

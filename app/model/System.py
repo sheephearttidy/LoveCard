@@ -13,6 +13,7 @@ from model.db import db
 class System(db.Model):
     """系统配置模型，存储站点键值对配置"""
     __tablename__ = 'system'
+    __table_args__ = {'mysql_charset': 'utf8mb4', 'mysql_collate': 'utf8mb4_general_ci'}
 
     # 主键，自增
     id = mapped_column(db.Integer, primary_key=True, autoincrement=True)

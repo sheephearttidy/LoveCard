@@ -13,5 +13,7 @@ from model.Images import Images
 from model.System import System
 from model.Tags import Tags
 from model.TagsMap import TagsMap
+from model.DeletedUser import DeletedUser
+from model.BanRecord import BanRecord
 
-__all__ = ['db', 'User', 'Card', 'Comment', 'Good', 'Images', 'System', 'Tags', 'TagsMap']
+__all__ = ['db', 'User', 'Card', 'Comment', 'Good', 'Images', 'System', 'Tags', 'TagsMap', 'DeletedUser', 'BanRecord']

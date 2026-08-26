@@ -15,6 +15,7 @@ from model.db import db
 class Card(db.Model):
     """卡片模型，用户发布的卡片内容"""
     __tablename__ = 'cards'
+    __table_args__ = {'mysql_charset': 'utf8mb4', 'mysql_collate': 'utf8mb4_general_ci'}
 
     # 主键，自增
     id = mapped_column(db.Integer, primary_key=True, autoincrement=True)

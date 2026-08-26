@@ -1,0 +1,210 @@
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css');
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: "Inter", "Segoe UI", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    line-height: 1.6;
+}
+
+.admin-sidebar {
+    width: 16rem;
+    background: #1e293b;
+    color: #cbd5e1;
+    flex-shrink: 0;
+    transition: transform 0.3s ease;
+}
+
+@media (max-width: 767px) {
+    .admin-sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        z-index: 50;
+        transform: translateX(-100%);
+    }
+
+    .admin-sidebar.open {
+        transform: translateX(0);
+    }
+}
+
+.admin-sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 49;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+
+.admin-sidebar-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.admin-sidebar a {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    transition: background 0.15s, color 0.15s;
+    text-decoration: none;
+}
+
+.admin-sidebar a:hover {
+    background: #334155;
+}
+
+.admin-sidebar a.active {
+    background: #334155;
+    color: white;
+}
+
+.admin-table {
+    width: 100%;
+    font-size: 0.875rem;
+}
+
+.admin-table thead {
+    background: #f9fafb;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: #6b7280;
+}
+
+.admin-table th {
+    padding: 0.75rem 1.5rem;
+    text-align: left;
+    font-weight: 500;
+}
+
+.admin-table th.text-center {
+    text-align: center;
+}
+
+.admin-table td {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #f3f4f6;
+}
+
+.admin-table tbody tr {
+    transition: background 0.15s;
+}
+
+.admin-table tbody tr:hover {
+    background: #f9fafb;
+}
+
+@media (max-width: 768px) {
+    .admin-table th,
+    .admin-table td {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.75rem;
+    }
+
+    .admin-table .hide-mobile {
+        display: none;
+    }
+}
+
+.admin-stat-card {
+    background: white;
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    border: 1px solid #f3f4f6;
+    transition: transform 0.2s;
+}
+
+input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 1rem;
+    height: 1rem;
+    border: 1.5px solid #d1d5db;
+    border-radius: 0.25rem;
+    background: white;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+    flex-shrink: 0;
+}
+
+input[type="checkbox"]:checked {
+    background: #3b82f6;
+    border-color: #3b82f6;
+}
+
+input[type="checkbox"]:checked::after {
+    content: "";
+    position: absolute;
+    left: 3px;
+    top: 0px;
+    width: 4px;
+    height: 7px;
+    border: solid white;
+    border-width: 0 1.5px 1.5px 0;
+    transform: rotate(45deg);
+}
+
+@media (prefers-color-scheme: dark) {
+    input[type="checkbox"] {
+        border-color: #4b5563;
+        background: #374151;
+    }
+    input[type="checkbox"]:checked {
+        background: #3b82f6;
+        border-color: #3b82f6;
+    }
+}
+
+.admin-stat-card:hover {
+    transform: translateY(-1px);
+}
+
+.admin-action-btn {
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.15s;
+}
+
+.admin-action-btn:hover {
+    opacity: 0.8;
+}
+
+.admin-content {
+    padding: 1.5rem;
+}
+
+@media (max-width: 640px) {
+    .admin-content {
+        padding: 1rem;
+    }
+}
+
+.admin-header {
+    height: 4rem;
+    padding: 0 1.5rem;
+    position: sticky;
+    top: 0;
+    z-index: 40;
+}
+
+@media (max-width: 640px) {
+    .admin-header {
+        padding: 0 1rem;
+    }
+}

@@ -1,49 +1,57 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>用户登录</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
-</head>
-<body>
+{% extends "base.html" %}
 
-<main class="login-card">
-    <h1>欢迎登录</h1>
-    <p class="subtitle">请输入您的账号信息</p>
+{% block title %}登录 - LoveCards{% endblock %}
 
-    <div id="errorBox" class="error-msg" role="alert"></div>
+{% block content %}
+<div class="min-h-[80vh] flex items-center justify-center px-4 py-8 sm:py-12">
+    <div class="w-full max-w-md">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 sm:p-8">
+            <div class="text-center mb-6 sm:mb-8">
+                <i class="fas fa-heart text-primary-500 text-2xl sm:text-3xl mb-2 sm:mb-3"></i>
+                <h1 class="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white">欢迎登录</h1>
+                <p class="text-gray-400 text-xs sm:text-sm mt-1">请输入您的账号信息</p>
+            </div>
 
-    <form id="loginForm" method="post" action="/login" novalidate>
-        <div class="form-group">
-            <label for="username">用户名</label>
-            <input type="text" id="username" name="username"
-                   placeholder="请输入用户名"
-                   autocomplete="username" required>
+            <div id="errorBox" class="hidden mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-300 text-sm" role="alert"></div>
+
+            <form id="loginForm" method="post" action="/login" novalidate>
+                <div class="mb-4 sm:mb-5">
+                    <label for="username" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">用户名</label>
+                    <input type="text" id="username" name="username"
+                           placeholder="请输入用户名"
+                           autocomplete="username" required
+                           class="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-800 dark:text-gray-200 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition text-sm sm:text-base bg-white dark:bg-gray-700">
+                </div>
+
+                <div class="mb-4 sm:mb-5">
+                    <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">密码</label>
+                    <input type="password" id="password" name="password"
+                           placeholder="请输入密码"
+                           autocomplete="current-password" required minlength="6"
+                           class="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-800 dark:text-gray-200 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition text-sm sm:text-base bg-white dark:bg-gray-700">
+                </div>
+
+                <div class="mb-5 sm:mb-6">
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="remember" name="remember" value="1"
+                               class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-primary-500 focus:ring-primary-500 bg-white dark:bg-gray-700">
+                        <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">记住我</span>
+                    </label>
+                </div>
+
+                <button type="submit" class="w-full bg-gradient-to-r from-primary-500 to-accent text-white py-2.5 sm:py-3 rounded-xl font-semibold hover:shadow-lg transition transform hover:scale-[1.02] text-sm sm:text-base">
+                    登 录
+                </button>
+            </form>
+
+            <p class="text-center text-xs sm:text-sm text-gray-400 dark:text-gray-500 mt-5 sm:mt-6">
+                还没有账号？<a href="/register" class="text-primary-500 hover:text-primary-700 font-medium">立即注册</a>
+            </p>
         </div>
+    </div>
+</div>
+{% endblock %}
 
-        <div class="form-group">
-            <label for="password">密码</label>
-            <input type="password" id="password" name="password"
-                   placeholder="请输入密码"
-                   autocomplete="current-password" required
-                   minlength="6">
-        </div>
-
-        <div class="form-options">
-            <label>
-                <input type="checkbox" name="remember"> 记住我
-            </label>
-            <a href="/forgot-password">忘记密码？</a>
-        </div>
-
-        <button type="submit" class="submit-btn">登 录</button>
-    </form>
-
-    <p class="register-link">还没有账号？<a href="/register">立即注册</a></p>
-</main>
-
+{% block extra_js %}
 <script src="{{ url_for('static', filename='js/login.js') }}"></script>
-</body>
-</html>
+{% endblock %}

@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}编辑资料 - LoveCards{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 py-8 sm:py-10">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    {% if message %}
+    <div class="flash-msg mb-4 p-3 sm:p-4 rounded-lg text-sm
+         {% if category == 'success' %}bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800{% else %}bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800{% endif %}">
+        <i class="fas {% if category == 'success' %}fa-circle-check{% else %}fa-circle-exclamation{% endif %} mr-2"></i>{{ message }}
+    </div>
+    {% endif %}
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-5 sm:p-8">
+        <div class="flex items-center mb-5 sm:mb-6">
+            <a href="/profile" class="text-gray-400 dark:text-gray-500 hover:text-primary-500 transition mr-3">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <h1 class="text-base sm:text-lg font-bold text-gray-800 dark:text-white">
+                <i class="fas fa-user-pen text-primary-500 mr-2"></i>编辑资料
+            </h1>
+        </div>
+
+        <form method="post" action="/profile/edit" enctype="multipart/form-data" class="space-y-4 sm:space-y-5">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">头像</label>
+                <div class="flex items-start space-x-4">
+                    <div class="w-16 h-16 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0" id="avatarDisplay">
+                        {% if current_user.avatar %}
+                        <img id="avatarImg" src="{{ current_user.avatar }}" alt="头像" class="w-full h-full object-cover">
+                        {% else %}
+                        <i id="avatarPlaceholder" class="fas fa-user text-primary-500 text-xl"></i>
+                        {% endif %}
+                    </div>
+                    <div class="flex-1">
+                        <label class="cursor-pointer inline-block">
+                            <input type="file" name="avatar" accept="image/*" id="avatarInput" class="hidden peer">
+                            <div class="px-4 py-2.5 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl text-gray-400 text-sm hover:border-primary-400 hover:text-primary-500 transition bg-white dark:bg-gray-700">
+                                <i class="fas fa-camera mr-2"></i>更换头像
+                            </div>
+                        </label>
+                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1.5">支持 JPG、PNG、GIF 格式</p>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <label for="username" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">用户名</label>
+                <input type="text" name="username" value="{{ current_user.username }}" required minlength="3" maxlength="20"
+                       class="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 transition text-sm bg-white dark:bg-gray-700">
+            </div>
+            <div>
+                <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">邮箱</label>
+                <input type="email" name="email" value="{{ current_user.email }}" required
+                       class="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 transition text-sm bg-white dark:bg-gray-700">
+            </div>
+            <div>
+                <label for="phone" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">手机号</label>
+                <input type="tel" name="phone" value="{{ current_user.phone }}" placeholder="选填"
+                       class="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-800 dark:text-gray-200 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 transition text-sm bg-white dark:bg-gray-700">
+            </div>
+            <button type="submit" class="w-full bg-primary-500 text-white py-2.5 sm:py-3 rounded-xl font-medium hover:bg-primary-600 transition text-sm sm:text-base">
+                <i class="fas fa-check mr-2"></i>保存修改
+            </button>
+        </form>
+
+        <div class="mt-5 pt-5 border-t border-gray-100 dark:border-gray-700">
+            <a href="/profile/security" class="flex items-center justify-between p-3 sm:p-4 rounded-xl bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition group">
+                <div class="flex items-center">
+                    <div class="w-8 h-8 bg-orange-50 dark:bg-orange-900/30 rounded-lg flex items-center justify-center mr-3">
+                        <i class="fas fa-shield-halved text-orange-500"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-700 dark:text-gray-300">安全设置</p>
+                        <p class="text-xs text-gray-400 dark:text-gray-500">修改密码、邮箱、手机号、注销账号</p>
+                    </div>
+                </div>
+                <i class="fas fa-chevron-right text-gray-300 dark:text-gray-600 group-hover:text-primary-500 transition"></i>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function(){
+    var avatarInput = document.getElementById('avatarInput');
+    var avatarDisplay = document.getElementById('avatarDisplay');
+    if(avatarInput && avatarDisplay){
+        avatarInput.addEventListener('change', function(){
+            var file = this.files[0];
+            if(!file || !file.type.startsWith('image/')) return;
+            var reader = new FileReader();
+            reader.onload = function(e){
+                var placeholder = document.getElementById('avatarPlaceholder');
+                if(placeholder) placeholder.style.display = 'none';
+                var img = document.getElementById('avatarImg');
+                if(!img){
+                    img = document.createElement('img');
+                    img.id = 'avatarImg';
+                    img.alt = '头像';
+                    img.className = 'w-full h-full object-cover';
+                    avatarDisplay.appendChild(img);
+                }
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+})();
+</script>
+{% endblock %}

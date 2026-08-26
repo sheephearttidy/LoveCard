@@ -1,0 +1,298 @@
+{% extends "admin/base.html" %}
+
+{% block title %}审核卡片 #{{ card.id }}{% endblock %}
+{% block page_title %}审核卡片详情{% endblock %}
+
+{% block content %}
+<div class="mb-4 flex items-center text-sm text-gray-500 dark:text-gray-400">
+    <a href="/admin/cards" class="hover:text-blue-500 transition">
+        <i class="fas fa-arrow-left mr-1"></i>卡片管理
+    </a>
+    <i class="fas fa-chevron-right mx-2 text-xs"></i>
+    <span class="text-gray-700 dark:text-gray-300">卡片 #{{ card.id }}</span>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+    <div class="lg:col-span-2 space-y-5">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+            {% if card.cover and card.cover.strip() %}
+            <div class="relative">
+                <img src="{{ card.cover }}" alt="封面" class="w-full max-h-80 object-cover">
+                <div class="absolute top-3 right-3">
+                    {% if card.status == 0 %}
+                    <span class="bg-yellow-500/90 backdrop-blur-sm text-white text-xs font-semibold px-2.5 py-1 rounded-lg">待审核</span>
+                    {% elif card.status == 1 %}
+                    <span class="bg-green-500/90 backdrop-blur-sm text-white text-xs font-semibold px-2.5 py-1 rounded-lg">已通过</span>
+                    {% elif card.status == 3 %}
+                    <span class="bg-orange-500/90 backdrop-blur-sm text-white text-xs font-semibold px-2.5 py-1 rounded-lg">已封禁</span>
+                    {% else %}
+                    <span class="bg-red-500/90 backdrop-blur-sm text-white text-xs font-semibold px-2.5 py-1 rounded-lg">已拒绝</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="p-5 sm:p-6">
+                {% if not (card.cover and card.cover.strip()) %}
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        {% if card.status == 0 %}
+                        <span class="bg-yellow-50 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 px-2.5 py-1 rounded-lg text-xs font-medium">待审核</span>
+                        {% elif card.status == 1 %}
+                        <span class="bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 px-2.5 py-1 rounded-lg text-xs font-medium">已通过</span>
+                        {% elif card.status == 3 %}
+                        <span class="bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 px-2.5 py-1 rounded-lg text-xs font-medium">已封禁</span>
+                        {% else %}
+                        <span class="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-2.5 py-1 rounded-lg text-xs font-medium">已拒绝</span>
+                        {% endif %}
+                    </div>
+                    {% if card.is_top %}
+                    <span class="bg-red-50 dark:bg-red-900/30 text-red-500 px-2.5 py-1 rounded-lg text-xs font-medium"><i class="fas fa-thumbtack mr-1"></i>置顶</span>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <div class="text-gray-800 dark:text-gray-200 text-base leading-relaxed whitespace-pre-wrap break-words">
+                    {{ card.content }}
+                </div>
+
+                {% if tags %}
+                <div class="flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+                    {% for tag in tags %}
+                    <span class="bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2.5 py-1 rounded-lg text-xs font-medium">
+                        <i class="fas fa-tag mr-1"></i>{{ tag.name }}
+                    </span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if images %}
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5 sm:p-6">
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">
+                <i class="fas fa-images mr-2 text-blue-500"></i>附件图片 ({{ images|length }})
+            </h3>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {% for img in images %}
+                <a href="{{ img.url }}" target="_blank" class="block rounded-lg overflow-hidden border border-gray-200 dark:border-gray-600 hover:opacity-80 transition">
+                    <img src="{{ img.url }}" alt="图片{{ loop.index }}" class="w-full h-32 sm:h-40 object-cover" loading="lazy">
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if comments %}
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5 sm:p-6">
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">
+                <i class="fas fa-comment mr-2 text-green-500"></i>评论 ({{ comments|length }})
+            </h3>
+            <div class="space-y-3">
+                {% for comment in comments %}
+                <div class="flex items-start gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50">
+                    <div class="w-8 h-8 bg-primary-50 dark:bg-primary-900/30 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
+                        {% if comment.user and comment.user.avatar %}
+                        <img src="{{ comment.user.avatar }}" class="w-full h-full object-cover" alt="">
+                        {% else %}
+                        <i class="fas fa-user text-primary-400 text-xs"></i>
+                        {% endif %}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="text-sm font-medium
+                                {% if comment.user and comment.user.roles_id and 0 in comment.user.roles_id %}text-red-500 dark:text-red-400 font-semibold{% elif comment.user and comment.user.roles_id and 1 in comment.user.roles_id %}text-blue-500 dark:text-blue-400 font-semibold{% else %}text-gray-700 dark:text-gray-300{% endif %}
+                            ">{{ comment.user.username if comment.user else '未知' }}</span>
+                            <span class="text-xs text-gray-400 dark:text-gray-500">{{ comment.created_at.strftime('%m-%d %H:%M') }}</span>
+                            {% if comment.status == 1 %}
+                            <span class="text-xs text-green-500">已通过</span>
+                            {% else %}
+                            <span class="text-xs text-yellow-500">待审核</span>
+                            {% endif %}
+                        </div>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 break-words">{{ comment.content }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="space-y-5">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5 sm:p-6">
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">
+                <i class="fas fa-info-circle mr-2 text-blue-500"></i>卡片信息
+            </h3>
+            <dl class="space-y-3 text-sm">
+                <div class="flex justify-between">
+                    <dt class="text-gray-400 dark:text-gray-500">ID</dt>
+                    <dd class="text-gray-700 dark:text-gray-300 font-mono">{{ card.id }}</dd>
+                </div>
+                <div class="flex justify-between">
+                    <dt class="text-gray-400 dark:text-gray-500">状态</dt>
+                    <dd>
+                        {% if card.status == 0 %}
+                        <span class="text-yellow-600 dark:text-yellow-400">待审核</span>
+                        {% elif card.status == 1 %}
+                        <span class="text-green-600 dark:text-green-400">已通过</span>
+                        {% elif card.status == 3 %}
+                        <span class="text-orange-600 dark:text-orange-400">已封禁</span>
+                        {% else %}
+                        <span class="text-red-600 dark:text-red-400">已拒绝</span>
+                        {% endif %}
+                    </dd>
+                </div>
+                <div class="flex justify-between">
+                    <dt class="text-gray-400 dark:text-gray-500">置顶</dt>
+                    <dd class="text-gray-700 dark:text-gray-300">{{ '是' if card.is_top else '否' }}</dd>
+                </div>
+                <div class="flex justify-between">
+                    <dt class="text-gray-400 dark:text-gray-500">点赞</dt>
+                    <dd class="text-gray-700 dark:text-gray-300">{{ card.good }}</dd>
+                </div>
+                <div class="flex justify-between">
+                    <dt class="text-gray-400 dark:text-gray-500">评论</dt>
+                    <dd class="text-gray-700 dark:text-gray-300">{{ card.comments }}</dd>
+                </div>
+                <div class="flex justify-between">
+                    <dt class="text-gray-400 dark:text-gray-500">浏览</dt>
+                    <dd class="text-gray-700 dark:text-gray-300">{{ card.views }}</dd>
+                </div>
+                {% if card.post_ip %}
+                <div class="flex justify-between">
+                    <dt class="text-gray-400 dark:text-gray-500">IP</dt>
+                    <dd class="text-gray-700 dark:text-gray-300 font-mono text-xs">{{ card.post_ip }}</dd>
+                </div>
+                {% endif %}
+                <div class="flex justify-between">
+                    <dt class="text-gray-400 dark:text-gray-500">发布时间</dt>
+                    <dd class="text-gray-700 dark:text-gray-300 text-xs">{{ card.created_at.strftime('%Y-%m-%d %H:%M') }}</dd>
+                </div>
+                <div class="flex justify-between">
+                    <dt class="text-gray-400 dark:text-gray-500">更新时间</dt>
+                    <dd class="text-gray-700 dark:text-gray-300 text-xs">{{ card.updated_at.strftime('%Y-%m-%d %H:%M') }}</dd>
+                </div>
+            </dl>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5 sm:p-6">
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">
+                <i class="fas fa-user mr-2 text-purple-500"></i>作者信息
+            </h3>
+            {% if card.author %}
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 bg-primary-50 dark:bg-primary-900/30 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0">
+                    {% if card.author.avatar %}
+                    <img src="{{ card.author.avatar }}" class="w-full h-full object-cover" alt="">
+                    {% else %}
+                    <i class="fas fa-user text-primary-400"></i>
+                    {% endif %}
+                </div>
+                <div>
+                    <div class="text-sm font-medium
+                        {% if card.author.roles_id and 0 in card.author.roles_id %}text-red-500 dark:text-red-400 font-semibold{% elif card.author.roles_id and 1 in card.author.roles_id %}text-blue-500 dark:text-blue-400 font-semibold{% else %}text-gray-700 dark:text-gray-300{% endif %}
+                    ">{{ card.author.username }}</div>
+                    <div class="text-xs text-gray-400 dark:text-gray-500">{{ card.author.email }}</div>
+                </div>
+            </div>
+            <dl class="space-y-2 text-sm">
+                <div class="flex justify-between">
+                    <dt class="text-gray-400 dark:text-gray-500">ID</dt>
+                    <dd class="text-gray-700 dark:text-gray-300 font-mono">{{ card.author.id }}</dd>
+                </div>
+                <div class="flex justify-between">
+                    <dt class="text-gray-400 dark:text-gray-500">编号</dt>
+                    <dd class="text-gray-700 dark:text-gray-300 font-mono text-xs">{{ card.author.number }}</dd>
+                </div>
+                <div class="flex justify-between">
+                    <dt class="text-gray-400 dark:text-gray-500">手机</dt>
+                    <dd class="text-gray-700 dark:text-gray-300 text-xs">{{ card.author.phone or '-' }}</dd>
+                </div>
+                <div class="flex justify-between">
+                    <dt class="text-gray-400 dark:text-gray-500">状态</dt>
+                    <dd>
+                        {% if card.author.status == 0 %}
+                        <span class="text-green-600 dark:text-green-400">正常</span>
+                        {% else %}
+                        <span class="text-red-600 dark:text-red-400">封禁</span>
+                        {% endif %}
+                    </dd>
+                </div>
+                <div class="flex justify-between">
+                    <dt class="text-gray-400 dark:text-gray-500">注册时间</dt>
+                    <dd class="text-gray-700 dark:text-gray-300 text-xs">{{ card.author.created_at.strftime('%Y-%m-%d') }}</dd>
+                </div>
+            </dl>
+            {% else %}
+            <p class="text-sm text-gray-400 dark:text-gray-500">作者信息不可用</p>
+            {% endif %}
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5 sm:p-6">
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">
+                <i class="fas fa-gavel mr-2 text-orange-500"></i>审核操作
+            </h3>
+            <div class="space-y-2">
+                {% if card.status == 0 %}
+                <form method="post" action="/admin/cards/{{ card.id }}/approve">
+                    <button type="submit" class="w-full px-4 py-2.5 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600 transition flex items-center justify-center gap-2">
+                        <i class="fas fa-check"></i>通过审核
+                    </button>
+                </form>
+                <form method="post" action="/admin/cards/{{ card.id }}/reject">
+                    <button type="submit" class="w-full px-4 py-2.5 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-600 transition flex items-center justify-center gap-2" onclick="return confirm('确认拒绝该卡片？')">
+                        <i class="fas fa-times"></i>拒绝
+                    </button>
+                </form>
+                {% elif card.status == 1 %}
+                <form method="post" action="/admin/cards/{{ card.id }}/ban">
+                    <button type="submit" class="w-full px-4 py-2.5 bg-orange-500 text-white rounded-lg text-sm font-medium hover:bg-orange-600 transition flex items-center justify-center gap-2" onclick="return confirm('确认封禁该卡片？')">
+                        <i class="fas fa-ban"></i>封禁卡片
+                    </button>
+                </form>
+                {% elif card.status == 3 %}
+                <form method="post" action="/admin/cards/{{ card.id }}/unban">
+                    <button type="submit" class="w-full px-4 py-2.5 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600 transition flex items-center justify-center gap-2">
+                        <i class="fas fa-unlock"></i>解封卡片
+                    </button>
+                </form>
+                {% elif card.status == 2 %}
+                <form method="post" action="/admin/cards/{{ card.id }}/approve">
+                    <button type="submit" class="w-full px-4 py-2.5 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600 transition flex items-center justify-center gap-2">
+                        <i class="fas fa-check"></i>重新通过
+                    </button>
+                </form>
+                {% endif %}
+
+                <form method="post" action="/admin/cards/{{ card.id }}/toggle_top">
+                    <button type="submit" class="w-full px-4 py-2.5 {% if card.is_top %}bg-gray-500{% else %}bg-red-500{% endif %} text-white rounded-lg text-sm font-medium hover:opacity-80 transition flex items-center justify-center gap-2">
+                        <i class="fas fa-thumbtack"></i>{{ '取消置顶' if card.is_top else '置顶' }}
+                    </button>
+                </form>
+
+                {% if card.author and card.author.id != current_user.id and card.status == 1 %}
+                <form method="post" action="/admin/cards/ban_user/{{ card.author.id }}" onclick="return confirm('确认封禁该用户所有已通过卡片？')">
+                    <button type="submit" class="w-full px-4 py-2.5 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition flex items-center justify-center gap-2">
+                        <i class="fas fa-user-slash"></i>封禁该用户所有卡片
+                    </button>
+                </form>
+                {% endif %}
+
+                <div class="pt-2 border-t border-gray-100 dark:border-gray-700 mt-2">
+                    <form method="post" action="/admin/cards/{{ card.id }}/delete" onsubmit="return confirm('确认删除该卡片？删除后关联评论也会一并删除。')">
+                        <button type="submit" class="w-full px-4 py-2 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg text-sm font-medium hover:opacity-80 transition flex items-center justify-center gap-2">
+                            <i class="fas fa-trash"></i>删除卡片
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <a href="/card/{{ card.id }}" target="_blank" class="block bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 hover:border-blue-300 dark:hover:border-blue-600 transition text-center">
+            <i class="fas fa-external-link-alt text-blue-500 mr-2"></i>
+            <span class="text-sm text-blue-500 font-medium">在前台查看</span>
+        </a>
+    </div>
+</div>
+{% endblock %}

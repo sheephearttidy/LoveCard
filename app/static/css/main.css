@@ -1,0 +1,228 @@
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css');
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: "Inter", "Segoe UI", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    line-height: 1.6;
+}
+
+.masonry {
+    columns: 3;
+    column-gap: 1.25rem;
+}
+
+.masonry-item {
+    break-inside: avoid;
+    margin-bottom: 1.25rem;
+}
+
+@media (max-width: 1024px) {
+    .masonry {
+        columns: 2;
+    }
+}
+
+@media (max-width: 640px) {
+    .masonry {
+        columns: 1;
+    }
+}
+
+.line-clamp-4 {
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.card-hover {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.dark .card-hover:hover {
+    box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.3), 0 4px 10px -5px rgba(0, 0, 0, 0.2);
+}
+
+.nav-auth-desktop {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+@media (max-width: 767px) {
+    .nav-auth-desktop {
+        display: none;
+    }
+}
+
+.mobile-menu {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.mobile-menu.open {
+    max-height: 300px;
+}
+
+.hero-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.card-hover {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.tag-pill {
+    transition: all 0.15s ease;
+}
+
+.tag-pill:hover {
+    transform: scale(1.05);
+}
+
+.toggle-switch {
+    position: relative;
+    width: 2.75rem;
+    height: 1.5rem;
+    background: #e5e7eb;
+    border-radius: 9999px;
+    transition: background 0.2s;
+    cursor: pointer;
+}
+
+.toggle-switch::after {
+    content: '';
+    position: absolute;
+    top: 0.125rem;
+    left: 0.125rem;
+    width: 1.25rem;
+    height: 1.25rem;
+    background: white;
+    border-radius: 9999px;
+    transition: transform 0.2s;
+}
+
+.toggle-switch.active {
+    background: #667eea;
+}
+
+.toggle-switch.active::after {
+    transform: translateX(1.25rem);
+}
+
+.dark .toggle-switch {
+    background: #4b5563;
+}
+
+.checkbox-custom {
+    width: 1.25rem;
+    height: 1.25rem;
+    border: 2px solid #d1d5db;
+    border-radius: 0.25rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.checkbox-custom.checked {
+    background: #667eea;
+    border-color: #667eea;
+}
+
+.checkbox-custom.checked i {
+    opacity: 1;
+}
+
+.checkbox-custom i {
+    color: white;
+    font-size: 0.65rem;
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+@media (max-width: 640px) {
+    .hero-section {
+        padding: 2.5rem 1rem;
+    }
+
+    .hero-section h1 {
+        font-size: 1.75rem;
+    }
+
+    .hero-section p {
+        font-size: 0.95rem;
+    }
+}
+
+.flash-msg {
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.pagination-btn {
+    min-width: 2.5rem;
+    min-height: 2.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@media (max-width: 640px) {
+    .publish-form .form-actions {
+        flex-direction: column;
+    }
+
+    .publish-form .form-actions a,
+    .publish-form .form-actions button {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+.comment-form textarea {
+    min-height: 80px;
+}
+
+@media (max-width: 640px) {
+    .card-detail-content {
+        padding: 1.25rem;
+    }
+
+    .card-stats {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+}

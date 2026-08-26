@@ -2,62 +2,10 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>后台管理系统 - 管理员登录</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <meta http-equiv="refresh" content="0;url=/admin/">
+    <title>重定向...</title>
 </head>
 <body>
-
-<main class="admin-card">
-    <header class="admin-header">
-        <div class="shield-badge" aria-hidden="true">
-            <svg viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5.25 3.4 10.15 8 11 4.6-.85 8-5.75 8-11V5l-8-3zm-1 14.5-3.5-3.5 1.41-1.41L11 13.67l4.59-4.58L17 10.5l-6 6z"/></svg>
-        </div>
-        <h1>后台管理系统</h1>
-        <p class="subtitle">ADMIN CONSOLE</p>
-    </header>
-
-    <div id="errorBox" class="error-msg" role="alert"></div>
-
-    <form id="adminLoginForm" method="post" action="/admin/login" novalidate>
-        <div class="form-group">
-            <label for="username">用户名</label>
-            <div class="input-wrap">
-                <input type="text" id="username" name="username"
-                       placeholder="请输入管理员用户名"
-                       autocomplete="username" required>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label for="password">密码</label>
-            <div class="input-wrap">
-                <input type="password" id="password" name="password"
-                       placeholder="请输入密码（至少 6 位）"
-                       autocomplete="current-password" required
-                       minlength="6">
-                <button type="button" class="toggle-pwd" id="togglePwd" aria-label="切换密码可见性">
-                    <svg id="eyeIcon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 12.5a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg>
-                </button>
-            </div>
-            <p class="capslock-hint" id="capslockHint">提示：大写锁定（Caps Lock）已开启</p>
-        </div>
-
-        <button type="submit" class="submit-btn" id="submitBtn" data-primary-action>登 录</button>
-    </form>
-
-    <section class="success-panel" id="successPanel">
-        <div class="check-icon">
-            <svg viewBox="0 0 24 24"><polyline points="4 12.5 9.5 18 20 6.5"/></svg>
-        </div>
-        <h2>登录成功</h2>
-        <p>欢迎，<span id="welcomeName">管理员</span>！<br>本页面为前端登录演示，未连接真实账号系统。</p>
-        <button type="button" class="back-btn" id="backBtn">返回登录</button>
-    </section>
-
-    <p class="demo-tip">演示提示：输入任意用户名和 6 位以上密码即可体验完整登录流程。<br>接入真实后端时，将表单 action 替换为实际登录接口地址，并移除脚本中的演示拦截逻辑即可。</p>
-</main>
-
-<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+    <p>正在跳转到管理后台... <a href="/admin/">点击这里</a></p>
 </body>
 </html>

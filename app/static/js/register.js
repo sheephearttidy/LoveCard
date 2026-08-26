@@ -52,7 +52,7 @@ document.getElementById('registerForm').addEventListener('submit', function (e) 
     .then(function (data) {
         if (data.success) {
             errorBox.style.display = 'block';
-            errorBox.classList.add('success-msg');
+            errorBox.className = 'mb-4 p-3 rounded-lg bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-300 text-sm';
             var countdown = 3;
             errorBox.textContent = '注册成功，' + countdown + ' 秒后跳转到登录页';
             var timer = setInterval(function () {
@@ -65,6 +65,7 @@ document.getElementById('registerForm').addEventListener('submit', function (e) 
                 }
             }, 1000);
         } else {
+            errorBox.className = 'mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-300 text-sm';
             errorBox.textContent = data.message;
             errorBox.style.display = 'block';
         }

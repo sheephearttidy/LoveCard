@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+
+{% block title %}{{ card.content[:30] }}... - LoveCards{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 py-8 sm:py-10">
+    <article class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+        {% if card.cover and card.cover.strip() %}
+        <img src="{{ card.cover }}" alt="封面" class="w-full object-cover max-h-80 sm:max-h-96">
+        {% endif %}
+
+        <div class="card-detail-content p-5 sm:p-8">
+            {% if card.is_top %}
+            <span class="inline-block bg-red-50 dark:bg-red-900/30 text-red-500 text-xs font-semibold px-2 py-0.5 rounded mb-3">
+                <i class="fas fa-thumbtack mr-1"></i>置顶
+            </span>
+            {% endif %}
+
+            <div class="flex items-center mb-4 sm:mb-5">
+                {% if card.data and card.data.get('anonymous') %}
+                <div class="w-9 h-9 sm:w-10 sm:h-10 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-user-secret text-gray-400 dark:text-gray-500 text-sm sm:text-base"></i>
+                </div>
+                <div class="ml-3">
+                    <span class="text-sm sm:text-base font-medium text-gray-600 dark:text-gray-400">匿名用户</span>
+                </div>
+                {% else %}
+                <div class="w-9 h-9 sm:w-10 sm:h-10 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
+                    {% if card.author and card.author.avatar %}
+                    <img src="{{ card.author.avatar }}" alt="" class="w-full h-full object-cover">
+                    {% else %}
+                    <i class="fas fa-user text-primary-500 text-sm sm:text-base"></i>
+                    {% endif %}
+                </div>
+                <div class="ml-3">
+                    {% if card.author %}
+                        {% if card.author.roles_id and 0 in card.author.roles_id %}
+                        <span class="text-sm sm:text-base font-semibold text-red-500 dark:text-red-400">{{ card.author.username }}</span>
+                        {% elif card.author.roles_id and 1 in card.author.roles_id %}
+                        <span class="text-sm sm:text-base font-semibold text-blue-500 dark:text-blue-400">{{ card.author.username }}</span>
+                        {% else %}
+                        <span class="text-sm sm:text-base font-medium text-gray-800 dark:text-gray-200">{{ card.author.username }}</span>
+                        {% endif %}
+                    {% else %}
+                    <span class="text-sm sm:text-base font-medium text-gray-800 dark:text-gray-200">未知用户</span>
+                    {% endif %}
+                </div>
+                {% endif %}
+                <span class="ml-auto text-xs sm:text-sm text-gray-400 dark:text-gray-500 flex-shrink-0">
+                    <i class="fas fa-clock mr-1"></i>{{ card.created_at.strftime('%Y-%m-%d %H:%M') }}
+                </span>
+            </div>
+
+            <div class="text-gray-800 dark:text-gray-200 text-base sm:text-lg leading-relaxed whitespace-pre-wrap mb-5 sm:mb-6">
+                {{ card.content }}
+            </div>
+
+            {% if images %}
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 mb-5 sm:mb-6">
+                {% for img in images %}
+                <img src="{{ img.url }}" alt="图片" class="w-full rounded-lg object-cover aspect-square" loading="lazy">
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="card-stats flex items-center space-x-4 sm:space-x-6 pt-3 sm:pt-4 border-t border-gray-100 dark:border-gray-700 text-xs sm:text-sm text-gray-400 dark:text-gray-500">
+                <button class="like-btn flex items-center hover:text-pink-500 transition focus:outline-none" data-card-id="{{ card.id }}">
+                    <i class="fas fa-heart mr-1.5 {% if is_liked %}text-pink-500{% else %}text-pink-400{% endif %}"></i>
+                    <span class="like-count">{{ card.good }}</span> 赞
+                </button>
+                <span class="flex items-center">
+                    <i class="fas fa-comment text-blue-400 mr-1.5"></i>{{ card.comments }} 评论
+                </span>
+                <span class="flex items-center">
+                    <i class="fas fa-eye mr-1.5"></i>{{ card.views }} 浏览
+                </span>
+            </div>
+        </div>
+    </article>
+
+    <div class="mt-6 sm:mt-8">
+        <h2 class="text-lg sm:text-xl font-bold text-gray-800 dark:text-white mb-4 sm:mb-6">
+            <i class="fas fa-comment text-primary-500 mr-2"></i>评论
+            <span class="text-xs sm:text-sm font-normal text-gray-400 dark:text-gray-500 ml-2">({{ comments|length }})</span>
+        </h2>
+
+        {% if current_user.is_authenticated %}
+        <form method="post" action="/comment" class="comment-form bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-4 sm:p-5 mb-5 sm:mb-6">
+            <input type="hidden" name="aid" value="1">
+            <input type="hidden" name="pid" value="{{ card.id }}">
+            <textarea name="content" rows="3" required
+                placeholder="写下你的评论..."
+                class="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-800 dark:text-gray-200 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none transition text-sm bg-white dark:bg-gray-700"></textarea>
+            <div class="flex justify-end mt-3">
+                <button type="submit"
+                    class="bg-primary-500 text-white px-5 sm:px-6 py-2 rounded-lg hover:bg-primary-600 transition text-xs sm:text-sm font-medium">
+                    <i class="fas fa-paper-plane mr-1"></i>发表评论
+                </button>
+            </div>
+        </form>
+        {% else %}
+        <div class="bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-4 sm:p-5 mb-5 sm:mb-6 text-center text-xs sm:text-sm text-gray-400 dark:text-gray-500">
+            <i class="fas fa-lock mr-1"></i>请先 <a href="/login" class="text-primary-500 hover:underline font-medium">登录</a> 后发表评论
+        </div>
+        {% endif %}
+
+        {% if comments %}
+        <div class="space-y-3 sm:space-y-4">
+            {% for comment in comments %}
+            <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-4 sm:p-5">
+                <div class="flex items-center mb-2 sm:mb-3 text-xs sm:text-sm">
+                    <div class="flex items-center text-gray-600 dark:text-gray-300 min-w-0">
+                        <i class="fas fa-user-circle text-primary-400 mr-1.5 flex-shrink-0"></i>
+                        {% if comment.user %}
+                            {% if comment.user.roles_id and 0 in comment.user.roles_id %}
+                            <span class="font-semibold truncate text-red-500 dark:text-red-400">{{ comment.user.username }}</span>
+                            {% elif comment.user.roles_id and 1 in comment.user.roles_id %}
+                            <span class="font-semibold truncate text-blue-500 dark:text-blue-400">{{ comment.user.username }}</span>
+                            {% else %}
+                            <span class="font-medium truncate">{{ comment.user.username }}</span>
+                            {% endif %}
+                        {% else %}
+                        <span class="font-medium truncate">匿名</span>
+                        {% endif %}
+                    </div>
+                    <span class="ml-auto text-gray-400 dark:text-gray-500 text-xs flex-shrink-0 pl-2">{{ comment.created_at.strftime('%m-%d %H:%M') }}</span>
+                </div>
+                <p class="text-gray-700 dark:text-gray-300 leading-relaxed text-sm sm:text-base">{{ comment.content }}</p>
+                <div class="flex items-center mt-2 sm:mt-3 text-xs text-gray-400 dark:text-gray-500">
+                    {% if current_user.is_authenticated %}
+                    <button onclick="toggleCommentGood(this, {{ comment.id }})" class="comment-like-btn hover:text-pink-400 transition mr-1 {% if comment.is_liked %}text-pink-500{% endif %}">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                    {% else %}
+                    <span class="mr-1"><i class="fas fa-heart text-pink-300"></i></span>
+                    {% endif %}
+                    <span class="comment-goods-count">{{ comment.goods }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-8 sm:py-10 text-gray-300 dark:text-gray-600">
+            <i class="fas fa-comment-slash text-2xl sm:text-3xl mb-2 sm:mb-3"></i>
+            <p class="text-xs sm:text-sm">还没有评论，来说点什么吧</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="mt-6 sm:mt-8 text-center">
+        <a href="/" class="text-primary-500 hover:text-primary-700 transition text-xs sm:text-sm">
+            <i class="fas fa-arrow-left mr-1"></i>返回首页
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function(){
+    document.querySelectorAll('.like-btn').forEach(function(btn){
+        btn.addEventListener('click', function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            var cardId = this.dataset.cardId;
+            if(!cardId) return;
+            var fd = new FormData();
+            fetch('/good/' + cardId, {method:'POST', body:fd, headers:{'X-Requested-With':'XMLHttpRequest'}})
+            .then(function(r){
+                if(!r.ok) return r.text().then(function(t){throw new Error(t)});
+                return r.json();
+            })
+            .then(function(data){
+                if(data.success){
+                    var icon = btn.querySelector('i');
+                    var count = btn.querySelector('.like-count');
+                    if(count) count.textContent = data.count;
+                    if(icon){
+                        if(data.liked){
+                            icon.classList.remove('text-pink-400');
+                            icon.classList.add('text-pink-500');
+                        }else{
+                            icon.classList.remove('text-pink-500');
+                            icon.classList.add('text-pink-400');
+                        }
+                    }
+                }
+            })
+            .catch(function(err){console.error('点赞失败:',err)});
+        });
+    });
+
+    var commentForm = document.querySelector('.comment-form');
+    if(commentForm){
+        commentForm.addEventListener('submit', function(e){
+            e.preventDefault();
+            var formData = new FormData(this);
+            fetch(this.action, {method:'POST', body:formData, headers:{'X-Requested-With':'XMLHttpRequest'}})
+            .then(function(r){return r.json()})
+            .then(function(data){
+                if(data.success){
+                    var textarea = commentForm.querySelector('textarea');
+                    if(textarea) textarea.value = '';
+                    var msg = document.createElement('div');
+                    msg.className = 'px-3 py-2 rounded-lg text-sm bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800 mb-3';
+                    msg.innerHTML = '<i class="fas fa-circle-check mr-1"></i>' + (data.message || '评论成功');
+                    commentForm.parentNode.insertBefore(msg, commentForm.nextSibling);
+                    setTimeout(function(){msg.style.transition='opacity 0.3s';msg.style.opacity='0';setTimeout(function(){msg.remove()},300)},3000);
+                    setTimeout(function(){location.reload()},1500);
+                }else{
+                    var msg = document.createElement('div');
+                    msg.className = 'px-3 py-2 rounded-lg text-sm bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800 mb-3';
+                    msg.innerHTML = '<i class="fas fa-circle-exclamation mr-1"></i>' + (data.message || '评论失败');
+                    commentForm.parentNode.insertBefore(msg, commentForm.nextSibling);
+                    setTimeout(function(){msg.remove()},3000);
+                }
+            })
+            .catch(function(){
+                commentForm.submit();
+            });
+        });
+    }
+})();
+
+function toggleCommentGood(btn, commentId) {
+    var fd = new FormData();
+    fetch('/comment/' + commentId + '/good', {method:'POST', body:fd, headers:{'X-Requested-With':'XMLHttpRequest'}})
+    .then(function(r){
+        if(!r.ok) return r.text().then(function(t){throw new Error(t)});
+        return r.json();
+    })
+    .then(function(data){
+        if(data.success){
+            var icon = btn.querySelector('i');
+            var countEl = btn.parentElement.querySelector('.comment-goods-count');
+            if(countEl) countEl.textContent = data.count;
+            if(icon){
+                if(data.liked){
+                    icon.classList.remove('text-pink-300');
+                    icon.classList.add('text-pink-500');
+                    btn.classList.add('text-pink-500');
+                }else{
+                    icon.classList.remove('text-pink-500');
+                    icon.classList.add('text-pink-300');
+                    btn.classList.remove('text-pink-500');
+                }
+            }
+        }
+    })
+    .catch(function(err){console.error('评论点赞失败:',err)});
+}
+</script>
+{% endblock %}
