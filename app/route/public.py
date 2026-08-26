@@ -12,9 +12,11 @@ def index():
 def about():
     return render_template("public/about.html")
 
+
 @public.route("/terms")
 def terms():
     return "terms Page"
+
 
 @public.route("/privacy")
 def privacy():

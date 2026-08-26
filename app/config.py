@@ -1,7 +1,6 @@
 SECRET_KEY = 'dev-secret-key'
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-
 '''仅开发使用'''
 ADMIN = 'admin'
 ADMIN_PASSWORD = 'admin'

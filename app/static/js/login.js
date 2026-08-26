@@ -1,4 +1,6 @@
 document.getElementById('loginForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+
     var errorBox = document.getElementById('errorBox');
     var username = document.getElementById('username').value.trim();
     var password = document.getElementById('password').value;
@@ -14,10 +16,29 @@ document.getElementById('loginForm').addEventListener('submit', function (e) {
     }
 
     if (errors.length > 0) {
-        e.preventDefault();
         errorBox.textContent = errors.join('；');
         errorBox.style.display = 'block';
-    } else {
-        errorBox.style.display = 'none';
+        return;
     }
+
+    errorBox.style.display = 'none';
+
+    var form = this;
+    fetch(form.action, {
+        method: 'POST',
+        body: new FormData(form)
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+        if (data.success) {
+            window.location.href = '/';
+        } else {
+            errorBox.textContent = data.message;
+            errorBox.style.display = 'block';
+        }
+    })
+    .catch(function () {
+        errorBox.textContent = '请求失败，请稍后重试';
+        errorBox.style.display = 'block';
+    });
 });

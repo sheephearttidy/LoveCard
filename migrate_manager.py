@@ -5,6 +5,6 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'app'))
 
 from flask_migrate import Migrate
 from app import app
-from model import db, User, Card
+from model import db, User, Card,Comment
 
 migrate = Migrate(app, db)

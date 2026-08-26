@@ -1,4 +1,5 @@
 from flask import Flask
+
 import config
 from model import db
 from route import public, auth, admin
@@ -11,8 +12,5 @@ app.register_blueprint(public)
 app.register_blueprint(auth)
 app.register_blueprint(admin)
 
-
-
-
 if __name__ == '__main__':
-    app.run(debug=True,port=8000)
+    app.run(debug=True, port=8000)

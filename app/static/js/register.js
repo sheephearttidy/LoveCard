@@ -1,4 +1,6 @@
 document.getElementById('registerForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+
     var errorBox = document.getElementById('errorBox');
     var username = document.getElementById('username').value.trim();
     var email = document.getElementById('email').value.trim();
@@ -34,10 +36,41 @@ document.getElementById('registerForm').addEventListener('submit', function (e) 
     }
 
     if (errors.length > 0) {
-        e.preventDefault();
         errorBox.textContent = errors.join('；');
         errorBox.style.display = 'block';
-    } else {
-        errorBox.style.display = 'none';
+        return;
     }
+
+    errorBox.style.display = 'none';
+
+    var form = this;
+    fetch(form.action, {
+        method: 'POST',
+        body: new FormData(form)
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+        if (data.success) {
+            errorBox.style.display = 'block';
+            errorBox.classList.add('success-msg');
+            var countdown = 3;
+            errorBox.textContent = '注册成功，' + countdown + ' 秒后跳转到登录页';
+            var timer = setInterval(function () {
+                countdown--;
+                if (countdown <= 0) {
+                    clearInterval(timer);
+                    window.location.href = '/login';
+                } else {
+                    errorBox.textContent = '注册成功，' + countdown + ' 秒后跳转到登录页';
+                }
+            }, 1000);
+        } else {
+            errorBox.textContent = data.message;
+            errorBox.style.display = 'block';
+        }
+    })
+    .catch(function () {
+        errorBox.textContent = '请求失败，请稍后重试';
+        errorBox.style.display = 'block';
+    });
 });
