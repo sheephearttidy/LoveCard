@@ -24,8 +24,8 @@ def login():
         if user is None or not user.check_password(password):
             return jsonify(success=False, message="用户名或密码错误")
 
-        # 账号已被禁用
-        if not user.is_active:
+        # 账号已被禁用（status != 0 表示禁用）
+        if user.status != 0:
             return jsonify(success=False, message="账号已被禁用")
 
         # 登录成功，建立会话
@@ -56,8 +56,12 @@ def register():
         if email_existing:
             return jsonify(success=False, message="邮箱已被注册")
 
+        # 生成用户编号：查询当前最大 id，新编号 = 1000000000 + max_id
+        max_id_result = db.session.execute(db.select(db.func.max(User.id))).scalar()
+        new_number = str(1000000000 + (max_id_result or 0))
+
         # 创建新用户，通过 set_password 方法加密存储密码
-        new_user = User(username=username, email=email)
+        new_user = User(number=new_number, username=username, email=email)
         new_user.set_password(password)
         db.session.add(new_user)
         db.session.commit()

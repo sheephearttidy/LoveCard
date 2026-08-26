@@ -44,6 +44,11 @@ class User(db.Model, UserMixin):
     # 软删除时间，非空表示该用户已被删除
     deleted_at = mapped_column(db.DateTime, nullable=True)
 
+    @property
+    def is_active(self):
+        """覆盖 UserMixin 的 is_active，根据 status 判断账号是否可用"""
+        return self.status == 0
+
     def set_password(self, raw_password):
         """将明文密码哈希后存储，不应直接保存明文密码"""
         self.password = generate_password_hash(raw_password)
