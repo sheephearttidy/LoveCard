@@ -13,4 +13,4 @@ class DataBase(DeclarativeBase):
     })
 
 
-db = SQLAlchemy()
+db = SQLAlchemy(model_class=DataBase)
