@@ -9,26 +9,26 @@ from model.db import db
 
 class User(db.Model, UserMixin):
     """用户模型，继承 UserMixin 以支持 Flask-Login"""
-    __tablename__ = 'user'
+    __tablename__ = 'users'
+
     id = mapped_column(db.Integer, primary_key=True, autoincrement=True)
+    number = mapped_column(db.String(32), nullable=False)
+    avatar = mapped_column(db.String(255), nullable=False, default='')
+    email = mapped_column(db.String(320), nullable=False)
+    phone = mapped_column(db.String(20), nullable=False, default='')
+    username = mapped_column(db.String(255), nullable=False)
+    password = mapped_column(db.String(255), nullable=False)
+    status = mapped_column(db.Integer, nullable=False, default=0)
+    roles_id = mapped_column(db.JSON, nullable=True)
 
-    # 用户属性
-    username = mapped_column(db.String(80), unique=True, nullable=False)
-    email = mapped_column(db.String(120), unique=True, nullable=True)
-    password_hash = mapped_column(db.String(255), nullable=False)
+    created_at = mapped_column(db.DateTime, nullable=False, default=datetime.now)
+    updated_at = mapped_column(db.DateTime, nullable=False, default=datetime.now, onupdate=datetime.now)
+    deleted_at = mapped_column(db.DateTime, nullable=True)
 
-    # 管理字段
-    is_admin = mapped_column(db.Boolean, nullable=False, default=False)
-    is_active = mapped_column(db.Boolean, nullable=False, default=True)
+    def set_password(self, raw_password):
+        """将明文密码哈希后存储"""
+        self.password = generate_password_hash(raw_password)
 
-    # 时间字段
-    create_time = mapped_column(db.DateTime, nullable=False, default=datetime.now)
-    end_login_time = mapped_column(db.DateTime, nullable=True)
-
-    def set_password(self, password):
-        """将明文密码哈希后存储，不应直接保存明文密码"""
-        self.password_hash = generate_password_hash(password)
-
-    def check_password(self, password):
+    def check_password(self, raw_password):
         """验证用户输入的密码是否与存储的哈希匹配"""
-        return check_password_hash(self.password_hash, password)
+        return check_password_hash(self.password, raw_password)

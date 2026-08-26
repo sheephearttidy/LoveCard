@@ -8,28 +8,23 @@ from model.db import db
 
 class Card(db.Model):
     """卡片模型，用户发布的卡片内容"""
-    __tablename__ = 'card'
+    __tablename__ = 'cards'
+
     id = mapped_column(db.Integer, primary_key=True, autoincrement=True)
+    is_top = mapped_column(db.Integer, nullable=False, default=0)
+    status = mapped_column(db.Integer, nullable=False, default=0)
+    user_id = mapped_column(db.Integer, ForeignKey('users.id'), nullable=False, default=0)
+    data = mapped_column(db.JSON, nullable=True)
+    cover = mapped_column(db.String(2083), nullable=True)
+    content = mapped_column(db.Text, nullable=True)
+    tags = mapped_column(db.JSON, nullable=True)
+    good = mapped_column(db.Integer, nullable=False, default=0)
+    views = mapped_column(db.Integer, nullable=False, default=0)
+    comments = mapped_column(db.Integer, nullable=False, default=0)
+    post_ip = mapped_column(db.String(39), nullable=True)
 
-    # 卡片内容
-    title = mapped_column(db.String(50), nullable=False)
-    content = mapped_column(db.String(200), nullable=False)
-    author_id = mapped_column(db.Integer, ForeignKey('user.id'), nullable=False)
+    created_at = mapped_column(db.DateTime, nullable=False, default=datetime.now)
+    updated_at = mapped_column(db.DateTime, nullable=False, default=datetime.now, onupdate=datetime.now)
+    deleted_at = mapped_column(db.DateTime, nullable=True)
 
-    # 统计数据
-    like_count = mapped_column(db.Integer, nullable=False, default=0)
-    comment_count = mapped_column(db.Integer, nullable=False, default=0)
-
-    # 管理字段
-    status = mapped_column(db.Boolean, nullable=False, default=False, comment="审核状态，False=未通过，True=已通过")
-    is_top = mapped_column(db.Boolean, nullable=False, default=False, comment="是否置顶")
-
-    # 时间字段
-    create_time = mapped_column(db.DateTime, nullable=False, default=datetime.now)
-    update_time = mapped_column(db.DateTime, nullable=False, default=datetime.now, onupdate=datetime.now)
-    delete_time = mapped_column(db.DateTime, nullable=True, comment="软删除标记，非空表示已删除")
-
-    # 关系：卡片 -> 作者（多对一）
     author = relationship('User', backref='cards')
-    # 关系：卡片 -> 评论（一对多）
-    comments = relationship('Comment', backref='card', order_by='Comment.create_time.desc()')
