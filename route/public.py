@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import re
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user, logout_user
@@ -18,6 +19,21 @@ from utils.upload import allowed_file, save_upload
 
 public = Blueprint('public', __name__)
 
+MAX_CONTENT_LENGTH = 2000
+MAX_COMMENT_LENGTH = 500
+
+
+def _escape_like(value):
+    return value.replace('\\', '\\\\').replace('%', '\\%').replace('_', '\\_')
+
+
+def _validate_cover_url(url):
+    if not url:
+        return None
+    if url.startswith('/uploads/'):
+        return url
+    return None
+
 
 @public.route('/')
 def index():
@@ -35,8 +51,9 @@ def index():
         query = query.where(Card.tags.contains(tag_id))
 
     if search:
-        conditions = [Card.content.ilike(f'%{search}%')]
-        author_subq = db.select(User.id).where(User.username.ilike(f'%{search}%'))
+        escaped = _escape_like(search)
+        conditions = [Card.content.ilike(f'%{escaped}%')]
+        author_subq = db.select(User.id).where(User.username.ilike(f'%{escaped}%'))
         conditions.append(Card.user_id.in_(author_subq))
         query = query.where(or_(*conditions))
 
@@ -106,6 +123,12 @@ def add_comment():
         flash('评论内容不能为空', 'error')
         return redirect(request.referrer or '/')
 
+    if len(content) > MAX_COMMENT_LENGTH:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify(success=False, message=f'评论内容不能超过 {MAX_COMMENT_LENGTH} 个字符'), 400
+        flash(f'评论内容不能超过 {MAX_COMMENT_LENGTH} 个字符', 'error')
+        return redirect(request.referrer or '/')
+
     card = db.session.get(Card, pid)
     if not card or card.deleted_at is not None:
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
@@ -113,21 +136,30 @@ def add_comment():
         flash('卡片不存在', 'error')
         return redirect('/')
 
+    need_review = get_config('siteCommentNeedReview') != 'false'
+    comment_status = 0 if need_review else 1
+
     new_comment = Comment(
         aid=aid,
         pid=pid,
         user_id=current_user.id,
         content=content,
-        status=1,
+        status=comment_status,
     )
     db.session.add(new_comment)
 
-    card.comments = (card.comments or 0) + 1
+    if comment_status == 1:
+        card.comments = (card.comments or 0) + 1
     db.session.commit()
 
+    if comment_status == 0:
+        msg = '评论已提交，等待审核通过后将会展示'
+    else:
+        msg = '评论成功'
+
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        return jsonify(success=True, message='评论成功')
-    flash('评论成功', 'success')
+        return jsonify(success=True, message=msg)
+    flash(msg, 'success')
     return redirect(url_for('public.card_detail', card_id=pid))
 
 
@@ -146,6 +178,10 @@ def publish():
             flash('内容不能为空', 'error')
             return redirect(url_for('public.publish'))
 
+        if len(content) > MAX_CONTENT_LENGTH:
+            flash(f'内容不能超过 {MAX_CONTENT_LENGTH} 个字符', 'error')
+            return redirect(url_for('public.publish'))
+
         tag_ids = request.form.getlist('tags', type=int)
 
         cover_url = None
@@ -154,8 +190,8 @@ def publish():
             cover_url = save_upload(cover_file, sub_dir='cards')
 
         cover_input = request.form.get('cover', '').strip()
-        if not cover_url and cover_input:
-            cover_url = cover_input
+        if not cover_url:
+            cover_url = _validate_cover_url(cover_input)
 
         need_review = get_config('siteCardNeedReview') != 'false'
         initial_status = 0 if need_review else 1
@@ -242,14 +278,21 @@ def profile_edit():
         has_error = False
 
         if username and username != current_user.username:
-            existing = db.session.execute(
-                db.select(User).where(User.username == username, User.id != current_user.id)
-            ).scalar()
-            if existing:
-                flash('用户名已被占用', 'error')
+            if len(username) < 3 or len(username) > 20:
+                flash('用户名长度需在 3-20 个字符之间', 'error')
+                has_error = True
+            elif not re.match(r'^[a-zA-Z0-9_\u4e00-\u9fff]+$', username):
+                flash('用户名只能包含字母、数字、下划线和中文', 'error')
                 has_error = True
             else:
-                current_user.username = username
+                existing = db.session.execute(
+                    db.select(User).where(User.username == username, User.id != current_user.id)
+                ).scalar()
+                if existing:
+                    flash('用户名已被占用', 'error')
+                    has_error = True
+                else:
+                    current_user.username = username
 
         if email and email != current_user.email:
             existing = db.session.execute(
@@ -410,6 +453,19 @@ def security_delete_account():
     )
     db.session.add(archive)
 
+    now = datetime.now()
+    my_cards = db.session.execute(
+        db.select(Card).where(Card.user_id == current_user.id, Card.deleted_at.is_(None))
+    ).scalars().all()
+    for c in my_cards:
+        c.deleted_at = now
+
+    my_comments = db.session.execute(
+        db.select(Comment).where(Comment.user_id == current_user.id, Comment.deleted_at.is_(None))
+    ).scalars().all()
+    for c in my_comments:
+        c.deleted_at = now
+
     current_user.status = 1
     current_user.username = f'[注销中]{current_user.username}'
     db.session.commit()
@@ -524,6 +580,56 @@ def ban_records():
     pagination = db.paginate(query, page=page, per_page=20, error_out=False)
     records = pagination.items
     return render_template("public/ban_records.html", records=records, pagination=pagination)
+
+
+@public.route('/profile/cards/<int:card_id>/delete', methods=['POST'])
+@login_required
+def profile_card_delete(card_id):
+    card = db.session.get(Card, card_id)
+    if not card or card.deleted_at is not None:
+        flash('卡片不存在', 'error')
+        return redirect(url_for('public.profile_cards'))
+
+    if card.user_id != current_user.id:
+        flash('无权删除此卡片', 'error')
+        return redirect(url_for('public.profile_cards'))
+
+    now = datetime.now()
+    card.deleted_at = now
+
+    related_comments = db.session.execute(
+        db.select(Comment).where(Comment.pid == card_id, Comment.deleted_at.is_(None))
+    ).scalars().all()
+    for c in related_comments:
+        c.deleted_at = now
+
+    db.session.commit()
+    flash('卡片已删除', 'success')
+    return redirect(url_for('public.profile_cards'))
+
+
+@public.route('/profile/comments/<int:comment_id>/delete', methods=['POST'])
+@login_required
+def profile_comment_delete(comment_id):
+    comment = db.session.get(Comment, comment_id)
+    if not comment or comment.deleted_at is not None:
+        flash('评论不存在', 'error')
+        return redirect(url_for('public.profile_comments'))
+
+    if comment.user_id != current_user.id:
+        flash('无权删除此评论', 'error')
+        return redirect(url_for('public.profile_comments'))
+
+    comment.deleted_at = datetime.now()
+
+    if comment.pid:
+        card = db.session.get(Card, comment.pid)
+        if card and card.comments > 0:
+            card.comments -= 1
+
+    db.session.commit()
+    flash('评论已删除', 'success')
+    return redirect(url_for('public.profile_comments'))
 
 
 @public.route('/about')

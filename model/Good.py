@@ -6,6 +6,7 @@
 """
 from datetime import datetime
 
+from sqlalchemy import UniqueConstraint
 from sqlalchemy.orm import mapped_column
 
 from model.db import db
@@ -14,7 +15,10 @@ from model.db import db
 class Good(db.Model):
     """点赞模型，记录用户对条目的点赞"""
     __tablename__ = 'good'
-    __table_args__ = {'mysql_charset': 'utf8mb4', 'mysql_collate': 'utf8mb4_general_ci'}
+    __table_args__ = (
+        UniqueConstraint('aid', 'pid', 'uid', name='uq_good_aid_pid_uid'),
+        {'mysql_charset': 'utf8mb4', 'mysql_collate': 'utf8mb4_general_ci'},
+    )
 
     # 主键，自增
     id = mapped_column(db.Integer, primary_key=True, autoincrement=True)

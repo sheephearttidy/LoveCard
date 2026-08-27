@@ -25,6 +25,20 @@
                 }
             });
         }
+
+        form.addEventListener('submit', function (e) {
+            var content = textarea ? textarea.value.trim() : '';
+            if (!content) {
+                e.preventDefault();
+                alert('内容不能为空');
+                return;
+            }
+            if (content.length > 2000) {
+                e.preventDefault();
+                alert('内容不能超过 2000 个字符');
+                return;
+            }
+        });
     }
 
     var coverFile = document.getElementById('coverFile');

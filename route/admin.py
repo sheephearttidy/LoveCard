@@ -20,6 +20,10 @@ from utils.system import ensure_default_configs, set_config, get_site_config, SI
 admin = Blueprint('admin', __name__, url_prefix='/admin')
 
 
+def _escape_like(value):
+    return value.replace('\\', '\\\\').replace('%', '\\%').replace('_', '\\_')
+
+
 def admin_required(func):
     from functools import wraps
     @wraps(func)
@@ -82,10 +86,11 @@ def cards_list():
     if status_filter is not None:
         query = query.where(Card.status == status_filter)
     if search:
-        conditions = [Card.content.ilike(f'%{search}%')]
+        escaped = _escape_like(search)
+        conditions = [Card.content.ilike(f'%{escaped}%')]
         if search.isdigit():
             conditions.append(Card.id == int(search))
-        author_subq = db.select(User.id).where(User.username.ilike(f'%{search}%'))
+        author_subq = db.select(User.id).where(User.username.ilike(f'%{escaped}%'))
         conditions.append(Card.user_id.in_(author_subq))
         query = query.where(or_(*conditions))
     query = query.order_by(desc(Card.created_at))
@@ -284,12 +289,13 @@ def users_list():
     if role_filter is not None:
         query = query.where(User.roles_id.contains([role_filter]))
     if search:
+        escaped = _escape_like(search)
         query = query.where(
             or_(
-                User.username.ilike(f'%{search}%'),
-                User.email.ilike(f'%{search}%'),
-                User.number.ilike(f'%{search}%'),
-                User.phone.ilike(f'%{search}%')
+                User.username.ilike(f'%{escaped}%'),
+                User.email.ilike(f'%{escaped}%'),
+                User.number.ilike(f'%{escaped}%'),
+                User.phone.ilike(f'%{escaped}%')
             )
         )
     query = query.order_by(desc(User.created_at))
@@ -405,7 +411,27 @@ def user_delete(user_id):
         flash('无权删除超级管理员', 'error')
         return redirect(request.referrer or url_for('admin.users_list'))
 
-    user.deleted_at = datetime.now()
+    now = datetime.now()
+
+    related_cards = db.session.execute(
+        db.select(Card).where(Card.user_id == user_id, Card.deleted_at.is_(None))
+    ).scalars().all()
+    for c in related_cards:
+        c.deleted_at = now
+
+    related_comments = db.session.execute(
+        db.select(Comment).where(Comment.user_id == user_id, Comment.deleted_at.is_(None))
+    ).scalars().all()
+    for c in related_comments:
+        c.deleted_at = now
+
+    related_goods = db.session.execute(
+        db.select(Good).where(Good.uid == user_id)
+    ).scalars().all()
+    for g in related_goods:
+        db.session.delete(g)
+
+    user.deleted_at = now
     db.session.commit()
     flash('用户已删除', 'success')
     return redirect(request.referrer or url_for('admin.users_list'))
@@ -416,20 +442,142 @@ def user_delete(user_id):
 def comments_list():
     page = request.args.get('page', 1, type=int)
     search = request.args.get('search', '').strip()
+    status_filter = request.args.get('status', type=int)
 
     query = db.select(Comment).where(Comment.deleted_at.is_(None))
+    if status_filter is not None:
+        query = query.where(Comment.status == status_filter)
     if search:
-        conditions = [Comment.content.ilike(f'%{search}%')]
+        escaped = _escape_like(search)
+        conditions = [Comment.content.ilike(f'%{escaped}%')]
         if search.isdigit():
             conditions.append(Comment.id == int(search))
-        author_subq = db.select(User.id).where(User.username.ilike(f'%{search}%'))
+        author_subq = db.select(User.id).where(User.username.ilike(f'%{escaped}%'))
         conditions.append(Comment.user_id.in_(author_subq))
         query = query.where(or_(*conditions))
     query = query.order_by(desc(Comment.created_at))
 
     pagination = db.paginate(query, page=page, per_page=20, error_out=False)
     comments = pagination.items
-    return render_template("admin/comments.html", comments=comments, pagination=pagination, search=search)
+    return render_template("admin/comments.html", comments=comments, pagination=pagination, search=search, status_filter=status_filter)
+
+
+@admin.route('/comments/<int:comment_id>/approve', methods=['POST'])
+@admin_required
+def comment_approve(comment_id):
+    comment = db.session.get(Comment, comment_id)
+    if not comment or comment.deleted_at is not None:
+        flash('评论不存在', 'error')
+        return redirect(request.referrer or url_for('admin.comments_list'))
+    comment.status = 1
+    comment.updated_at = datetime.now()
+    if comment.pid:
+        card = db.session.get(Card, comment.pid)
+        if card:
+            card.comments = (card.comments or 0) + 1
+    db.session.commit()
+    flash('评论已通过', 'success')
+    return redirect(request.referrer or url_for('admin.comments_list'))
+
+
+@admin.route('/comments/<int:comment_id>/reject', methods=['POST'])
+@admin_required
+def comment_reject(comment_id):
+    comment = db.session.get(Comment, comment_id)
+    if not comment or comment.deleted_at is not None:
+        flash('评论不存在', 'error')
+        return redirect(request.referrer or url_for('admin.comments_list'))
+    comment.status = 2
+    comment.updated_at = datetime.now()
+    db.session.commit()
+    flash('评论已拒绝', 'success')
+    return redirect(request.referrer or url_for('admin.comments_list'))
+
+
+@admin.route('/comments/<int:comment_id>/ban', methods=['POST'])
+@admin_required
+def comment_ban(comment_id):
+    comment = db.session.get(Comment, comment_id)
+    if not comment or comment.deleted_at is not None:
+        flash('评论不存在', 'error')
+        return redirect(request.referrer or url_for('admin.comments_list'))
+    was_approved = comment.status == 1
+    comment.status = 3
+    comment.updated_at = datetime.now()
+    if was_approved and comment.pid:
+        card = db.session.get(Card, comment.pid)
+        if card and card.comments > 0:
+            card.comments -= 1
+    db.session.commit()
+    flash('评论已封禁', 'success')
+    return redirect(request.referrer or url_for('admin.comments_list'))
+
+
+@admin.route('/comments/<int:comment_id>/unban', methods=['POST'])
+@admin_required
+def comment_unban(comment_id):
+    comment = db.session.get(Comment, comment_id)
+    if not comment or comment.deleted_at is not None:
+        flash('评论不存在', 'error')
+        return redirect(request.referrer or url_for('admin.comments_list'))
+    comment.status = 1
+    comment.updated_at = datetime.now()
+    if comment.pid:
+        card = db.session.get(Card, comment.pid)
+        if card:
+            card.comments = (card.comments or 0) + 1
+    db.session.commit()
+    flash('评论已解封', 'success')
+    return redirect(request.referrer or url_for('admin.comments_list'))
+
+
+@admin.route('/comments/batch', methods=['POST'])
+@admin_required
+def comments_batch():
+    action = request.form.get('batch_action', '').strip()
+    comment_ids = request.form.getlist('comment_ids', type=int)
+
+    if not comment_ids or not action:
+        flash('请选择评论和操作', 'error')
+        return redirect(url_for('admin.comments_list'))
+
+    count = 0
+    now = datetime.now()
+    for cid in comment_ids:
+        comment = db.session.get(Comment, cid)
+        if not comment or comment.deleted_at is not None:
+            continue
+        if action == 'approve':
+            if comment.status != 1:
+                comment.status = 1
+                if comment.pid:
+                    card = db.session.get(Card, comment.pid)
+                    if card:
+                        card.comments = (card.comments or 0) + 1
+        elif action == 'reject':
+            comment.status = 2
+        elif action == 'ban':
+            was_approved = comment.status == 1
+            comment.status = 3
+            if was_approved and comment.pid:
+                card = db.session.get(Card, comment.pid)
+                if card and card.comments > 0:
+                    card.comments -= 1
+        elif action == 'delete':
+            comment.deleted_at = now
+            if comment.pid:
+                card = db.session.get(Card, comment.pid)
+                if card and card.comments > 0:
+                    card.comments -= 1
+        else:
+            continue
+        comment.updated_at = now
+        count += 1
+
+    db.session.commit()
+    action_names = {'approve': '通过', 'reject': '拒绝', 'ban': '封禁', 'delete': '删除'}
+    flash(f'已{action_names.get(action, "操作")} {count} 条评论', 'success')
+    return redirect(request.referrer or url_for('admin.comments_list'))
 
 
 @admin.route('/comments/<int:comment_id>/delete', methods=['POST'])
@@ -580,7 +728,7 @@ def deleted_user_restore(archive_id):
 
     db.session.delete(archive)
     db.session.commit()
-    flash(f'用户 {user.username} 已恢复', 'success')
+    flash(f'用户 {user.username} 已恢复（其发布的内容需在卡片/评论管理中单独恢复）', 'success')
     return redirect(url_for('admin.deleted_users_list'))
 
 

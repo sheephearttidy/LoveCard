@@ -1,3 +1,5 @@
+import re
+
 from flask import Blueprint, request, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
 from sqlalchemy import desc
@@ -14,6 +16,16 @@ from utils.upload import allowed_file, save_upload
 
 api = Blueprint('api', __name__, url_prefix='/api/v1')
 
+MAX_CONTENT_LENGTH = 2000
+
+
+def _validate_cover_url(url):
+    if not url:
+        return None
+    if url.startswith('/uploads/'):
+        return url
+    return None
+
 
 @api.route('/auth/register', methods=['POST'])
 def register():
@@ -28,6 +40,12 @@ def register():
     if not username or not email or not password:
         return jsonify(code=400, message='用户名、邮箱和密码不能为空'), 400
 
+    if len(username) < 3 or len(username) > 20:
+        return jsonify(code=400, message='用户名长度需在 3-20 个字符之间'), 400
+
+    if not re.match(r'^[a-zA-Z0-9_\u4e00-\u9fff]+$', username):
+        return jsonify(code=400, message='用户名只能包含字母、数字、下划线和中文'), 400
+
     if len(password) < 6:
         return jsonify(code=400, message='密码至少6位'), 400
 
@@ -37,12 +55,11 @@ def register():
     if db.session.execute(db.select(User).where(User.username == username)).scalar():
         return jsonify(code=409, message='用户名已被占用'), 409
 
-    max_id_result = db.session.execute(db.select(db.func.max(User.id))).scalar()
-    number = str(1000000000 + (max_id_result or 0))
-
-    user = User(number=number, username=username, email=email, status=0, roles_id=[2])
+    user = User(number='0', username=username, email=email, status=0, roles_id=[2])
     user.set_password(password)
     db.session.add(user)
+    db.session.flush()
+    user.number = str(1000000000 + user.id)
     db.session.commit()
 
     return jsonify(code=200, message='注册成功', data={'id': user.id, 'username': user.username})
@@ -91,6 +108,10 @@ def update_profile():
     phone = data.get('phone', '').strip()
 
     if username and username != current_user.username:
+        if len(username) < 3 or len(username) > 20:
+            return jsonify(code=400, message='用户名长度需在 3-20 个字符之间'), 400
+        if not re.match(r'^[a-zA-Z0-9_\u4e00-\u9fff]+$', username):
+            return jsonify(code=400, message='用户名只能包含字母、数字、下划线和中文'), 400
         existing = db.session.execute(
             db.select(User).where(User.username == username, User.id != current_user.id)
         ).scalar()
@@ -131,7 +152,8 @@ def change_password():
 
     current_user.set_password(new_password)
     db.session.commit()
-    return jsonify(code=200, message='密码修改成功')
+    logout_user()
+    return jsonify(code=200, message='密码修改成功，请重新登录')
 
 
 @api.route('/user/avatar', methods=['POST'])
@@ -259,10 +281,17 @@ def create_card():
     if not content:
         return jsonify(code=400, message='内容不能为空'), 400
 
+    if len(content) > MAX_CONTENT_LENGTH:
+        return jsonify(code=400, message=f'内容不能超过 {MAX_CONTENT_LENGTH} 个字符'), 400
+
     cover_url = None
     cover_file = request.files.get('cover_file')
     if cover_file and cover_file.filename and allowed_file(cover_file.filename):
         cover_url = save_upload(cover_file, sub_dir='cards')
+
+    cover_input = request.form.get('cover', '').strip()
+    if not cover_url:
+        cover_url = _validate_cover_url(cover_input)
 
     need_review = get_config('siteCardNeedReview') != 'false'
     initial_status = 0 if need_review else 1
@@ -324,19 +353,27 @@ def add_comment(card_id):
     if not content:
         return jsonify(code=400, message='评论内容不能为空'), 400
 
+    if len(content) > 500:
+        return jsonify(code=400, message='评论内容不能超过 500 个字符'), 400
+
     card = db.session.get(Card, card_id)
     if not card or card.deleted_at is not None:
         return jsonify(code=404, message='卡片不存在'), 404
 
+    need_review = get_config('siteCommentNeedReview') != 'false'
+    comment_status = 0 if need_review else 1
+
     new_comment = Comment(
         aid=1, pid=card_id, user_id=current_user.id,
-        content=content, status=1,
+        content=content, status=comment_status,
     )
     db.session.add(new_comment)
-    card.comments = (card.comments or 0) + 1
+    if comment_status == 1:
+        card.comments = (card.comments or 0) + 1
     db.session.commit()
 
-    return jsonify(code=200, message='评论成功', data={
+    message = '评论成功，等待审核' if comment_status == 0 else '评论成功'
+    return jsonify(code=200, message=message, data={
         'id': new_comment.id,
         'content': new_comment.content,
         'author': current_user.username,

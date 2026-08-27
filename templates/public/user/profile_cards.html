@@ -17,13 +17,15 @@
     {% if cards %}
     <div class="space-y-3">
         {% for card in cards %}
-        <a href="/card/{{ card.id }}" class="block p-4 sm:p-5 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-600 hover:shadow-sm transition">
+        <div class="p-4 sm:p-5 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700">
             {% if card.cover and card.cover.strip() %}
             <img src="{{ card.cover }}" alt="" class="w-full rounded-lg object-cover max-h-40 sm:max-h-48 mb-3">
             {% endif %}
-            <p class="text-sm sm:text-base text-gray-700 dark:text-gray-300 leading-relaxed mb-3">
-                {{ card.content[:150] }}{% if card.content|length > 150 %}...{% endif %}
-            </p>
+            <a href="/card/{{ card.id }}" class="block">
+                <p class="text-sm sm:text-base text-gray-700 dark:text-gray-300 leading-relaxed mb-3">
+                    {{ card.content[:150] }}{% if card.content|length > 150 %}...{% endif %}
+                </p>
+            </a>
             <div class="flex items-center text-xs text-gray-400 dark:text-gray-500 space-x-3">
                 <span class="px-2 py-0.5 rounded text-xs
                     {% if card.status == 0 %}bg-yellow-50 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400{% elif card.status == 1 %}bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400{% elif card.status == 3 %}bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400{% else %}bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400{% endif %}">
@@ -31,9 +33,12 @@
                 </span>
                 <span><i class="fas fa-heart mr-1 text-pink-400"></i>{{ card.good }}</span>
                 <span><i class="fas fa-comment mr-1 text-blue-400"></i>{{ card.comments }}</span>
-                <span class="ml-auto">{{ card.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                <span>{{ card.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                <form method="post" action="/profile/cards/{{ card.id }}/delete" class="ml-auto inline" onsubmit="return confirm('确认删除此卡片？相关评论也会一并删除。')">
+                    <button type="submit" class="text-red-400 hover:text-red-600 transition"><i class="fas fa-trash-alt mr-1"></i>删除</button>
+                </form>
             </div>
-        </a>
+        </div>
         {% endfor %}
     </div>
 

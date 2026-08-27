@@ -112,13 +112,13 @@
                             <span class="truncate">匿名</span>
                             {% else %}
                             <div class="w-5 h-5 bg-primary-50 dark:bg-primary-900/30 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
-                                {% if card.author and card.author.avatar %}
+                                {% if card.author and card.author.status == 0 and card.author.deleted_at is none and card.author.avatar %}
                                 <img src="{{ card.author.avatar }}" class="w-full h-full object-cover" alt="">
                                 {% else %}
                                 <i class="fas fa-user text-primary-400" style="font-size:9px"></i>
                                 {% endif %}
                             </div>
-                            {% if card.author %}
+                            {% if card.author and card.author.status == 0 and card.author.deleted_at is none %}
                                 {% if card.author.roles_id and 0 in card.author.roles_id %}
                                 <span class="truncate text-red-500 dark:text-red-400 font-semibold">{{ card.author.username }}</span>
                                 {% elif card.author.roles_id and 1 in card.author.roles_id %}
@@ -126,6 +126,8 @@
                                 {% else %}
                                 <span class="truncate">{{ card.author.username }}</span>
                                 {% endif %}
+                            {% elif card.author %}
+                            <span class="truncate text-gray-400 dark:text-gray-500">已注销用户</span>
                             {% else %}
                             <span class="truncate">未知</span>
                             {% endif %}

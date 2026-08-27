@@ -21,11 +21,12 @@
             <p class="text-sm sm:text-base text-gray-700 dark:text-gray-300 leading-relaxed mb-3">{{ comment.content }}</p>
             <div class="flex items-center text-xs text-gray-400 dark:text-gray-500">
                 <span><i class="fas fa-clock mr-1"></i>{{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
-                <span class="ml-auto">
-                    <a href="/card/{{ comment.pid }}" class="text-primary-500 hover:underline">
-                        查看卡片 <i class="fas fa-arrow-right ml-1"></i>
-                    </a>
-                </span>
+                <a href="/card/{{ comment.pid }}" class="text-primary-500 hover:underline ml-4">
+                    查看卡片 <i class="fas fa-arrow-right ml-1"></i>
+                </a>
+                <form method="post" action="/profile/comments/{{ comment.id }}/delete" class="ml-auto inline" onsubmit="return confirm('确认删除此评论？')">
+                    <button type="submit" class="text-red-400 hover:text-red-600 transition"><i class="fas fa-trash-alt mr-1"></i>删除</button>
+                </form>
             </div>
         </div>
         {% endfor %}

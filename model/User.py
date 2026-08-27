@@ -26,11 +26,11 @@ class User(db.Model, UserMixin):
     # 头像 URL
     avatar = mapped_column(db.String(255), nullable=False, default='')
     # 邮箱地址，用于登录和通知
-    email = mapped_column(db.String(320), nullable=False)
+    email = mapped_column(db.String(320), nullable=False, unique=True)
     # 手机号码
     phone = mapped_column(db.String(20), nullable=False, default='')
     # 用户名，显示名称
-    username = mapped_column(db.String(255), nullable=False)
+    username = mapped_column(db.String(255), nullable=False, unique=True)
     # 密码哈希值，使用 bcrypt 加密存储
     password = mapped_column(db.String(255), nullable=False)
     # 账号状态：0=正常，其他值=禁用等

@@ -4,101 +4,195 @@
 {% block page_title %}评论管理{% endblock %}
 
 {% block content %}
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-    <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex flex-wrap items-center justify-between gap-3">
-        <h2 class="font-semibold text-gray-800 dark:text-white"><i class="fas fa-comments text-gray-400 dark:text-gray-500 mr-2"></i>评论列表</h2>
-        <form method="get" class="flex items-center gap-2">
-            <input type="text" name="search" value="{{ search or '' }}" placeholder="搜索内容/作者/ID..."
-                   class="px-3 py-1.5 border border-gray-200 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 w-48">
-            <button type="submit" class="px-3 py-1.5 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition">
-                <i class="fas fa-search"></i>
-            </button>
-            {% if pagination %}
-            <span class="text-xs text-gray-400 dark:text-gray-500 ml-2">共 {{ pagination.total }} 条</span>
-            {% endif %}
+<div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700/50">
+    <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-700/50">
+        <form method="get" class="flex flex-col sm:flex-row sm:items-center gap-2.5">
+            <div class="flex flex-wrap items-center gap-1.5">
+                <a href="/admin/comments"
+                   class="px-2.5 py-1 rounded-md text-xs font-medium transition
+                          {% if status_filter is none %}bg-primary-500 text-white{% else %}bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600{% endif %}">
+                    全部
+                </a>
+                <a href="/admin/comments?status=0"
+                   class="px-2.5 py-1 rounded-md text-xs font-medium transition
+                          {% if status_filter == 0 %}bg-yellow-500 text-white{% else %}bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600{% endif %}">
+                    待审核
+                </a>
+                <a href="/admin/comments?status=1"
+                   class="px-2.5 py-1 rounded-md text-xs font-medium transition
+                          {% if status_filter == 1 %}bg-green-500 text-white{% else %}bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600{% endif %}">
+                    已通过
+                </a>
+                <a href="/admin/comments?status=2"
+                   class="px-2.5 py-1 rounded-md text-xs font-medium transition
+                          {% if status_filter == 2 %}bg-red-500 text-white{% else %}bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600{% endif %}">
+                    已拒绝
+                </a>
+                <a href="/admin/comments?status=3"
+                   class="px-2.5 py-1 rounded-md text-xs font-medium transition
+                          {% if status_filter == 3 %}bg-orange-500 text-white{% else %}bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600{% endif %}">
+                    已封禁
+                </a>
+            </div>
+            <div class="flex items-center gap-1.5 sm:ml-auto">
+                <input type="text" name="search" value="{{ search or '' }}" placeholder="搜索内容/作者/ID..."
+                       class="px-2.5 py-1 border border-gray-200 dark:border-gray-600 rounded-md text-xs bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-primary-500 w-36">
+                {% if status_filter is not none %}
+                <input type="hidden" name="status" value="{{ status_filter }}">
+                {% endif %}
+                <button type="submit" class="px-2.5 py-1 bg-primary-500 text-white rounded-md text-xs hover:bg-primary-600 transition">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
         </form>
     </div>
 
     {% if comments %}
-    <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-            <thead class="bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-xs uppercase">
-                <tr>
-                    <th class="px-6 py-3 text-left">ID</th>
-                    <th class="px-6 py-3 text-left">内容</th>
-                    <th class="px-6 py-3 text-left">评论者</th>
-                    <th class="px-6 py-3 text-center">卡片ID</th>
-                    <th class="px-6 py-3 text-center">赞</th>
-                    <th class="px-6 py-3 text-left">时间</th>
-                    <th class="px-6 py-3 text-center">操作</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-50 dark:divide-gray-700">
-                {% for comment in comments %}
-                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
-                    <td class="px-6 py-4 text-gray-400 dark:text-gray-500">{{ comment.id }}</td>
-                    <td class="px-6 py-4 text-gray-700 dark:text-gray-300 max-w-xs truncate">{{ comment.content[:50] }}</td>
-                    <td class="px-6 py-4">
-                        {% if comment.user %}
-                            {% if comment.user.roles_id and 0 in comment.user.roles_id %}
-                            <span class="text-red-500 dark:text-red-400 font-semibold">{{ comment.user.username }}</span>
-                            {% elif comment.user.roles_id and 1 in comment.user.roles_id %}
-                            <span class="text-blue-500 dark:text-blue-400 font-semibold">{{ comment.user.username }}</span>
+    <form id="batchForm" method="post" action="/admin/comments/batch">
+        <div class="px-3.5 py-2 border-b border-gray-100 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-700/20 flex flex-wrap items-center gap-2">
+            <label class="inline-flex items-center text-[11px] text-gray-500 dark:text-gray-400 cursor-pointer">
+                <input type="checkbox" id="selectAll" class="mr-1 rounded border-gray-300 dark:border-gray-600 text-primary-500 focus:ring-primary-500">
+                全选
+            </label>
+            <select name="batch_action" class="px-2 py-0.5 border border-gray-200 dark:border-gray-600 rounded text-[11px] bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 focus:outline-none">
+                <option value="">批量操作</option>
+                <option value="approve">批量通过</option>
+                <option value="reject">批量拒绝</option>
+                <option value="ban">批量封禁</option>
+                <option value="delete">批量删除</option>
+            </select>
+            <button type="submit" class="px-2 py-0.5 bg-primary-500 text-white rounded text-[11px] hover:bg-primary-600 transition" onclick="return document.querySelector('select[name=batch_action]').value && confirm('确认执行批量操作？')">
+                执行
+            </button>
+            {% if pagination %}
+            <span class="ml-auto text-[11px] text-gray-400 dark:text-gray-500">共 {{ pagination.total }} 条</span>
+            {% endif %}
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-xs">
+                <thead class="bg-gray-50/50 dark:bg-gray-700/20 text-gray-500 dark:text-gray-400 text-[11px] uppercase">
+                    <tr>
+                        <th class="px-3 py-2.5 text-center w-8"></th>
+                        <th class="px-3 py-2.5 text-left">ID</th>
+                        <th class="px-3 py-2.5 text-left">内容</th>
+                        <th class="px-3 py-2.5 text-left">评论者</th>
+                        <th class="px-3 py-2.5 text-center">卡片ID</th>
+                        <th class="px-3 py-2.5 text-center">状态</th>
+                        <th class="px-3 py-2.5 text-center">赞</th>
+                        <th class="px-3 py-2.5 text-left">时间</th>
+                        <th class="px-3 py-2.5 text-center">操作</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50 dark:divide-gray-700/30">
+                    {% for comment in comments %}
+                    <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-700/20 transition">
+                        <td class="px-3 py-2.5 text-center">
+                            <input type="checkbox" name="comment_ids" value="{{ comment.id }}" class="row-check rounded border-gray-300 dark:border-gray-600 text-primary-500 focus:ring-primary-500">
+                        </td>
+                        <td class="px-3 py-2.5 text-gray-400 dark:text-gray-500">{{ comment.id }}</td>
+                        <td class="px-3 py-2.5 text-gray-600 dark:text-gray-400 max-w-xs truncate">{{ comment.content[:50] }}</td>
+                        <td class="px-3 py-2.5">
+                            {% if comment.user %}
+                                {% if comment.user.roles_id and 0 in comment.user.roles_id %}
+                                <span class="text-red-500 dark:text-red-400 font-semibold">{{ comment.user.username }}</span>
+                                {% elif comment.user.roles_id and 1 in comment.user.roles_id %}
+                                <span class="text-blue-500 dark:text-blue-400 font-semibold">{{ comment.user.username }}</span>
+                                {% else %}
+                                <span class="text-gray-600 dark:text-gray-400">{{ comment.user.username }}</span>
+                                {% endif %}
                             {% else %}
-                            <span class="text-gray-600 dark:text-gray-400">{{ comment.user.username }}</span>
+                            <span class="text-gray-400">-</span>
                             {% endif %}
-                        {% else %}
-                        <span class="text-gray-400">-</span>
-                        {% endif %}
-                    </td>
-                    <td class="px-6 py-4 text-center">
-                        <a href="/card/{{ comment.pid }}" class="text-blue-500 hover:underline">{{ comment.pid }}</a>
-                    </td>
-                    <td class="px-6 py-4 text-center text-gray-400 dark:text-gray-500">{{ comment.goods }}</td>
-                    <td class="px-6 py-4 text-gray-400 dark:text-gray-500 text-xs whitespace-nowrap">{{ comment.created_at.strftime('%m-%d %H:%M') }}</td>
-                    <td class="px-6 py-4 text-center">
-                        <form method="post" action="/admin/comments/{{ comment.id }}/delete" onsubmit="return confirm('确认删除该评论？')">
-                            <button type="submit" class="px-2 py-1 bg-red-50 dark:bg-red-900/30 text-red-500 rounded hover:opacity-80 transition text-xs" title="删除">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </form>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+                        </td>
+                        <td class="px-3 py-2.5 text-center">
+                            <a href="/card/{{ comment.pid }}" class="text-primary-500 hover:underline">{{ comment.pid }}</a>
+                        </td>
+                        <td class="px-3 py-2.5 text-center">
+                            {% if comment.status == 0 %}
+                            <span class="bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400 px-1.5 py-0.5 rounded text-[11px]">待审核</span>
+                            {% elif comment.status == 1 %}
+                            <span class="bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 px-1.5 py-0.5 rounded text-[11px]">已通过</span>
+                            {% elif comment.status == 3 %}
+                            <span class="bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 px-1.5 py-0.5 rounded text-[11px]">已封禁</span>
+                            {% else %}
+                            <span class="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 px-1.5 py-0.5 rounded text-[11px]">已拒绝</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-3 py-2.5 text-center text-gray-400 dark:text-gray-500 text-[11px]">{{ comment.goods }}</td>
+                        <td class="px-3 py-2.5 text-gray-400 dark:text-gray-500 text-[11px] whitespace-nowrap">{{ comment.created_at.strftime('%m-%d %H:%M') }}</td>
+                        <td class="px-3 py-2.5 text-center">
+                            <div class="flex items-center justify-center flex-wrap gap-0.5">
+                                {% if comment.status == 0 %}
+                                <button type="button" onclick="singleAction('/admin/comments/{{ comment.id }}/approve')" class="px-1.5 py-0.5 bg-green-50 dark:bg-green-900/20 text-green-500 rounded hover:opacity-80 transition text-[11px]" title="通过"><i class="fas fa-check"></i></button>
+                                <button type="button" onclick="singleAction('/admin/comments/{{ comment.id }}/reject')" class="px-1.5 py-0.5 bg-red-50 dark:bg-red-900/20 text-red-500 rounded hover:opacity-80 transition text-[11px]" title="拒绝"><i class="fas fa-times"></i></button>
+                                {% elif comment.status == 1 %}
+                                <button type="button" onclick="singleAction('/admin/comments/{{ comment.id }}/ban')" class="px-1.5 py-0.5 bg-orange-50 dark:bg-orange-900/20 text-orange-500 rounded hover:opacity-80 transition text-[11px]" title="封禁"><i class="fas fa-ban"></i></button>
+                                {% elif comment.status == 3 %}
+                                <button type="button" onclick="singleAction('/admin/comments/{{ comment.id }}/unban')" class="px-1.5 py-0.5 bg-green-50 dark:bg-green-900/20 text-green-500 rounded hover:opacity-80 transition text-[11px]" title="解封"><i class="fas fa-unlock"></i></button>
+                                {% elif comment.status == 2 %}
+                                <button type="button" onclick="singleAction('/admin/comments/{{ comment.id }}/approve')" class="px-1.5 py-0.5 bg-green-50 dark:bg-green-900/20 text-green-500 rounded hover:opacity-80 transition text-[11px]" title="通过"><i class="fas fa-check"></i></button>
+                                {% endif %}
+                                <button type="button" onclick="singleAction('/admin/comments/{{ comment.id }}/delete', '确认删除？')" class="px-1.5 py-0.5 bg-red-50 dark:bg-red-900/20 text-red-400 rounded hover:opacity-80 transition text-[11px]" title="删除"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </form>
 
     {% if pagination and pagination.pages > 1 %}
-    <div class="px-6 py-4 border-t border-gray-100 dark:border-gray-700 flex justify-center items-center space-x-1">
+    <div class="px-4 py-3 border-t border-gray-100 dark:border-gray-700/50 flex justify-center items-center gap-1">
         {% if pagination.has_prev %}
-        <a href="/admin/comments?page=1{% if search %}&search={{ search }}{% endif %}" class="px-2 py-1 border border-gray-200 dark:border-gray-600 rounded text-sm text-gray-600 dark:text-gray-300 hover:border-blue-300 transition">首页</a>
-        <a href="/admin/comments?page={{ pagination.prev_num }}{% if search %}&search={{ search }}{% endif %}" class="px-2 py-1 border border-gray-200 dark:border-gray-600 rounded text-sm text-gray-600 dark:text-gray-300 hover:border-blue-300 transition">上一页</a>
+        <a href="/admin/comments?page=1{% if status_filter is not none %}&status={{ status_filter }}{% endif %}{% if search %}&search={{ search }}{% endif %}" class="px-2 py-0.5 border border-gray-200 dark:border-gray-600 rounded text-[11px] text-gray-500 dark:text-gray-400 hover:border-primary-300 transition">首页</a>
+        <a href="/admin/comments?page={{ pagination.prev_num }}{% if status_filter is not none %}&status={{ status_filter }}{% endif %}{% if search %}&search={{ search }}{% endif %}" class="px-2 py-0.5 border border-gray-200 dark:border-gray-600 rounded text-[11px] text-gray-500 dark:text-gray-400 hover:border-primary-300 transition">上一页</a>
         {% endif %}
 
         {% set start_page = [1, pagination.page - 2]|max %}
         {% set end_page = [pagination.pages, pagination.page + 2]|min %}
         {% for p in range(start_page, end_page + 1) %}
         {% if p == pagination.page %}
-        <span class="px-2.5 py-1 bg-blue-500 text-white rounded text-sm">{{ p }}</span>
+        <span class="px-2 py-0.5 bg-primary-500 text-white rounded text-[11px]">{{ p }}</span>
         {% else %}
-        <a href="/admin/comments?page={{ p }}{% if search %}&search={{ search }}{% endif %}" class="px-2.5 py-1 border border-gray-200 dark:border-gray-600 rounded text-sm text-gray-600 dark:text-gray-300 hover:border-blue-300 transition">{{ p }}</a>
+        <a href="/admin/comments?page={{ p }}{% if status_filter is not none %}&status={{ status_filter }}{% endif %}{% if search %}&search={{ search }}{% endif %}" class="px-2 py-0.5 border border-gray-200 dark:border-gray-600 rounded text-[11px] text-gray-500 dark:text-gray-400 hover:border-primary-300 transition">{{ p }}</a>
         {% endif %}
         {% endfor %}
 
         {% if pagination.has_next %}
-        <a href="/admin/comments?page={{ pagination.next_num }}{% if search %}&search={{ search }}{% endif %}" class="px-2 py-1 border border-gray-200 dark:border-gray-600 rounded text-sm text-gray-600 dark:text-gray-300 hover:border-blue-300 transition">下一页</a>
-        <a href="/admin/comments?page={{ pagination.pages }}{% if search %}&search={{ search }}{% endif %}" class="px-2 py-1 border border-gray-200 dark:border-gray-600 rounded text-sm text-gray-600 dark:text-gray-300 hover:border-blue-300 transition">末页</a>
+        <a href="/admin/comments?page={{ pagination.next_num }}{% if status_filter is not none %}&status={{ status_filter }}{% endif %}{% if search %}&search={{ search }}{% endif %}" class="px-2 py-0.5 border border-gray-200 dark:border-gray-600 rounded text-[11px] text-gray-500 dark:text-gray-400 hover:border-primary-300 transition">下一页</a>
+        <a href="/admin/comments?page={{ pagination.pages }}{% if status_filter is not none %}&status={{ status_filter }}{% endif %}{% if search %}&search={{ search }}{% endif %}" class="px-2 py-0.5 border border-gray-200 dark:border-gray-600 rounded text-[11px] text-gray-500 dark:text-gray-400 hover:border-primary-300 transition">末页</a>
         {% endif %}
-        <span class="text-xs text-gray-400 dark:text-gray-500 ml-2">{{ pagination.page }} / {{ pagination.pages }}</span>
+        <span class="text-[11px] text-gray-400 dark:text-gray-500 ml-1.5">{{ pagination.page }} / {{ pagination.pages }}</span>
     </div>
     {% endif %}
 
     {% else %}
-    <div class="px-6 py-16 text-center text-gray-300 dark:text-gray-600">
-        <i class="fas fa-comments text-4xl mb-3"></i>
-        <p>暂无评论</p>
+    <div class="px-4 py-14 text-center text-gray-300 dark:text-gray-600">
+        <i class="fas fa-comments text-3xl mb-2"></i>
+        <p class="text-xs">暂无评论</p>
     </div>
     {% endif %}
 </div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function(){
+    var sa=document.getElementById('selectAll');
+    var rc=document.querySelectorAll('.row-check');
+    if(sa){sa.addEventListener('change',function(){rc.forEach(function(c){c.checked=sa.checked})})}
+
+    window.singleAction=function(url,confirmMsg){
+        if(confirmMsg && !confirm(confirmMsg)) return;
+        var f=document.createElement('form');
+        f.method='post';
+        f.action=url;
+        document.body.appendChild(f);
+        f.submit();
+    };
+})();
+</script>
 {% endblock %}

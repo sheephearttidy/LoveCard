@@ -26,14 +26,14 @@
                 </div>
                 {% else %}
                 <div class="w-9 h-9 sm:w-10 sm:h-10 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
-                    {% if card.author and card.author.avatar %}
+                    {% if card.author and card.author.status == 0 and card.author.deleted_at is none and card.author.avatar %}
                     <img src="{{ card.author.avatar }}" alt="" class="w-full h-full object-cover">
                     {% else %}
                     <i class="fas fa-user text-primary-500 text-sm sm:text-base"></i>
                     {% endif %}
                 </div>
                 <div class="ml-3">
-                    {% if card.author %}
+                    {% if card.author and card.author.status == 0 and card.author.deleted_at is none %}
                         {% if card.author.roles_id and 0 in card.author.roles_id %}
                         <span class="text-sm sm:text-base font-semibold text-red-500 dark:text-red-400">{{ card.author.username }}</span>
                         {% elif card.author.roles_id and 1 in card.author.roles_id %}
@@ -41,6 +41,8 @@
                         {% else %}
                         <span class="text-sm sm:text-base font-medium text-gray-800 dark:text-gray-200">{{ card.author.username }}</span>
                         {% endif %}
+                    {% elif card.author %}
+                    <span class="text-sm sm:text-base font-medium text-gray-400 dark:text-gray-500">已注销用户</span>
                     {% else %}
                     <span class="text-sm sm:text-base font-medium text-gray-800 dark:text-gray-200">未知用户</span>
                     {% endif %}
@@ -111,7 +113,7 @@
                 <div class="flex items-center mb-2 sm:mb-3 text-xs sm:text-sm">
                     <div class="flex items-center text-gray-600 dark:text-gray-300 min-w-0">
                         <i class="fas fa-user-circle text-primary-400 mr-1.5 flex-shrink-0"></i>
-                        {% if comment.user %}
+                        {% if comment.user and comment.user.status == 0 and comment.user.deleted_at is none %}
                             {% if comment.user.roles_id and 0 in comment.user.roles_id %}
                             <span class="font-semibold truncate text-red-500 dark:text-red-400">{{ comment.user.username }}</span>
                             {% elif comment.user.roles_id and 1 in comment.user.roles_id %}
@@ -119,6 +121,8 @@
                             {% else %}
                             <span class="font-medium truncate">{{ comment.user.username }}</span>
                             {% endif %}
+                        {% elif comment.user %}
+                        <span class="font-medium truncate text-gray-400 dark:text-gray-500">已注销用户</span>
                         {% else %}
                         <span class="font-medium truncate">匿名</span>
                         {% endif %}

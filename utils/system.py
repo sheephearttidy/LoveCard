@@ -13,6 +13,7 @@ SITE_CONFIG_DEFAULTS = {
     'siteAllowRegister': 'true',
     'siteAllowPublish': 'true',
     'siteCardNeedReview': 'true',
+    'siteCommentNeedReview': 'true',
 }
 
 SITE_CONFIG_LABELS = {
@@ -26,6 +27,7 @@ SITE_CONFIG_LABELS = {
     'siteAllowRegister': '允许注册',
     'siteAllowPublish': '允许发布',
     'siteCardNeedReview': '卡片需审核',
+    'siteCommentNeedReview': '评论需审核',
 }
 
 SITE_CONFIG_GROUPS = [
@@ -42,7 +44,7 @@ SITE_CONFIG_GROUPS = [
     {
         'title': '功能开关',
         'icon': 'fa-toggle-on',
-        'fields': ['siteAllowRegister', 'siteAllowPublish', 'siteCardNeedReview'],
+        'fields': ['siteAllowRegister', 'siteAllowPublish', 'siteCardNeedReview', 'siteCommentNeedReview'],
     },
 ]
 
@@ -57,6 +59,7 @@ SITE_CONFIG_HINTS = {
     'siteAllowRegister': 'true=允许新用户注册，false=关闭注册',
     'siteAllowPublish': 'true=允许发布卡片，false=关闭发布',
     'siteCardNeedReview': 'true=新卡片需审核后才显示，false=直接显示',
+    'siteCommentNeedReview': 'true=新评论需审核后才显示，false=直接显示',
 }
 
 

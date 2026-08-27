@@ -4,16 +4,12 @@
 {% block page_title %}标签管理{% endblock %}
 
 {% block content %}
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-    <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700">
-        <h2 class="font-semibold text-gray-800 dark:text-white"><i class="fas fa-tags text-gray-400 dark:text-gray-500 mr-2"></i>标签列表</h2>
-    </div>
-
-    <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700">
-        <form method="post" action="/admin/tags" class="flex items-center space-x-3">
+<div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700/50">
+    <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-700/50">
+        <form method="post" action="/admin/tags" class="flex items-center gap-2">
             <input type="text" name="name" required placeholder="输入新标签名称"
-                   class="flex-1 px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 placeholder-gray-400">
-            <button type="submit" class="bg-blue-500 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-blue-600 transition">
+                   class="flex-1 px-2.5 py-1 border border-gray-200 dark:border-gray-600 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-primary-500 transition bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 placeholder-gray-400">
+            <button type="submit" class="px-2.5 py-1 bg-primary-500 text-white rounded-md text-xs font-medium hover:bg-primary-600 transition">
                 <i class="fas fa-plus mr-1"></i>添加
             </button>
         </form>
@@ -21,43 +17,43 @@
 
     {% if tags %}
     <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-            <thead class="bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-xs uppercase">
+        <table class="w-full text-xs">
+            <thead class="bg-gray-50/50 dark:bg-gray-700/20 text-gray-500 dark:text-gray-400 text-[11px] uppercase">
                 <tr>
-                    <th class="px-6 py-3 text-left">ID</th>
-                    <th class="px-6 py-3 text-left">名称</th>
-                    <th class="px-6 py-3 text-center">状态</th>
-                    <th class="px-6 py-3 text-left">创建者</th>
-                    <th class="px-6 py-3 text-left">创建时间</th>
-                    <th class="px-6 py-3 text-center">操作</th>
+                    <th class="px-3 py-2.5 text-left">ID</th>
+                    <th class="px-3 py-2.5 text-left">名称</th>
+                    <th class="px-3 py-2.5 text-center">状态</th>
+                    <th class="px-3 py-2.5 text-left">创建者</th>
+                    <th class="px-3 py-2.5 text-left">创建时间</th>
+                    <th class="px-3 py-2.5 text-center">操作</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-gray-50 dark:divide-gray-700">
+            <tbody class="divide-y divide-gray-50 dark:divide-gray-700/30">
                 {% for tag in tags %}
-                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
-                    <td class="px-6 py-4 text-gray-400 dark:text-gray-500">{{ tag.id }}</td>
-                    <td class="px-6 py-4">
-                        <span class="bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-3 py-1 rounded-full text-xs font-medium">{{ tag.name }}</span>
+                <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-700/20 transition">
+                    <td class="px-3 py-2.5 text-gray-400 dark:text-gray-500">{{ tag.id }}</td>
+                    <td class="px-3 py-2.5">
+                        <span class="bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-full text-[11px] font-medium">{{ tag.name }}</span>
                     </td>
-                    <td class="px-6 py-4 text-center">
+                    <td class="px-3 py-2.5 text-center">
                         {% if tag.status == 0 %}
-                        <span class="bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 px-2 py-1 rounded text-xs">启用</span>
+                        <span class="bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 px-1.5 py-0.5 rounded text-[11px]">启用</span>
                         {% else %}
-                        <span class="bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 px-2 py-1 rounded text-xs">禁用</span>
+                        <span class="bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 px-1.5 py-0.5 rounded text-[11px]">禁用</span>
                         {% endif %}
                     </td>
-                    <td class="px-6 py-4 text-gray-600 dark:text-gray-400">{{ tag.user.username if tag.user else '-' }}</td>
-                    <td class="px-6 py-4 text-gray-400 dark:text-gray-500 text-xs whitespace-nowrap">{{ tag.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
-                    <td class="px-6 py-4 text-center">
-                        <div class="flex items-center justify-center space-x-1">
-                            <form method="post" action="/admin/tags/{{ tag.id }}/toggle_status">
-                                <button type="submit" class="px-2 py-1 {% if tag.status == 0 %}bg-yellow-50 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400{% else %}bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400{% endif %} rounded hover:opacity-80 transition text-xs"
+                    <td class="px-3 py-2.5 text-gray-600 dark:text-gray-400">{{ tag.user.username if tag.user else '-' }}</td>
+                    <td class="px-3 py-2.5 text-gray-400 dark:text-gray-500 text-[11px] whitespace-nowrap">{{ tag.created_at.strftime('%m-%d %H:%M') }}</td>
+                    <td class="px-3 py-2.5 text-center">
+                        <div class="flex items-center justify-center gap-0.5">
+                            <form method="post" action="/admin/tags/{{ tag.id }}/toggle_status" class="inline">
+                                <button type="submit" class="px-1.5 py-0.5 {% if tag.status == 0 %}bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600{% else %}bg-green-50 dark:bg-green-900/20 text-green-500{% endif %} rounded hover:opacity-80 transition text-[11px]"
                                         title="{% if tag.status == 0 %}禁用{% else %}启用{% endif %}">
                                     <i class="fas {% if tag.status == 0 %}fa-ban{% else %}fa-circle-check{% endif %}"></i>
                                 </button>
                             </form>
-                            <form method="post" action="/admin/tags/{{ tag.id }}/delete" onsubmit="return confirm('确认删除该标签？')">
-                                <button type="submit" class="px-2 py-1 bg-red-50 dark:bg-red-900/30 text-red-500 rounded hover:opacity-80 transition text-xs" title="删除">
+                            <form method="post" action="/admin/tags/{{ tag.id }}/delete" onsubmit="return confirm('确认删除该标签？')" class="inline">
+                                <button type="submit" class="px-1.5 py-0.5 bg-red-50 dark:bg-red-900/20 text-red-400 rounded hover:opacity-80 transition text-[11px]" title="删除">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </form>
@@ -69,9 +65,9 @@
         </table>
     </div>
     {% else %}
-    <div class="px-6 py-16 text-center text-gray-300 dark:text-gray-600">
-        <i class="fas fa-tags text-4xl mb-3"></i>
-        <p>暂无标签，请在上方添加</p>
+    <div class="px-4 py-14 text-center text-gray-300 dark:text-gray-600">
+        <i class="fas fa-tags text-3xl mb-2"></i>
+        <p class="text-xs">暂无标签，请在上方添加</p>
     </div>
     {% endif %}
 </div>
