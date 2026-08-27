@@ -11,8 +11,6 @@ document.getElementById('loginForm').addEventListener('submit', function (e) {
     }
     if (!password) {
         errors.push('密码不能为空');
-    } else if (password.length < 6) {
-        errors.push('密码长度至少为 6 位');
     }
 
     if (errors.length > 0) {
