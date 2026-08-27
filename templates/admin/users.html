@@ -97,11 +97,11 @@
                             </div>
                             {% endif %}
                             {% if user.roles_id and 0 in user.roles_id %}
-                            <span class="text-red-500 dark:text-red-400 font-semibold">{{ user.username }}</span>
-                            {% elif user.roles_id and 1 in user.roles_id %}
-                            <span class="text-blue-500 dark:text-blue-400 font-semibold">{{ user.username }}</span>
-                            {% else %}
-                            <span class="text-gray-600 dark:text-gray-400">{{ user.username }}</span>
+                            <span class="text-red-500 dark:text-red-400 font-semibold">{{ user.display_name }}</span>
+                                {% elif user.roles_id and 1 in user.roles_id %}
+                            <span class="text-blue-500 dark:text-blue-400 font-semibold">{{ user.display_name }}</span>
+                                {% else %}
+                            <span class="text-gray-600 dark:text-gray-400">{{ user.display_name }}</span>
                             {% endif %}
                         </div>
                     </td>
@@ -166,7 +166,7 @@
                             </form>
                             {% endif %}
                             {% if user.status == 0 %}
-                            <button type="button" onclick="showBanModal({{ user.id }}, '{{ user.username }}')" class="px-1.5 py-0.5 bg-red-50 dark:bg-red-900/20 text-red-500 rounded hover:opacity-80 transition text-[11px]" title="封禁">
+                            <button type="button" onclick="showBanModal({{ user.id }}, '{{ user.display_name }}')" class="px-1.5 py-0.5 bg-red-50 dark:bg-red-900/20 text-red-500 rounded hover:opacity-80 transition text-[11px]" title="封禁">
                                 <i class="fas fa-ban"></i>
                             </button>
                             {% else %}

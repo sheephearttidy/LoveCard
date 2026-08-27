@@ -34,8 +34,29 @@ def create_tables():
     """创建所有数据库表（如果不存在）"""
     with app.app_context():
         db.create_all()
+        _migrate_add_columns()
         print("数据库表创建完成")
         _print_tables()
+
+
+def _migrate_add_columns():
+    from sqlalchemy import text, inspect
+    insp = inspect(db.engine)
+    migrations = [
+        ('users', 'nickname', "ALTER TABLE users ADD COLUMN nickname VARCHAR(255) NOT NULL DEFAULT '' AFTER username"),
+        ('deleted_users', 'nickname', "ALTER TABLE deleted_users ADD COLUMN nickname VARCHAR(255) NOT NULL DEFAULT '' AFTER username"),
+    ]
+    for table, column, sql in migrations:
+        if table in insp.get_table_names():
+            existing_cols = [c['name'] for c in insp.get_columns(table)]
+            if column not in existing_cols:
+                try:
+                    db.session.execute(text(sql))
+                    db.session.commit()
+                    print(f"  迁移: {table}.{column} 列已添加")
+                except Exception as e:
+                    db.session.rollback()
+                    print(f"  迁移失败: {table}.{column}: {e}")
 
 
 def drop_tables():
@@ -68,6 +89,7 @@ def _seed_admin():
             email='admin@lovecard.com',
             phone='',
             username='admin',
+            nickname='admin',
             password=generate_password_hash('admin'),
             status=0,
             roles_id=[0]

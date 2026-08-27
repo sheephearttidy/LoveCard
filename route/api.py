@@ -86,7 +86,7 @@ def register():
     need_review = get_config('siteRegisterNeedReview') == 'true'
     initial_status = 2 if need_review else 0
 
-    user = User(number='0', username=username, email=email, status=initial_status, roles_id=[2])
+    user = User(number='0', username=username, nickname=username, email=email, status=initial_status, roles_id=[2])
     user.set_password(password)
     db.session.add(user)
     db.session.flush()
@@ -143,21 +143,13 @@ def me():
 def update_profile():
     data = request.get_json(silent=True) or {}
 
-    username = data.get('username', '').strip()
+    nickname = data.get('nickname', '').strip()
     email = data.get('email', '').strip()
     phone = data.get('phone', '').strip()
 
-    if username and username != current_user.username:
-        if len(username) < 3 or len(username) > 20:
-            return jsonify(code=400, message='用户名长度需在 3-20 个字符之间'), 400
-        if not re.match(r'^[a-zA-Z0-9_\u4e00-\u9fff]+$', username):
-            return jsonify(code=400, message='用户名只能包含字母、数字、下划线和中文'), 400
-        existing = db.session.execute(
-            db.select(User).where(User.username == username, User.id != current_user.id)
-        ).scalar()
-        if existing:
-            return jsonify(code=409, message='用户名已被占用'), 409
-        current_user.username = username
+    if len(nickname) > 30:
+        return jsonify(code=400, message='昵称长度不能超过 30 个字符'), 400
+    current_user.nickname = nickname
 
     if email and email != current_user.email:
         existing = db.session.execute(
@@ -227,7 +219,7 @@ def get_cards():
     for card in pagination.items:
         author_name = '匿名'
         if not (card.data and card.data.get('anonymous')):
-            author_name = card.author.username if card.author else '未知'
+            author_name = card.author.display_name if card.author else '未知'
 
         items.append({
             'id': card.id,
@@ -264,7 +256,7 @@ def get_card_detail(card_id):
 
     author_name = '匿名'
     if not (card.data and card.data.get('anonymous')):
-        author_name = card.author.username if card.author else '未知'
+        author_name = card.author.display_name if card.author else '未知'
 
     comments = db.session.execute(
         db.select(Comment).where(
@@ -301,7 +293,7 @@ def get_card_detail(card_id):
         'comment_list': [{
             'id': c.id,
             'content': c.content,
-            'author': c.author.username if c.author else '未知',
+            'author': c.author.display_name if c.author else '未知',
             'created_at': c.created_at.isoformat() if c.created_at else None,
         } for c in comments],
         'image_list': [{'id': i.id, 'url': i.url} for i in images],
@@ -416,7 +408,7 @@ def add_comment(card_id):
     return jsonify(code=200, message=message, data={
         'id': new_comment.id,
         'content': new_comment.content,
-        'author': current_user.username,
+        'author': current_user.display_name,
         'created_at': new_comment.created_at.isoformat() if new_comment.created_at else None,
     })
 
@@ -449,6 +441,8 @@ def _user_info(user):
     return {
         'id': user.id,
         'username': user.username,
+        'nickname': user.nickname,
+        'display_name': user.display_name,
         'email': user.email,
         'phone': user.phone,
         'avatar': user.avatar,

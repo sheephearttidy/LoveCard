@@ -25,7 +25,10 @@ def login():
 
         remember = request.form.get("remember") == "1"
 
-        user = db.session.execute(db.select(User).where(User.username == username)).scalar()
+        if '@' in username:
+            user = db.session.execute(db.select(User).where(User.email == username)).scalar()
+        else:
+            user = db.session.execute(db.select(User).where(User.username == username)).scalar()
 
         if user is None or not user.check_password(password):
             return jsonify(success=False, message="用户名或密码错误")
@@ -99,7 +102,7 @@ def register():
                 return jsonify(success=False, message="邀请码无效或已过期")
 
         initial_status = 2 if need_review else 0
-        new_user = User(number='0', username=username, email=email, status=initial_status, roles_id=[2])
+        new_user = User(number='0', username=username, nickname=username, email=email, status=initial_status, roles_id=[2])
         new_user.set_password(password)
         db.session.add(new_user)
         db.session.flush()

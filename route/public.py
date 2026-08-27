@@ -53,7 +53,7 @@ def index():
     if search:
         escaped = _escape_like(search)
         conditions = [Card.content.ilike(f'%{escaped}%')]
-        author_subq = db.select(User.id).where(User.username.ilike(f'%{escaped}%'))
+        author_subq = db.select(User.id).where(or_(User.username.ilike(f'%{escaped}%'), User.nickname.ilike(f'%{escaped}%')))
         conditions.append(Card.user_id.in_(author_subq))
         query = query.where(or_(*conditions))
 
@@ -272,27 +272,16 @@ def profile():
 @login_required
 def profile_edit():
     if request.method == 'POST':
-        username = request.form.get('username', '').strip()
+        nickname = request.form.get('nickname', '').strip()
         email = request.form.get('email', '').strip()
         phone = request.form.get('phone', '').strip()
         has_error = False
 
-        if username and username != current_user.username:
-            if len(username) < 3 or len(username) > 20:
-                flash('用户名长度需在 3-20 个字符之间', 'error')
-                has_error = True
-            elif not re.match(r'^[a-zA-Z0-9_\u4e00-\u9fff]+$', username):
-                flash('用户名只能包含字母、数字、下划线和中文', 'error')
-                has_error = True
-            else:
-                existing = db.session.execute(
-                    db.select(User).where(User.username == username, User.id != current_user.id)
-                ).scalar()
-                if existing:
-                    flash('用户名已被占用', 'error')
-                    has_error = True
-                else:
-                    current_user.username = username
+        if len(nickname) > 30:
+            flash('昵称长度不能超过 30 个字符', 'error')
+            has_error = True
+        else:
+            current_user.nickname = nickname
 
         if email and email != current_user.email:
             existing = db.session.execute(
@@ -445,6 +434,7 @@ def security_delete_account():
         email=current_user.email,
         phone=current_user.phone,
         username=current_user.username,
+        nickname=current_user.nickname,
         roles_id=current_user.roles_id,
         cards_count=cards_count,
         comments_count=comments_count,
@@ -468,6 +458,7 @@ def security_delete_account():
 
     current_user.status = 1
     current_user.username = f'[注销中]{current_user.username}'
+    current_user.nickname = f'[注销中]{current_user.nickname}'
     db.session.commit()
 
     logout_user()

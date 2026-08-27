@@ -29,7 +29,7 @@
             <div class="min-w-0 flex-1">
                 <h1 class="text-lg sm:text-xl font-bold
                     {% if current_user.is_super_admin %}text-red-500 dark:text-red-400{% elif current_user.is_admin %}text-blue-500 dark:text-blue-400{% else %}text-gray-800 dark:text-white{% endif %}
-                truncate">{{ current_user.username }}</h1>
+                truncate">{{ current_user.display_name }}</h1>
                 <p class="text-xs sm:text-sm text-gray-400 dark:text-gray-500 truncate">{{ current_user.email }}</p>
             </div>
         <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">

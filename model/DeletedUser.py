@@ -23,6 +23,7 @@ class DeletedUser(db.Model):
     email = mapped_column(db.String(320), nullable=False, default='')
     phone = mapped_column(db.String(20), nullable=False, default='')
     username = mapped_column(db.String(255), nullable=False, default='')
+    nickname = mapped_column(db.String(255), nullable=False, default='')
     roles_id = mapped_column(db.JSON, nullable=False, default=list)
 
     cards_count = mapped_column(db.Integer, nullable=False, default=0)
@@ -42,3 +43,7 @@ class DeletedUser(db.Model):
         if delta.total_seconds() <= 0:
             return 0
         return int(delta.total_seconds() / 3600)
+
+    @property
+    def display_name(self):
+        return self.nickname if self.nickname else self.username

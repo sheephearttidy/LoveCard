@@ -96,7 +96,7 @@
                         <p class="text-xs text-gray-600 dark:text-gray-400 truncate">{{ card.content[:40] }}</p>
                         <p class="text-[11px]
                             {% if card.author and card.author.roles_id and 0 in card.author.roles_id %}text-red-500 dark:text-red-400 font-semibold{% elif card.author and card.author.roles_id and 1 in card.author.roles_id %}text-blue-500 dark:text-blue-400 font-semibold{% else %}text-gray-400 dark:text-gray-500{% endif %}
-                        ">{{ card.author.username if card.author else '-' }}</p>
+                        ">{{ card.author.display_name if card.author else '-' }}</p>
                     </div>
                     <span class="flex-shrink-0 text-[11px] font-medium
                         {% if card.status == 0 %}text-yellow-500{% elif card.status == 1 %}text-green-500{% else %}text-red-500{% endif %}">
@@ -127,7 +127,7 @@
                         </div>
                         <span class="text-xs
                             {% if user.roles_id and 0 in user.roles_id %}text-red-500 dark:text-red-400 font-semibold{% elif user.roles_id and 1 in user.roles_id %}text-blue-500 dark:text-blue-400 font-semibold{% else %}text-gray-600 dark:text-gray-400{% endif %}
-                        truncate">{{ user.username }}</span>
+                        truncate">{{ user.display_name }}</span>
                     </div>
                     <span class="text-[11px] text-gray-400 dark:text-gray-500 flex-shrink-0">{{ user.created_at.strftime('%m-%d') }}</span>
                 </div>

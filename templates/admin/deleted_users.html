@@ -27,11 +27,11 @@
                     <td class="px-3 py-2.5 text-gray-400 dark:text-gray-500">{{ du.original_id }}</td>
                     <td class="px-3 py-2.5">
                         {% if du.roles_id and 0 in du.roles_id %}
-                        <span class="text-red-500 dark:text-red-400 font-semibold">{{ du.username }}</span>
+                        <span class="text-red-500 dark:text-red-400 font-semibold">{{ du.display_name }}</span>
                         {% elif du.roles_id and 1 in du.roles_id %}
-                        <span class="text-blue-500 dark:text-blue-400 font-semibold">{{ du.username }}</span>
+                        <span class="text-blue-500 dark:text-blue-400 font-semibold">{{ du.display_name }}</span>
                         {% else %}
-                        <span class="text-gray-600 dark:text-gray-400">{{ du.username }}</span>
+                        <span class="text-gray-600 dark:text-gray-400">{{ du.display_name }}</span>
                         {% endif %}
                     </td>
                     <td class="px-3 py-2.5 text-gray-500 dark:text-gray-400 text-[11px]">{{ du.email }}</td>

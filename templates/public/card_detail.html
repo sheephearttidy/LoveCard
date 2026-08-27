@@ -35,11 +35,11 @@
                 <div class="ml-3">
                     {% if card.author and card.author.status == 0 and card.author.deleted_at is none %}
                         {% if card.author.roles_id and 0 in card.author.roles_id %}
-                        <span class="text-sm sm:text-base font-semibold text-red-500 dark:text-red-400">{{ card.author.username }}</span>
+                        <span class="text-sm sm:text-base font-semibold text-red-500 dark:text-red-400">{{ card.author.display_name }}</span>
                         {% elif card.author.roles_id and 1 in card.author.roles_id %}
-                        <span class="text-sm sm:text-base font-semibold text-blue-500 dark:text-blue-400">{{ card.author.username }}</span>
+                        <span class="text-sm sm:text-base font-semibold text-blue-500 dark:text-blue-400">{{ card.author.display_name }}</span>
                         {% else %}
-                        <span class="text-sm sm:text-base font-medium text-gray-800 dark:text-gray-200">{{ card.author.username }}</span>
+                        <span class="text-sm sm:text-base font-medium text-gray-800 dark:text-gray-200">{{ card.author.display_name }}</span>
                         {% endif %}
                     {% elif card.author %}
                     <span class="text-sm sm:text-base font-medium text-gray-400 dark:text-gray-500">已注销用户</span>
@@ -115,11 +115,11 @@
                         <i class="fas fa-user-circle text-primary-400 mr-1.5 flex-shrink-0"></i>
                         {% if comment.user and comment.user.status == 0 and comment.user.deleted_at is none %}
                             {% if comment.user.roles_id and 0 in comment.user.roles_id %}
-                            <span class="font-semibold truncate text-red-500 dark:text-red-400">{{ comment.user.username }}</span>
+                            <span class="font-semibold truncate text-red-500 dark:text-red-400">{{ comment.user.display_name }}</span>
                             {% elif comment.user.roles_id and 1 in comment.user.roles_id %}
-                            <span class="font-semibold truncate text-blue-500 dark:text-blue-400">{{ comment.user.username }}</span>
+                            <span class="font-semibold truncate text-blue-500 dark:text-blue-400">{{ comment.user.display_name }}</span>
                             {% else %}
-                            <span class="font-medium truncate">{{ comment.user.username }}</span>
+                            <span class="font-medium truncate">{{ comment.user.display_name }}</span>
                             {% endif %}
                         {% elif comment.user %}
                         <span class="font-medium truncate text-gray-400 dark:text-gray-500">已注销用户</span>

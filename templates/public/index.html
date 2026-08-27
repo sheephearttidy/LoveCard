@@ -120,11 +120,11 @@
                             </div>
                             {% if card.author and card.author.status == 0 and card.author.deleted_at is none %}
                                 {% if card.author.roles_id and 0 in card.author.roles_id %}
-                                <span class="truncate text-red-500 dark:text-red-400 font-semibold">{{ card.author.username }}</span>
+                                <span class="truncate text-red-500 dark:text-red-400 font-semibold">{{ card.author.display_name }}</span>
                                 {% elif card.author.roles_id and 1 in card.author.roles_id %}
-                                <span class="truncate text-blue-500 dark:text-blue-400 font-semibold">{{ card.author.username }}</span>
+                                <span class="truncate text-blue-500 dark:text-blue-400 font-semibold">{{ card.author.display_name }}</span>
                                 {% else %}
-                                <span class="truncate">{{ card.author.username }}</span>
+                                <span class="truncate">{{ card.author.display_name }}</span>
                                 {% endif %}
                             {% elif card.author %}
                             <span class="truncate text-gray-400 dark:text-gray-500">已注销用户</span>

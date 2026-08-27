@@ -95,11 +95,11 @@
                         <td class="px-3 py-2.5">
                             {% if comment.user %}
                                 {% if comment.user.roles_id and 0 in comment.user.roles_id %}
-                                <span class="text-red-500 dark:text-red-400 font-semibold">{{ comment.user.username }}</span>
+                                <span class="text-red-500 dark:text-red-400 font-semibold">{{ comment.user.display_name }}</span>
                                 {% elif comment.user.roles_id and 1 in comment.user.roles_id %}
-                                <span class="text-blue-500 dark:text-blue-400 font-semibold">{{ comment.user.username }}</span>
+                                <span class="text-blue-500 dark:text-blue-400 font-semibold">{{ comment.user.display_name }}</span>
                                 {% else %}
-                                <span class="text-gray-600 dark:text-gray-400">{{ comment.user.username }}</span>
+                                <span class="text-gray-600 dark:text-gray-400">{{ comment.user.display_name }}</span>
                                 {% endif %}
                             {% else %}
                             <span class="text-gray-400">-</span>

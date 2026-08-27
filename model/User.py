@@ -29,8 +29,10 @@ class User(db.Model, UserMixin):
     email = mapped_column(db.String(320), nullable=False, unique=True)
     # 手机号码
     phone = mapped_column(db.String(20), nullable=False, default='')
-    # 用户名，显示名称
+    # 用户名，用于登录，不可修改
     username = mapped_column(db.String(255), nullable=False, unique=True)
+    # 昵称，用于展示，可修改
+    nickname = mapped_column(db.String(255), nullable=False, default='')
     # 密码哈希值，使用 bcrypt 加密存储
     password = mapped_column(db.String(255), nullable=False)
     # 账号状态：0=正常，其他值=禁用等
@@ -44,6 +46,10 @@ class User(db.Model, UserMixin):
     updated_at = mapped_column(db.DateTime, nullable=False, default=datetime.now, onupdate=datetime.now)
     # 软删除时间，非空表示该用户已被删除
     deleted_at = mapped_column(db.DateTime, nullable=True)
+
+    @property
+    def display_name(self):
+        return self.nickname if self.nickname else self.username
 
     @property
     def is_active(self):

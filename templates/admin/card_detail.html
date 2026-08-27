@@ -102,7 +102,7 @@
                         <div class="flex items-center gap-1.5 mb-0.5">
                             <span class="text-xs font-medium
                                 {% if comment.user and comment.user.roles_id and 0 in comment.user.roles_id %}text-red-500 dark:text-red-400 font-semibold{% elif comment.user and comment.user.roles_id and 1 in comment.user.roles_id %}text-blue-500 dark:text-blue-400 font-semibold{% else %}text-gray-700 dark:text-gray-300{% endif %}
-                            ">{{ comment.user.username if comment.user else '未知' }}</span>
+                            ">{{ comment.user.display_name if comment.user else '未知' }}</span>
                             <span class="text-[11px] text-gray-400 dark:text-gray-500">{{ comment.created_at.strftime('%m-%d %H:%M') }}</span>
                             {% if comment.status == 1 %}
                             <span class="text-[11px] text-green-500">已通过</span>
@@ -192,7 +192,7 @@
                 <div>
                     <div class="text-xs font-medium
                         {% if card.author.roles_id and 0 in card.author.roles_id %}text-red-500 dark:text-red-400 font-semibold{% elif card.author.roles_id and 1 in card.author.roles_id %}text-blue-500 dark:text-blue-400 font-semibold{% else %}text-gray-700 dark:text-gray-300{% endif %}
-                    ">{{ card.author.username }}</div>
+                    ">{{ card.author.display_name }}</div>
                     <div class="text-[11px] text-gray-400 dark:text-gray-500">{{ card.author.email }}</div>
                 </div>
             </div>

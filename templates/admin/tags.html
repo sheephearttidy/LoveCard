@@ -42,7 +42,7 @@
                         <span class="bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 px-1.5 py-0.5 rounded text-[11px]">禁用</span>
                         {% endif %}
                     </td>
-                    <td class="px-3 py-2.5 text-gray-600 dark:text-gray-400">{{ tag.user.username if tag.user else '-' }}</td>
+                    <td class="px-3 py-2.5 text-gray-600 dark:text-gray-400">{{ tag.user.display_name if tag.user else '-' }}</td>
                     <td class="px-3 py-2.5 text-gray-400 dark:text-gray-500 text-[11px] whitespace-nowrap">{{ tag.created_at.strftime('%m-%d %H:%M') }}</td>
                     <td class="px-3 py-2.5 text-center">
                         <div class="flex items-center justify-center gap-0.5">

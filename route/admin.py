@@ -92,7 +92,7 @@ def cards_list():
         conditions = [Card.content.ilike(f'%{escaped}%')]
         if search.isdigit():
             conditions.append(Card.id == int(search))
-        author_subq = db.select(User.id).where(User.username.ilike(f'%{escaped}%'))
+        author_subq = db.select(User.id).where(or_(User.username.ilike(f'%{escaped}%'), User.nickname.ilike(f'%{escaped}%')))
         conditions.append(Card.user_id.in_(author_subq))
         query = query.where(or_(*conditions))
     query = query.order_by(desc(Card.created_at))
@@ -273,7 +273,7 @@ def cards_ban_user(user_id):
         ).values(status=3, updated_at=datetime.now())
     ).rowcount
     db.session.commit()
-    flash(f'已封禁用户 {user.username} 的 {count} 条已通过卡片', 'success')
+    flash(f'已封禁用户 {user.display_name} 的 {count} 条已通过卡片', 'success')
     return redirect(request.referrer or url_for('admin.cards_list'))
 
 
@@ -295,6 +295,7 @@ def users_list():
         query = query.where(
             or_(
                 User.username.ilike(f'%{escaped}%'),
+                User.nickname.ilike(f'%{escaped}%'),
                 User.email.ilike(f'%{escaped}%'),
                 User.number.ilike(f'%{escaped}%'),
                 User.phone.ilike(f'%{escaped}%')
@@ -360,15 +361,15 @@ def user_ban(user_id):
 
     record = BanRecord(
         user_id=user.id,
-        username=user.username,
+        username=user.display_name,
         reason=reason,
         tags=tags_list,
         banned_by=current_user.id,
-        banned_by_name=current_user.username
+        banned_by_name=current_user.display_name
     )
     db.session.add(record)
     db.session.commit()
-    flash(f'用户 {user.username} 已封禁', 'success')
+    flash(f'用户 {user.display_name} 已封禁', 'success')
     return redirect(request.referrer or url_for('admin.users_list'))
 
 
@@ -393,7 +394,7 @@ def user_unban(user_id):
         active_ban.unbanned_at = datetime.now()
 
     db.session.commit()
-    flash(f'用户 {user.username} 已解封', 'success')
+    flash(f'用户 {user.display_name} 已解封', 'success')
     return redirect(request.referrer or url_for('admin.users_list'))
 
 
@@ -454,7 +455,7 @@ def comments_list():
         conditions = [Comment.content.ilike(f'%{escaped}%')]
         if search.isdigit():
             conditions.append(Comment.id == int(search))
-        author_subq = db.select(User.id).where(User.username.ilike(f'%{escaped}%'))
+        author_subq = db.select(User.id).where(or_(User.username.ilike(f'%{escaped}%'), User.nickname.ilike(f'%{escaped}%')))
         conditions.append(Comment.user_id.in_(author_subq))
         query = query.where(or_(*conditions))
     query = query.order_by(desc(Comment.created_at))
@@ -691,7 +692,7 @@ def user_set_role(user_id):
     db.session.commit()
 
     role_names = {'super_admin': '超级管理员', 'admin': '管理员', 'user': '普通用户'}
-    flash(f'已将 {user.username} 的角色设置为 {role_names[role]}', 'success')
+    flash(f'已将 {user.display_name} 的角色设置为 {role_names[role]}', 'success')
     return redirect(request.referrer or url_for('admin.users_list'))
 
 
@@ -726,11 +727,13 @@ def deleted_user_restore(archive_id):
     user.roles_id = archive.roles_id
     if user.username.startswith('[注销中]'):
         user.username = user.username[5:]
+    if user.nickname.startswith('[注销中]'):
+        user.nickname = user.nickname[5:]
     user.updated_at = datetime.now()
 
     db.session.delete(archive)
     db.session.commit()
-    flash(f'用户 {user.username} 已恢复（其发布的内容需在卡片/评论管理中单独恢复）', 'success')
+    flash(f'用户 {user.display_name} 已恢复（其发布的内容需在卡片/评论管理中单独恢复）', 'success')
     return redirect(url_for('admin.deleted_users_list'))
 
 
@@ -822,7 +825,7 @@ def pending_user_approve(user_id):
     user.status = 0
     user.updated_at = datetime.now()
     db.session.commit()
-    flash(f'用户 {user.username} 已审核通过', 'success')
+    flash(f'用户 {user.display_name} 已审核通过', 'success')
     return redirect(request.referrer or url_for('admin.pending_users_list'))
 
 
@@ -836,7 +839,7 @@ def pending_user_reject(user_id):
     user.status = 1
     user.updated_at = datetime.now()
     db.session.commit()
-    flash(f'用户 {user.username} 已拒绝', 'success')
+    flash(f'用户 {user.display_name} 已拒绝', 'success')
     return redirect(request.referrer or url_for('admin.pending_users_list'))
 
 
