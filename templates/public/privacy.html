@@ -9,45 +9,279 @@
             <i class="fas fa-shield-halved text-primary-500 mr-2"></i>隐私政策
         </h1>
         <div class="text-gray-600 dark:text-gray-300 leading-relaxed space-y-4 text-xs sm:text-sm">
-            <p><strong class="text-gray-800 dark:text-gray-100">最后更新：2026年8月27日</strong></p>
 
             <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-100 dark:border-yellow-800/30 rounded-lg p-3 text-xs">
-                <strong class="text-yellow-700 dark:text-yellow-400">提示：</strong>本站由学生个人维护，隐私保护措施在合理范围内实施，但无法达到商业产品的标准。如果你对隐私有较高要求，请谨慎使用。
+                <strong class="text-yellow-700 dark:text-yellow-400">重要提示：</strong>本隐私政策旨在帮助您了解本站如何收集、使用、存储和保护您的个人信息。请您在使用本站服务前，仔细阅读本政策的全部内容。您一旦使用本站服务，即视为您已充分理解并同意本政策的内容。
             </div>
 
-            <h2 class="text-base sm:text-lg font-semibold text-gray-800 dark:text-white mt-4 sm:mt-6">1. 我们会收集什么</h2>
-            <p>注册账号的时候，你需要填用户名和邮箱，这是必须的。手机号是选填的，不填也能用。</p>
-            <p>你在站上发的所有内容——帖子、评论、图片——都会存在数据库里，这是废话，不然别人怎么看。</p>
-            <p>每次访问的时候，服务器会记录你的 IP 地址。这不是为了监控你，主要是两个用途：一是防刷票（同一个 IP 对同一张卡片只能点一次赞），二是如果有人发违规内容，得有个线索能追查。</p>
+            <p><strong class="text-gray-800 dark:text-gray-100">生效日期：2026年8月27日</strong></p>
+            <p><strong class="text-gray-800 dark:text-gray-100">最后更新：2026年8月27日</strong></p>
 
-            <h2 class="text-base sm:text-lg font-semibold text-gray-800 dark:text-white mt-4 sm:mt-6">2. 这些信息怎么用</h2>
+            <h2 class="text-base sm:text-lg font-semibold text-gray-800 dark:text-white mt-6">第一章 总则</h2>
+
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mt-3">第一条 适用范围</h3>
+            <p>本隐私政策适用于 {{ site_config.siteName }}（以下简称"本站"）提供的所有服务。本政策适用于本站以任何形式（包括但不限于网页端、移动端等）收集和使用您的个人信息的情形。</p>
+            <p>本政策不适用于其他第三方向您提供的服务。例如，本站可能包含指向第三方网站的链接，该等第三方网站有其独立的隐私政策，本站不对该等第三方网站的隐私实践承担任何责任。</p>
+
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mt-3">第二条 基本原则</h3>
+            <p>本站在处理您的个人信息时，遵循以下基本原则：</p>
             <ul class="list-disc list-inside space-y-1">
-                <li>让网站正常运转（登录、发帖、评论这些基本功能）</li>
-                <li>审核内容，把违规的拦掉</li>
-                <li>防刷、防恶意注册</li>
-                <li>如果你违反了规则，管理员需要知道你是谁来处理</li>
+                <li><strong class="text-gray-800 dark:text-gray-100">合法、正当、必要原则：</strong>仅收集为提供服务所必需的个人信息，不收集与提供服务无关的个人信息。</li>
+                <li><strong class="text-gray-800 dark:text-gray-100">知情同意原则：</strong>在收集、使用您的个人信息前，以本政策等方式告知您并获取您的同意。</li>
+                <li><strong class="text-gray-800 dark:text-gray-100">目的明确原则：</strong>仅在您同意的特定目的范围内处理您的个人信息。</li>
+                <li><strong class="text-gray-800 dark:text-gray-100">最小必要原则：</strong>仅处理满足目的所需的最低限度个人信息。</li>
+                <li><strong class="text-gray-800 dark:text-gray-100">安全保障原则：</strong>采取合理的安全措施保护您的个人信息。</li>
+                <li><strong class="text-gray-800 dark:text-gray-100">透明公开原则：</strong>以清晰、易懂的方式向您说明个人信息处理规则。</li>
             </ul>
-            <p>就这些。不会拿你的数据做用户画像，不会卖给你广告，不会把数据转给第三方赚钱。主要是这站也没啥商业价值。</p>
 
-            <h2 class="text-base sm:text-lg font-semibold text-gray-800 dark:text-white mt-4 sm:mt-6">3. 密码怎么存的</h2>
-            <p>密码用 Werkzeug 的 PBKDF2 哈希加密后存储，数据库里存的是加密后的字符串，不是明文。管理员也看不到你的原始密码。如果你忘了密码，只能重置，不能找回。</p>
-            <p>不过说实话，个人站的安全水平有限，建议不要用你在其他重要网站（比如邮箱、银行）的同一个密码。</p>
+            <h2 class="text-base sm:text-lg font-semibold text-gray-800 dark:text-white mt-6">第二章 个人信息的收集</h2>
 
-            <h2 class="text-base sm:text-lg font-semibold text-gray-800 dark:text-white mt-4 sm:mt-6">4. 匿名发布</h2>
-            <p>发帖时勾选匿名，其他用户就看不到你的用户名。但管理员后台还是能看到是谁发的——这个没办法，否则有人匿名发违规内容就没法处理了。所以"匿名"是对其他用户匿名，不是对管理员匿名。</p>
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mt-3">第三条 我们收集的个人信息</h3>
+            <p>在您使用本站服务的过程中，我们会收集以下类别的个人信息：</p>
 
-            <h2 class="text-base sm:text-lg font-semibold text-gray-800 dark:text-white mt-4 sm:mt-6">5. Cookie</h2>
-            <p>登录之后，浏览器会存一个 Cookie 来保持登录状态。这个 Cookie 里包含的是加密后的 session 信息，不是你的密码。关掉浏览器或者 30 分钟不操作，登录就自动过期了。</p>
-            <p>除了这个登录用的 Cookie，没有其他追踪用的 Cookie，也没有第三方分析脚本。</p>
+            <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/30 rounded-lg p-3 space-y-2">
+                <p><strong class="text-blue-700 dark:text-blue-400">1. 注册信息（必填）</strong></p>
+                <ul class="list-disc list-inside space-y-1 ml-2">
+                    <li>用户名：用于在平台上标识您的身份；</li>
+                    <li>电子邮箱：用于账号验证、密码重置及重要通知。</li>
+                </ul>
+            </div>
 
-            <h2 class="text-base sm:text-lg font-semibold text-gray-800 dark:text-white mt-4 sm:mt-6">6. 数据删除</h2>
-            <p>如果你想注销账号，联系管理员就行。注销后你的用户名和发布内容会被处理（用户名改为"[已注销]"格式，内容可以选择保留或删除）。不过数据库备份里可能还会残留一段时间，这个没办法完全避免。</p>
+            <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/30 rounded-lg p-3 space-y-2">
+                <p><strong class="text-blue-700 dark:text-blue-400">2. 注册信息（选填）</strong></p>
+                <ul class="list-disc list-inside space-y-1 ml-2">
+                    <li>手机号码：用于身份验证及安全通知。如您不提供该信息，不影响您使用本站的基本功能。</li>
+                </ul>
+            </div>
 
-            <h2 class="text-base sm:text-lg font-semibold text-gray-800 dark:text-white mt-4 sm:mt-6">7. 关于第三方</h2>
-            <p>本站不接入任何第三方统计、广告或社交登录服务。页面引用的 CDN 资源（字体、CSS 框架）来自公共 CDN，这些 CDN 可能会记录访问日志，这不在我们的控制范围内。</p>
+            <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/30 rounded-lg p-3 space-y-2">
+                <p><strong class="text-blue-700 dark:text-blue-400">3. 用户生成内容</strong></p>
+                <ul class="list-disc list-inside space-y-1 ml-2">
+                    <li>您发布的帖子、评论、图片等内容；</li>
+                    <li>您对其他用户内容的点赞、收藏等互动记录。</li>
+                </ul>
+            </div>
 
-            <h2 class="text-base sm:text-lg font-semibold text-gray-800 dark:text-white mt-4 sm:mt-6">8. 政策变动</h2>
-            <p>如果这份隐私政策有修改，会在站上通知。你继续用就表示你接受新的政策。不过大的变动我会尽量提前说一声。</p>
+            <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/30 rounded-lg p-3 space-y-2">
+                <p><strong class="text-blue-700 dark:text-blue-400">4. 日志信息</strong></p>
+                <ul class="list-disc list-inside space-y-1 ml-2">
+                    <li>IP地址：每次访问时自动记录，用于安全防护、防刷票及违规行为追溯；</li>
+                    <li>访问时间：记录您访问本站的时间信息；</li>
+                    <li>浏览器类型及操作系统：自动获取的设备环境信息。</li>
+                </ul>
+            </div>
+
+            <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/30 rounded-lg p-3 space-y-2">
+                <p><strong class="text-blue-700 dark:text-blue-400">5. 验证信息</strong></p>
+                <ul class="list-disc list-inside space-y-1 ml-2">
+                    <li>验证码：用于注册时的图形验证码验证，存储于服务端会话中，有效期5分钟，验证后立即删除；</li>
+                    <li>邀请码：在开启邀请码机制时，用于验证您的注册资格，使用后记录使用状态。</li>
+                </ul>
+            </div>
+
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mt-3">第四条 我们不收集的信息</h3>
+            <p>本站明确承诺，我们不会收集以下信息：</p>
+            <ul class="list-disc list-inside space-y-1">
+                <li>您的通讯录、短信、通话记录等手机敏感数据；</li>
+                <li>您的地理位置信息；</li>
+                <li>您的身份证号码、银行卡号等金融敏感信息；</li>
+                <li>您在其他网站或应用上的浏览记录、搜索记录等；</li>
+                <li>任何与提供服务无关的个人信息。</li>
+            </ul>
+
+            <h2 class="text-base sm:text-lg font-semibold text-gray-800 dark:text-white mt-6">第三章 个人信息的使用</h2>
+
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mt-3">第五条 使用目的</h3>
+            <p>我们收集的个人信息将用于以下目的：</p>
+            <ul class="list-disc list-inside space-y-1">
+                <li><strong class="text-gray-800 dark:text-gray-100">服务提供：</strong>为您提供注册、登录、内容发布、评论、点赞等核心功能；</li>
+                <li><strong class="text-gray-800 dark:text-gray-100">身份验证：</strong>验证您的身份，确保账号安全，包括验证码验证和邀请码验证；</li>
+                <li><strong class="text-gray-800 dark:text-gray-100">内容审核：</strong>对用户发布的内容进行审核，维护平台秩序；</li>
+                <li><strong class="text-gray-800 dark:text-gray-100">安全防护：</strong>防止恶意注册、刷票、暴力破解、DDoS攻击等安全威胁；</li>
+                <li><strong class="text-gray-800 dark:text-gray-100">违规追溯：</strong>在发生违规行为时，依据IP地址等信息进行追查；</li>
+                <li><strong class="text-gray-800 dark:text-gray-100">服务改进：</strong>基于用户反馈和运营数据，改进服务质量。</li>
+            </ul>
+
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mt-3">第六条 使用限制</h3>
+            <p>我们承诺：</p>
+            <ul class="list-disc list-inside space-y-1">
+                <li>不会将您的个人信息用于本政策未载明的其他目的；</li>
+                <li>不会对您的个人信息进行用户画像、精准营销或商业分析；</li>
+                <li>不会将您的个人信息出售给任何第三方；</li>
+                <li>不会将您的个人信息用于向您推送商业广告。</li>
+            </ul>
+
+            <h2 class="text-base sm:text-lg font-semibold text-gray-800 dark:text-white mt-6">第四章 个人信息的存储与保护</h2>
+
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mt-3">第七条 存储地点与期限</h3>
+            <ul class="list-disc list-inside space-y-1">
+                <li>您的个人信息存储在中华人民共和国境内的服务器上；</li>
+                <li>我们仅在为您提供服务所必需的期限内保留您的个人信息；</li>
+                <li>超出必要期限后，我们将删除或匿名化处理您的个人信息；</li>
+                <li>法律法规另有规定的，从其规定。</li>
+            </ul>
+
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mt-3">第八条 密码安全</h3>
+            <ul class="list-disc list-inside space-y-1">
+                <li>您的密码使用 Werkzeug 的 PBKDF2 哈希算法加密后存储，数据库中仅保存加密后的哈希值；</li>
+                <li>本站任何人员（包括管理员）均无法查看您的原始密码；</li>
+                <li>如您忘记密码，只能通过注册邮箱重置，无法找回原始密码；</li>
+                <li>建议您使用与其他重要网站（如邮箱、银行等）不同的密码，以降低安全风险。</li>
+            </ul>
+
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mt-3">第九条 安全措施</h3>
+            <p>我们采取了以下合理的安全措施来保护您的个人信息：</p>
+            <ul class="list-disc list-inside space-y-1">
+                <li>使用加密传输协议（HTTPS）保护数据传输安全；</li>
+                <li>对敏感数据（如密码）进行加密存储；</li>
+                <li>实施访问控制机制，限制对个人信息的访问权限；</li>
+                <li>采用验证码、邀请码等机制防止恶意注册和自动化攻击；</li>
+                <li>实施注册审核机制，确保用户身份的可追溯性；</li>
+                <li>定期检查安全措施的有效性，及时修补安全漏洞。</li>
+            </ul>
+
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mt-3">第十条 安全事件处置</h3>
+            <p>如不幸发生个人信息安全事件，我们将：</p>
+            <ul class="list-disc list-inside space-y-1">
+                <li>及时启动应急响应机制，采取措施防止事件扩大；</li>
+                <li>通过站内公告、电子邮件等方式通知受影响的用户；</li>
+                <li>向有关主管部门报告，并配合调查处理。</li>
+            </ul>
+            <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-100 dark:border-yellow-800/30 rounded-lg p-3 text-xs">
+                <strong class="text-yellow-700 dark:text-yellow-400">特别说明：</strong>本站由个人以课余时间和个人经费维护，安全防护措施在合理范围内实施，但无法达到大型商业产品的安全标准。如您对数据安全有较高要求，请谨慎评估是否使用本站服务。
+            </div>
+
+            <h2 class="text-base sm:text-lg font-semibold text-gray-800 dark:text-white mt-6">第五章 个人信息的共享与披露</h2>
+
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mt-3">第十一条 共享原则</h3>
+            <p>我们不会主动与第三方共享您的个人信息，但以下情形除外：</p>
+            <ul class="list-disc list-inside space-y-1">
+                <li><strong class="text-gray-800 dark:text-gray-100">获得您的明确同意：</strong>在获得您明确同意后，我们可能与第三方共享您的个人信息；</li>
+                <li><strong class="text-gray-800 dark:text-gray-100">法律法规要求：</strong>根据适用的法律法规、法律程序、诉讼或政府主管部门的强制性要求，我们可能需要披露您的个人信息；</li>
+                <li><strong class="text-gray-800 dark:text-gray-100">保护合法权益：</strong>为保护本站、其他用户或公众的合法权益、财产或安全免受损害，我们可能需要披露您的个人信息；</li>
+                <li><strong class="text-gray-800 dark:text-gray-100">匿名化处理：</strong>我们可能将个人信息进行匿名化处理后，用于统计分析、服务改进等目的。</li>
+            </ul>
+
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mt-3">第十二条 不共享的承诺</h3>
+            <p>我们明确承诺：</p>
+            <ul class="list-disc list-inside space-y-1">
+                <li>不会将您的个人信息出售给任何第三方；</li>
+                <li>不会将您的个人信息与任何第三方进行商业交易；</li>
+                <li>不会接入任何第三方统计分析服务（如Google Analytics、百度统计等）；</li>
+                <li>不会接入任何第三方广告服务。</li>
+            </ul>
+
+            <h2 class="text-base sm:text-lg font-semibold text-gray-800 dark:text-white mt-6">第六章 匿名发布与公开信息</h2>
+
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mt-3">第十三条 匿名发布</h3>
+            <ul class="list-disc list-inside space-y-1">
+                <li>您在发布内容时可以选择匿名发布。匿名发布后，其他用户将无法看到您的用户名；</li>
+                <li>匿名发布仅对其他用户匿名，管理员在后台仍可查看发布者身份。此为平台安全管理的必要措施，用于处理违规内容；</li>
+                <li>您理解并同意，"匿名"不等于"完全不可追溯"，在法律要求的情形下，本站可能披露匿名发布者的身份信息。</li>
+            </ul>
+
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mt-3">第十四条 公开信息</h3>
+            <p>以下信息将对其他用户可见：</p>
+            <ul class="list-disc list-inside space-y-1">
+                <li>您的用户名（匿名发布时除外）；</li>
+                <li>您发布的内容（帖子、评论、图片等）；</li>
+                <li>您发布内容的时间。</li>
+            </ul>
+            <p>请您在发布内容时注意保护自己和他人的隐私，不要在公开内容中包含敏感个人信息。</p>
+
+            <h2 class="text-base sm:text-lg font-semibold text-gray-800 dark:text-white mt-6">第七章 Cookie 与会话管理</h2>
+
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mt-3">第十五条 Cookie 的使用</h3>
+            <ul class="list-disc list-inside space-y-1">
+                <li>本站使用 Cookie 维持您的登录状态。该 Cookie 中包含的是加密后的会话标识信息，不包含您的密码或明文个人信息；</li>
+                <li>如您关闭浏览器或超过30分钟未操作，登录会话将自动过期；</li>
+                <li>除登录所需的 Cookie 外，本站不使用其他追踪性 Cookie；</li>
+                <li>本站不使用任何第三方 Cookie。</li>
+            </ul>
+
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mt-3">第十六条 会话数据</h3>
+            <ul class="list-disc list-inside space-y-1">
+                <li>验证码信息存储在服务端会话中，自生成之日起5分钟内有效，验证完成后立即删除；</li>
+                <li>会话数据存储在服务器内存中，不写入持久化存储；</li>
+                <li>会话过期后，相关数据自动清除。</li>
+            </ul>
+
+            <h2 class="text-base sm:text-lg font-semibold text-gray-800 dark:text-white mt-6">第八章 您的权利</h2>
+
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mt-3">第十七条 访问与更正</h3>
+            <p>您有权访问和更正您的个人信息。您可以通过以下方式行使该权利：</p>
+            <ul class="list-disc list-inside space-y-1">
+                <li>登录本站后，在个人设置页面查看和修改您的个人信息；</li>
+                <li>联系管理员协助您访问或更正个人信息。</li>
+            </ul>
+
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mt-3">第十八条 删除</h3>
+            <p>在以下情形下，您可以要求我们删除您的个人信息：</p>
+            <ul class="list-disc list-inside space-y-1">
+                <li>处理目的已实现、无法实现或为实现处理目的不再必要；</li>
+                <li>我们不再享有合法依据处理您的个人信息；</li>
+                <li>您撤回同意，且我们不存在其他合法依据继续处理；</li>
+                <li>我们违反法律法规处理您的个人信息。</li>
+            </ul>
+            <p>您可以通过本站提供的注销功能或联系管理员行使删除权。</p>
+
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mt-3">第十九条 注销账号</h3>
+            <p>您有权随时注销您的账号。注销账号后的处理方式如下：</p>
+            <ul class="list-disc list-inside space-y-1">
+                <li>您的用户名将变更为"[已注销]"格式，个人资料将被清除；</li>
+                <li>您发布的内容可由您选择保留或删除。如未特别声明，默认保留但不再关联您的身份信息；</li>
+                <li>账号注销后，您将无法再以该账号登录本站，相关数据将无法恢复；</li>
+                <li>因数据库备份机制，备份数据中可能短期残留您的信息，我们将在备份轮换周期（不超过30日）后彻底删除。</li>
+            </ul>
+
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mt-3">第二十条 响应请求</h3>
+            <p>我们将在收到您的请求后15个工作日内予以回复。对于您合理的请求，我们原则上不收取费用。我们可能会要求您验证自己的身份后再处理您的请求。</p>
+
+            <h2 class="text-base sm:text-lg font-semibold text-gray-800 dark:text-white mt-6">第九章 未成年人保护</h2>
+
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mt-3">第二十一条 未成年人条款</h3>
+            <ul class="list-disc list-inside space-y-1">
+                <li>如您为未满14周岁的未成年人，请在法定监护人的陪同下阅读本政策，并在取得法定监护人同意后使用本站服务；</li>
+                <li>我们不会主动收集未满14周岁未成年人的个人信息。如果我们发现在未取得法定监护人同意的情况下收集了未成年人的个人信息，我们将尽快删除相关信息；</li>
+                <li>法定监护人有权查阅、更正、删除未成年人的个人信息。</li>
+            </ul>
+
+            <h2 class="text-base sm:text-lg font-semibold text-gray-800 dark:text-white mt-6">第十章 第三方服务</h2>
+
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mt-3">第二十二条 第三方资源</h3>
+            <p>本站页面可能引用以下第三方公共CDN资源：</p>
+            <ul class="list-disc list-inside space-y-1">
+                <li>字体文件（如Google Fonts等）；</li>
+                <li>CSS/JavaScript框架（如Tailwind CSS等）。</li>
+            </ul>
+            <p>当您的浏览器加载这些资源时，相应的CDN服务商可能记录您的访问日志（包括IP地址、请求时间等）。该等信息的收集和使用受该等CDN服务商的隐私政策约束，不在本站的控制范围内。</p>
+
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mt-3">第二十三条 第三方服务排除</h3>
+            <p>本站明确声明：</p>
+            <ul class="list list-inside space-y-1">
+                <li>不接入任何第三方统计分析服务；</li>
+                <li>不接入任何第三方广告服务；</li>
+                <li>不接入任何第三方社交登录服务；</li>
+                <li>不使用任何第三方用户追踪技术。</li>
+            </ul>
+
+            <h2 class="text-base sm:text-lg font-semibold text-gray-800 dark:text-white mt-6">第十一章 政策更新</h2>
+
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mt-3">第二十四条 政策修改</h3>
+            <p>本站有权根据法律法规变化、业务发展需要等原因，不时修订本隐私政策。修订后的政策将在本站公布。</p>
+            <p>对于重大变更，我们将通过以下方式通知您：</p>
+            <ul class="list-disc list-inside space-y-1">
+                <li>在本站首页显著位置发布公告；</li>
+                <li>通过站内消息或电子邮件通知您。</li>
+            </ul>
+            <p>如您在政策修订后继续使用本站服务，即视为您同意受修订后的隐私政策约束。如您不同意修订后的内容，您有权停止使用本站服务并注销您的账号。</p>
+
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mt-3">第二十五条 生效与解释</h3>
+            <p>本隐私政策自公布之日起生效。本政策的解释权归 {{ site_config.siteName }} 所有。本政策与《服务条款》不一致的，在个人信息处理方面以本政策为准。</p>
+
+            <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 text-xs text-gray-400 dark:text-gray-500">
+                <p>如您对本隐私政策有任何疑问、意见或建议，可通过本站公布的联系方式与管理员取得联系。</p>
+            </div>
         </div>
     </div>
 </div>
