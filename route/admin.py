@@ -21,7 +21,7 @@ from model.db import db
 from utils.audit import log_action
 from utils.notification import notify_card_status, notify_comment_status
 from utils.system import ensure_default_configs, set_config, get_site_config, SITE_CONFIG_LABELS, SITE_CONFIG_GROUPS, \
-    SITE_CONFIG_HINTS
+    SITE_CONFIG_HINTS, AVAILABLE_THEMES
 
 admin = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -703,7 +703,8 @@ def settings(group=None):
                            config_groups=SITE_CONFIG_GROUPS,
                            config_hints=SITE_CONFIG_HINTS,
                            active_group=active_group,
-                           current_group=group or 'basic')
+                           current_group=group or 'basic',
+                           available_themes=AVAILABLE_THEMES)
 
 
 @admin.route('/settings/save', methods=['POST'])

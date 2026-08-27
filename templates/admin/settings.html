@@ -41,6 +41,13 @@
                             </span>
                             <input type="hidden" name="{{ key }}" id="input-{{ key }}" value="{{ config_dict.get(key, 'true') }}">
                         </div>
+                        {% elif key == 'siteTheme' %}
+                        <select id="config-{{ key }}" name="{{ key }}"
+                                class="w-full px-3 py-1.5 border border-gray-200 dark:border-gray-600 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-primary-500 transition bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200">
+                            {% for theme_key, theme_name in available_themes.items() %}
+                            <option value="{{ theme_key }}" {% if config_dict.get(key, 'classic') == theme_key %}selected{% endif %}>{{ theme_name }}（{{ theme_key }}）</option>
+                            {% endfor %}
+                        </select>
                         {% elif key in ['siteDesc', 'siteFooter'] %}
                         <textarea id="config-{{ key }}" name="{{ key }}" rows="2"
                                   class="w-full px-3 py-1.5 border border-gray-200 dark:border-gray-600 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-primary-500 transition resize-none bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200">{{ config_dict.get(key, '') }}</textarea>

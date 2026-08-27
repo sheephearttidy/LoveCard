@@ -16,6 +16,7 @@ SITE_CONFIG_DEFAULTS = {
     'siteCommentNeedReview': 'true',
     'siteRequireInviteCode': 'false',
     'siteRegisterNeedReview': 'false',
+    'siteTheme': 'classic',
     'smtpHost': '',
     'smtpPort': '465',
     'smtpUser': '',
@@ -38,6 +39,7 @@ SITE_CONFIG_LABELS = {
     'siteCommentNeedReview': '评论需审核',
     'siteRequireInviteCode': '强制邀请码',
     'siteRegisterNeedReview': '注册需审核',
+    'siteTheme': '前台主题',
     'smtpHost': 'SMTP服务器',
     'smtpPort': 'SMTP端口',
     'smtpUser': 'SMTP用户名',
@@ -52,6 +54,12 @@ SITE_CONFIG_GROUPS = [
         'title': '基本设置',
         'icon': 'fa-globe',
         'fields': ['siteName', 'siteSubTitle', 'siteDesc', 'siteUrl', 'siteKeyword'],
+    },
+    {
+        'key': 'appearance',
+        'title': '外观设置',
+        'icon': 'fa-palette',
+        'fields': ['siteTheme'],
     },
     {
         'key': 'footer',
@@ -87,12 +95,18 @@ SITE_CONFIG_HINTS = {
     'siteCommentNeedReview': '',
     'siteRequireInviteCode': '',
     'siteRegisterNeedReview': '',
+    'siteTheme': 'classic=经典主题，sakura=樱花主题',
     'smtpHost': 'SMTP服务器地址，如 smtp.qq.com',
     'smtpPort': 'SMTP端口，SSL通常465，TLS通常587',
     'smtpUser': 'SMTP登录用户名，通常为邮箱地址',
     'smtpPassword': 'SMTP授权码（非邮箱登录密码）',
     'smtpSecure': '加密方式：ssl 或 tls',
     'smtpSender': '发件人地址，留空则使用SMTP用户名',
+}
+
+AVAILABLE_THEMES = {
+    'classic': '经典',
+    'sakura': '樱花',
 }
 
 

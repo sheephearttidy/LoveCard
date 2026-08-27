@@ -1,0 +1,501 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+    --sakura-bg: #faf5ff;
+    --sakura-bg-pattern: #f3e8ff;
+    --sakura-surface: rgba(255,255,255,0.72);
+    --sakura-surface-solid: #ffffff;
+    --sakura-surface-hover: rgba(255,255,255,0.9);
+    --sakura-border: rgba(168,130,255,0.15);
+    --sakura-border-strong: rgba(168,130,255,0.3);
+    --sakura-text: #2d1b4e;
+    --sakura-text-secondary: #6b5280;
+    --sakura-text-muted: #9b8ab5;
+    --sakura-pink: #ec4899;
+    --sakura-pink-soft: #fce7f3;
+    --sakura-pink-glow: rgba(236,72,153,0.2);
+    --sakura-violet: #8b5cf6;
+    --sakura-violet-soft: #ede9fe;
+    --sakura-violet-glow: rgba(139,92,246,0.15);
+    --sakura-blue: #6366f1;
+    --sakura-blue-soft: #eef2ff;
+    --sakura-green: #10b981;
+    --sakura-green-soft: #ecfdf5;
+    --sakura-orange: #f59e0b;
+    --sakura-orange-soft: #fffbeb;
+    --sakura-red: #ef4444;
+    --sakura-red-soft: #fef2f2;
+    --sakura-glass: blur(20px) saturate(180%);
+    --sakura-radius: 20px;
+    --sakura-radius-md: 14px;
+    --sakura-radius-sm: 10px;
+    --sakura-shadow: 0 2px 8px rgba(139,92,246,0.06);
+    --sakura-shadow-hover: 0 16px 50px rgba(139,92,246,0.15);
+}
+
+html.dark body {
+    --sakura-bg: #1a1025;
+    --sakura-bg-pattern: #241535;
+    --sakura-surface: rgba(40,25,60,0.75);
+    --sakura-surface-solid: #2a1a3e;
+    --sakura-surface-hover: rgba(50,35,70,0.9);
+    --sakura-border: rgba(139,92,246,0.2);
+    --sakura-border-strong: rgba(139,92,246,0.35);
+    --sakura-text: #e8dff5;
+    --sakura-text-secondary: #b8a5d0;
+    --sakura-text-muted: #7a6595;
+    --sakura-pink-soft: rgba(236,72,153,0.12);
+    --sakura-violet-soft: rgba(139,92,246,0.12);
+    --sakura-blue-soft: rgba(99,102,241,0.12);
+    --sakura-green-soft: rgba(16,185,129,0.12);
+    --sakura-orange-soft: rgba(245,158,11,0.12);
+    --sakura-red-soft: rgba(239,68,68,0.12);
+}
+
+body {
+    background: var(--sakura-bg);
+    color: var(--sakura-text);
+    font-family: "Noto Sans SC", -apple-system, "Microsoft YaHei", sans-serif;
+    position: relative;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: -20%;
+    right: -10%;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(236,72,153,0.12) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+html.dark body::before {
+    background: radial-gradient(circle, rgba(236,72,153,0.06) 0%, transparent 70%);
+}
+
+body::after {
+    content: '';
+    position: fixed;
+    bottom: -10%;
+    left: -10%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(139,92,246,0.1) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+html.dark body::after {
+    background: radial-gradient(circle, rgba(139,92,246,0.05) 0%, transparent 70%);
+}
+
+body > *:not(script):not(link):not(style) {
+    position: relative;
+    z-index: 1;
+}
+
+/* ========== NAV ========== */
+nav.bg-white,
+nav.bg-white.dark\:bg-gray-800 {
+    background: var(--sakura-surface) !important;
+    backdrop-filter: var(--sakura-glass);
+    -webkit-backdrop-filter: var(--sakura-glass);
+    border-bottom: 1px solid var(--sakura-border) !important;
+    box-shadow: none !important;
+}
+
+nav a span.text-lg,
+nav a span.text-xl,
+nav a span.font-bold {
+    color: var(--sakura-violet) !important;
+    font-weight: 800 !important;
+}
+
+nav .fa-heart {
+    color: var(--sakura-pink) !important;
+}
+
+nav a.text-gray-600,
+nav a.text-gray-500,
+nav a.text-sm {
+    color: var(--sakura-text-secondary) !important;
+    transition: all 0.25s ease;
+}
+
+nav a.text-gray-600:hover,
+nav a.text-gray-500:hover,
+nav a.text-sm:hover {
+    color: var(--sakura-violet) !important;
+}
+
+nav a.text-primary-500,
+nav a.text-primary-600 {
+    color: var(--sakura-pink) !important;
+}
+
+nav a.bg-primary-500 {
+    background: linear-gradient(135deg, var(--sakura-pink), var(--sakura-violet)) !important;
+    border-radius: 50px !important;
+    box-shadow: 0 4px 15px var(--sakura-pink-glow) !important;
+}
+
+nav a.bg-primary-500:hover {
+    background: linear-gradient(135deg, var(--sakura-violet), var(--sakura-pink)) !important;
+}
+
+nav button#darkToggle,
+nav button#darkToggleMobile {
+    color: var(--sakura-text-secondary) !important;
+}
+
+nav button#darkToggle:hover,
+nav button#darkToggleMobile:hover {
+    color: var(--sakura-violet) !important;
+}
+
+.nav-auth-desktop a[href="/register"],
+.nav-auth-desktop a[href="/login"]:last-child {
+    border-radius: 50px !important;
+}
+
+/* ========== HERO ========== */
+.hero-section {
+    background: linear-gradient(135deg, var(--sakura-pink), var(--sakura-violet), var(--sakura-blue)) !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+.hero-section h1 {
+    text-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.hero-section p {
+    text-shadow: 0 1px 5px rgba(0,0,0,0.1);
+}
+
+/* ========== CARDS ========== */
+.card-hover {
+    background: var(--sakura-surface);
+    backdrop-filter: var(--sakura-glass);
+    -webkit-backdrop-filter: var(--sakura-glass);
+    border: 1px solid var(--sakura-border);
+    border-radius: var(--sakura-radius) !important;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--sakura-shadow-hover) !important;
+    border-color: var(--sakura-border-strong);
+}
+
+.dark .card-hover:hover {
+    box-shadow: 0 16px 50px rgba(139,92,246,0.25) !important;
+}
+
+.card-hover .bg-white,
+.card-hover .dark\:bg-gray-800 {
+    background: transparent !important;
+}
+
+/* Card inner backgrounds */
+.card-hover .bg-gray-50,
+.card-hover .dark\:bg-gray-700\/30 {
+    background: var(--sakura-bg) !important;
+}
+
+/* Card text */
+.card-hover .text-gray-800,
+.card-hover .text-gray-700 {
+    color: var(--sakura-text) !important;
+}
+
+.card-hover .text-gray-600,
+.card-hover .text-gray-500 {
+    color: var(--sakura-text-secondary) !important;
+}
+
+.card-hover .text-gray-400,
+.card-hover .text-gray-400 {
+    color: var(--sakura-text-muted) !important;
+}
+
+/* Tags */
+.tag-pill {
+    background: var(--sakura-violet-soft) !important;
+    color: var(--sakura-violet) !important;
+    border-radius: 50px !important;
+    border: none !important;
+    font-weight: 500;
+}
+
+.tag-pill:hover {
+    background: var(--sakura-pink-soft) !important;
+    color: var(--sakura-pink) !important;
+}
+
+.tag-pill.active,
+.tag-pill.bg-primary-500 {
+    background: linear-gradient(135deg, var(--sakura-pink), var(--sakura-violet)) !important;
+    color: white !important;
+    box-shadow: 0 4px 15px var(--sakura-pink-glow);
+}
+
+/* ========== BUTTONS ========== */
+.bg-primary-500:not(nav *):not(.hero-section *) {
+    background: linear-gradient(135deg, var(--sakura-pink), var(--sakura-violet)) !important;
+    box-shadow: 0 4px 20px var(--sakura-pink-glow);
+    border-radius: 50px !important;
+}
+
+.bg-primary-500:not(nav *):not(.hero-section *):hover {
+    background: linear-gradient(135deg, var(--sakura-violet), var(--sakura-pink)) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 30px var(--sakura-pink-glow);
+}
+
+.hover\:bg-primary-600:hover {
+    background: linear-gradient(135deg, var(--sakura-violet), var(--sakura-pink)) !important;
+}
+
+/* ========== FORMS ========== */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+textarea,
+select {
+    background: var(--sakura-bg) !important;
+    border: 1.5px solid var(--sakura-border) !important;
+    border-radius: var(--sakura-radius-md) !important;
+    color: var(--sakura-text) !important;
+    transition: all 0.25s ease;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    border-color: var(--sakura-violet) !important;
+    box-shadow: 0 0 0 4px var(--sakura-violet-glow) !important;
+    outline: none;
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: var(--sakura-text-muted) !important;
+}
+
+/* ========== FOOTER ========== */
+footer.bg-white,
+footer.dark\:bg-gray-800 {
+    background: var(--sakura-surface) !important;
+    backdrop-filter: var(--sakura-glass);
+    -webkit-backdrop-filter: var(--sakura-glass);
+    border-top: 1px solid var(--sakura-border) !important;
+}
+
+footer .text-gray-400,
+footer .text-gray-500 {
+    color: var(--sakura-text-muted) !important;
+}
+
+footer a {
+    color: var(--sakura-text-muted) !important;
+    transition: color 0.2s;
+}
+
+footer a:hover {
+    color: var(--sakura-violet) !important;
+}
+
+/* ========== WHITE SURFACES ========== */
+.bg-white:not(nav):not(footer) {
+    background: var(--sakura-surface) !important;
+    backdrop-filter: var(--sakura-glass);
+    -webkit-backdrop-filter: var(--sakura-glass);
+    border: 1px solid var(--sakura-border);
+    border-radius: var(--sakura-radius);
+}
+
+.dark .bg-gray-800:not(nav):not(footer) {
+    background: var(--sakura-surface) !important;
+    backdrop-filter: var(--sakura-glass);
+    -webkit-backdrop-filter: var(--sakura-glass);
+}
+
+/* ========== MASONRY ========== */
+.masonry {
+    columns: 2;
+    column-gap: 16px;
+}
+
+@media (max-width: 768px) {
+    .masonry {
+        columns: 1;
+    }
+}
+
+.masonry-item {
+    break-inside: avoid;
+    margin-bottom: 16px;
+}
+
+/* ========== PAGINATION ========== */
+.pagination-btn {
+    border-radius: 50% !important;
+    border: 1px solid var(--sakura-border) !important;
+    background: var(--sakura-surface) !important;
+    backdrop-filter: var(--sakura-glass);
+    color: var(--sakura-text-secondary) !important;
+}
+
+.pagination-btn:hover {
+    border-color: var(--sakura-violet) !important;
+    color: var(--sakura-violet) !important;
+}
+
+.pagination-btn.active,
+.pagination-btn.bg-primary-500 {
+    background: linear-gradient(135deg, var(--sakura-pink), var(--sakura-violet)) !important;
+    color: white !important;
+    border-color: transparent !important;
+    box-shadow: 0 4px 15px var(--sakura-pink-glow);
+}
+
+/* ========== MOBILE MENU ========== */
+.mobile-menu {
+    background: var(--sakura-surface-solid) !important;
+    backdrop-filter: var(--sakura-glass);
+    -webkit-backdrop-filter: var(--sakura-glass);
+    border-top: 1px solid var(--sakura-border) !important;
+}
+
+.mobile-menu a {
+    color: var(--sakura-text-secondary) !important;
+    border-radius: var(--sakura-radius-sm);
+    transition: all 0.2s;
+}
+
+.mobile-menu a:hover {
+    color: var(--sakura-violet) !important;
+    background: var(--sakura-violet-soft);
+}
+
+/* ========== TOGGLE SWITCH ========== */
+.toggle-switch {
+    background: var(--sakura-border-strong);
+}
+
+.toggle-switch.active {
+    background: linear-gradient(135deg, var(--sakura-pink), var(--sakura-violet)) !important;
+}
+
+/* ========== FLASH MESSAGES ========== */
+.flash-msg {
+    background: var(--sakura-surface) !important;
+    backdrop-filter: var(--sakura-glass);
+    border: 1px solid var(--sakura-border);
+    border-radius: var(--sakura-radius-md);
+}
+
+/* ========== MISC OVERRIDES ========== */
+.text-primary-500 {
+    color: var(--sakura-pink) !important;
+}
+
+.text-primary-600 {
+    color: var(--sakura-violet) !important;
+}
+
+.border-primary-500 {
+    border-color: var(--sakura-pink) !important;
+}
+
+.bg-primary-50 {
+    background: var(--sakura-pink-soft) !important;
+}
+
+.dark .bg-gray-700\/30 {
+    background: rgba(139,92,246,0.08) !important;
+}
+
+.dark .bg-gray-900 {
+    background: var(--sakura-bg) !important;
+}
+
+.dark .bg-gray-800 {
+    background: var(--sakura-surface-solid) !important;
+}
+
+.dark .text-white {
+    color: var(--sakura-text) !important;
+}
+
+.dark .text-gray-300 {
+    color: var(--sakura-text-secondary) !important;
+}
+
+.dark .text-gray-400 {
+    color: var(--sakura-text-muted) !important;
+}
+
+.dark .text-gray-500 {
+    color: var(--sakura-text-muted) !important;
+}
+
+.dark .border-gray-700 {
+    border-color: var(--sakura-border) !important;
+}
+
+.dark .border-gray-700\/50 {
+    border-color: var(--sakura-border) !important;
+}
+
+.dark .border-gray-600 {
+    border-color: var(--sakura-border-strong) !important;
+}
+
+.dark .bg-gray-700 {
+    background: var(--sakura-surface-solid) !important;
+}
+
+.dark .hover\:bg-gray-700:hover {
+    background: var(--sakura-surface-hover) !important;
+}
+
+/* ========== BADGE / NOTIFICATION DOT ========== */
+.bg-red-500[class*="rounded-full"] {
+    background: var(--sakura-pink) !important;
+}
+
+/* ========== SCROLLBAR ========== */
+::-webkit-scrollbar-thumb {
+    background: var(--sakura-border-strong);
+}
+
+/* ========== CHECKBOX ========== */
+.checkbox-custom.checked {
+    background: linear-gradient(135deg, var(--sakura-pink), var(--sakura-violet));
+    border-color: var(--sakura-violet);
+}
+
+/* ========== AVATAR GRADIENT ========== */
+.w-8.h-8.rounded-full.bg-primary-50,
+.w-6.h-6.rounded-full.bg-primary-50 {
+    background: var(--sakura-violet-soft) !important;
+}
+
+.w-8.h-8.rounded-full.bg-primary-50 .fa-user,
+.w-6.h-6.rounded-full.bg-primary-50 .fa-user {
+    color: var(--sakura-violet) !important;
+}

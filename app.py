@@ -50,13 +50,16 @@ def load_user(user_id):
 @app.context_processor
 def inject_site_config():
     try:
-        ctx = {'site_config': get_site_config()}
+        cfg = get_site_config()
+        ctx = {'site_config': cfg}
     except Exception:
         from utils.system import SITE_CONFIG_DEFAULTS
-        ctx = {'site_config': dict(SITE_CONFIG_DEFAULTS)}
+        cfg = dict(SITE_CONFIG_DEFAULTS)
+        ctx = {'site_config': cfg}
     if 'csrf_token' not in session:
         session['csrf_token'] = uuid.uuid4().hex
     ctx['csrf_token'] = session['csrf_token']
+    ctx['site_theme'] = cfg.get('siteTheme', 'classic')
     if current_user.is_authenticated:
         try:
             from utils.notification import get_unread_count

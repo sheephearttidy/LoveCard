@@ -26,7 +26,11 @@
         (function(){var d=document.documentElement;var s=localStorage.getItem('theme');if(s==='dark'||(!s&&window.matchMedia('(prefers-color-scheme:dark)').matches)){d.classList.add('dark')}else{d.classList.remove('dark')}})();
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    {% if site_theme == 'sakura' %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sakura.css') }}">
+    {% else %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    {% endif %}
     {% block extra_head %}{% endblock %}
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 min-h-screen flex flex-col transition-colors duration-300">

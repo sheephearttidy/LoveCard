@@ -1,0 +1,1519 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LoveCards - 设计方案 B</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+    --bg: #faf5ff;
+    --bg-pattern: #f3e8ff;
+    --surface: rgba(255,255,255,0.72);
+    --surface-solid: #ffffff;
+    --surface-hover: rgba(255,255,255,0.9);
+    --border: rgba(168,130,255,0.15);
+    --border-strong: rgba(168,130,255,0.3);
+    --text: #2d1b4e;
+    --text-secondary: #6b5280;
+    --text-muted: #9b8ab5;
+    --pink: #ec4899;
+    --pink-soft: #fce7f3;
+    --pink-glow: rgba(236,72,153,0.2);
+    --violet: #8b5cf6;
+    --violet-soft: #ede9fe;
+    --violet-glow: rgba(139,92,246,0.15);
+    --blue: #6366f1;
+    --blue-soft: #eef2ff;
+    --green: #10b981;
+    --green-soft: #ecfdf5;
+    --orange: #f59e0b;
+    --orange-soft: #fffbeb;
+    --red: #ef4444;
+    --red-soft: #fef2f2;
+    --radius: 20px;
+    --radius-md: 14px;
+    --radius-sm: 10px;
+    --shadow-sm: 0 2px 8px rgba(139,92,246,0.06);
+    --shadow-md: 0 8px 30px rgba(139,92,246,0.1);
+    --shadow-lg: 0 16px 50px rgba(139,92,246,0.15);
+    --glass: blur(20px) saturate(180%);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+    font-family: "Noto Sans SC", -apple-system, "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: -20%;
+    right: -10%;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(236,72,153,0.12) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+body::after {
+    content: '';
+    position: fixed;
+    bottom: -10%;
+    left: -10%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(139,92,246,0.1) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+a { color: inherit; text-decoration: none; }
+button { cursor: pointer; border: none; background: none; font: inherit; color: inherit; }
+input, textarea { font: inherit; color: inherit; }
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+
+.wrap { max-width: 960px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 1; }
+
+/* ========== NAV ========== */
+.nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--surface);
+    backdrop-filter: var(--glass);
+    -webkit-backdrop-filter: var(--glass);
+    border-bottom: 1px solid var(--border);
+}
+
+.nav-inner {
+    display: flex;
+    align-items: center;
+    height: 64px;
+    gap: 8px;
+}
+
+.nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 800;
+    font-size: 1.25rem;
+    color: var(--violet);
+    margin-right: auto;
+}
+
+.nav-logo-icon {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, var(--pink), var(--violet));
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.9rem;
+    box-shadow: 0 4px 15px var(--pink-glow);
+}
+
+.nav-tab {
+    padding: 8px 18px;
+    border-radius: 50px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition: all 0.25s ease;
+}
+
+.nav-tab:hover { color: var(--text); background: var(--violet-soft); }
+.nav-tab.active { color: white; background: linear-gradient(135deg, var(--pink), var(--violet)); box-shadow: 0 4px 15px var(--pink-glow); }
+
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: 12px;
+}
+
+.nav-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    transition: all 0.25s ease;
+    position: relative;
+}
+
+.nav-btn:hover { background: var(--violet-soft); color: var(--violet); }
+
+.nav-btn .dot {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 8px;
+    height: 8px;
+    background: var(--pink);
+    border-radius: 50%;
+    border: 2px solid white;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 22px;
+    border-radius: 50px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: all 0.25s ease;
+    white-space: nowrap;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--pink), var(--violet));
+    color: white;
+    box-shadow: 0 4px 20px var(--pink-glow);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px var(--pink-glow);
+}
+
+.btn-outline {
+    border: 1.5px solid var(--border-strong);
+    color: var(--violet);
+    background: var(--surface);
+    backdrop-filter: var(--glass);
+}
+
+.btn-outline:hover {
+    background: var(--violet-soft);
+    border-color: var(--violet);
+}
+
+.btn-soft {
+    background: var(--violet-soft);
+    color: var(--violet);
+}
+
+.btn-soft:hover { background: var(--pink-soft); color: var(--pink); }
+
+/* ========== HERO ========== */
+.hero {
+    padding: 56px 0 40px;
+    text-align: center;
+}
+
+.hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 16px;
+    background: var(--surface);
+    backdrop-filter: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    font-size: 0.775rem;
+    font-weight: 500;
+    color: var(--violet);
+    margin-bottom: 20px;
+}
+
+.hero h1 {
+    font-size: 2.8rem;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.03em;
+    margin-bottom: 12px;
+}
+
+.hero h1 .gradient {
+    background: linear-gradient(135deg, var(--pink), var(--violet), var(--blue));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.hero p {
+    font-size: 1.05rem;
+    color: var(--text-secondary);
+    max-width: 420px;
+    margin: 0 auto 28px;
+}
+
+.hero-btns {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+/* ========== FILTER ========== */
+.filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 24px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.filter-bar::-webkit-scrollbar { display: none; }
+
+.filter-pill {
+    padding: 7px 18px;
+    border-radius: 50px;
+    font-size: 0.825rem;
+    font-weight: 500;
+    white-space: nowrap;
+    border: 1.5px solid var(--border);
+    color: var(--text-secondary);
+    background: var(--surface);
+    backdrop-filter: var(--glass);
+    transition: all 0.25s ease;
+    cursor: pointer;
+}
+
+.filter-pill:hover { border-color: var(--border-strong); color: var(--text); }
+
+.filter-pill.active {
+    background: linear-gradient(135deg, var(--pink), var(--violet));
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 4px 15px var(--pink-glow);
+}
+
+.search-inline {
+    margin-left: auto;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.search-inline input {
+    width: 200px;
+    padding: 8px 14px 8px 34px;
+    background: var(--surface);
+    backdrop-filter: var(--glass);
+    border: 1.5px solid var(--border);
+    border-radius: 50px;
+    font-size: 0.8rem;
+    outline: none;
+    transition: all 0.25s ease;
+    color: var(--text);
+}
+
+.search-inline input::placeholder { color: var(--text-muted); }
+.search-inline input:focus { border-color: var(--violet); box-shadow: 0 0 0 4px var(--violet-glow); width: 260px; }
+
+.search-inline i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: 0.75rem;
+}
+
+/* ========== FEED ========== */
+.feed { display: flex; flex-direction: column; gap: 16px; margin-bottom: 48px; }
+
+.card {
+    background: var(--surface);
+    backdrop-filter: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--border-strong);
+}
+
+.card-banner {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    background: var(--pink-soft);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--pink);
+}
+
+.card-inner { padding: 20px; }
+
+.card-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: white;
+    flex-shrink: 0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.avatar-sm { width: 32px; height: 32px; font-size: 0.75rem; }
+
+.card-author-name { font-weight: 600; font-size: 0.9rem; }
+.card-author-name.admin { color: var(--violet); }
+.card-author-name.anon { color: var(--text-muted); font-style: italic; }
+.card-author-time { font-size: 0.75rem; color: var(--text-muted); }
+
+.card-more {
+    margin-left: auto;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    transition: all 0.2s;
+}
+
+.card-more:hover { background: var(--violet-soft); color: var(--violet); }
+
+.card-text {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    margin-bottom: 14px;
+    color: var(--text);
+}
+
+.card-gallery {
+    display: grid;
+    gap: 6px;
+    margin-bottom: 14px;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+}
+
+.card-gallery.g1 { grid-template-columns: 1fr; }
+.card-gallery.g2 { grid-template-columns: 1fr 1fr; }
+.card-gallery.g3 { grid-template-columns: 1fr 1fr; }
+
+.card-gallery img {
+    width: 100%;
+    aspect-ratio: 4/3;
+    object-fit: cover;
+    display: block;
+}
+
+.card-gallery.g3 img:first-child {
+    grid-column: 1 / -1;
+    aspect-ratio: 16/9;
+}
+
+.card-tags {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 14px;
+}
+
+.card-tag {
+    padding: 3px 12px;
+    border-radius: 50px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    background: var(--violet-soft);
+    color: var(--violet);
+}
+
+.card-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+}
+
+.card-action {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 14px;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+}
+
+.card-action:hover { background: var(--violet-soft); color: var(--violet); }
+.card-action.liked { color: var(--pink); }
+.card-action.liked:hover { background: var(--pink-soft); }
+
+.card-action i { font-size: 0.85rem; }
+
+.card-action-spacer { flex: 1; }
+
+.card-action .views { color: var(--text-muted); font-size: 0.75rem; }
+
+/* ========== DETAIL ========== */
+.overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    background: rgba(45,27,78,0.4);
+    backdrop-filter: blur(8px);
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 20px;
+    overflow-y: auto;
+}
+
+.overlay.open { display: flex; }
+
+.detail {
+    width: 100%;
+    max-width: 640px;
+    background: var(--surface-solid);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    animation: popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    overflow: hidden;
+}
+
+@keyframes popIn {
+    from { opacity: 0; transform: scale(0.95) translateY(10px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.detail-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+}
+
+.detail-top .avatar { width: 46px; height: 46px; font-size: 1rem; }
+
+.detail-user { flex: 1; }
+.detail-name { font-weight: 700; font-size: 0.95rem; }
+.detail-date { font-size: 0.775rem; color: var(--text-muted); }
+
+.detail-x {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    transition: all 0.2s;
+}
+
+.detail-x:hover { background: var(--pink-soft); color: var(--pink); }
+
+.detail-cover { width: 100%; max-height: 400px; object-fit: cover; }
+
+.detail-body { padding: 24px; }
+
+.detail-content {
+    font-size: 1.05rem;
+    line-height: 1.8;
+    margin-bottom: 20px;
+    white-space: pre-wrap;
+}
+
+.detail-imgs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.detail-imgs img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+}
+
+.detail-bar {
+    display: flex;
+    gap: 8px;
+    padding: 16px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+}
+
+.detail-bar .card-action { padding: 8px 18px; font-size: 0.875rem; }
+
+/* ========== COMMENTS ========== */
+.comments { padding: 24px; }
+
+.comments-head {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.comments-head i { color: var(--violet); }
+
+.comment-box {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.comment-box textarea {
+    flex: 1;
+    padding: 12px 16px;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    resize: none;
+    min-height: 48px;
+    outline: none;
+    transition: all 0.25s;
+}
+
+.comment-box textarea::placeholder { color: var(--text-muted); }
+.comment-box textarea:focus { border-color: var(--violet); box-shadow: 0 0 0 4px var(--violet-glow); }
+
+.comment-item {
+    display: flex;
+    gap: 10px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.comment-item:last-child { border-bottom: none; }
+
+.comment-body { flex: 1; }
+.comment-name { font-size: 0.825rem; font-weight: 600; }
+.comment-text { font-size: 0.85rem; color: var(--text-secondary); margin-top: 2px; }
+.comment-date { font-size: 0.7rem; color: var(--text-muted); margin-top: 4px; }
+
+/* ========== PUBLISH ========== */
+.pub-overlay .detail { max-width: 520px; }
+
+.pub-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+}
+
+.pub-header h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.pub-header h2 i { color: var(--pink); }
+
+.pub-body { padding: 24px; }
+
+.field { margin-bottom: 20px; }
+
+.field-label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+}
+
+.field-input {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    outline: none;
+    transition: all 0.25s;
+}
+
+.field-input:focus { border-color: var(--violet); box-shadow: 0 0 0 4px var(--violet-glow); }
+.field-input::placeholder { color: var(--text-muted); }
+
+textarea.field-input { resize: none; min-height: 120px; }
+
+.field-upload {
+    padding: 28px;
+    border: 2px dashed var(--border-strong);
+    border-radius: var(--radius-md);
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s;
+    color: var(--text-muted);
+}
+
+.field-upload:hover { border-color: var(--violet); color: var(--violet); background: var(--violet-soft); }
+.field-upload i { font-size: 1.5rem; display: block; margin-bottom: 6px; }
+.field-upload span { font-size: 0.825rem; }
+
+.tag-picker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.tag-pick {
+    padding: 6px 16px;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    border: 1.5px solid var(--border);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.tag-pick:hover { border-color: var(--violet); color: var(--violet); }
+.tag-pick.on { background: var(--violet); color: white; border-color: var(--violet); }
+
+.switch-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.switch-label { font-size: 0.875rem; font-weight: 600; }
+.switch-hint { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+
+.switch {
+    width: 48px;
+    height: 26px;
+    background: var(--border-strong);
+    border-radius: 13px;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.25s;
+}
+
+.switch::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    background: white;
+    border-radius: 50%;
+    transition: all 0.25s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+}
+
+.switch.on { background: linear-gradient(135deg, var(--pink), var(--violet)); }
+.switch.on::after { left: 25px; }
+
+.pub-footer {
+    display: flex;
+    gap: 10px;
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+}
+
+.pub-footer .btn { flex: 1; padding: 12px; }
+
+/* ========== LOGIN ========== */
+.login-overlay .detail { max-width: 400px; }
+
+.login-body { padding: 36px 32px; text-align: center; }
+
+.login-icon {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, var(--pink), var(--violet));
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+    margin: 0 auto 16px;
+    box-shadow: 0 8px 25px var(--pink-glow);
+}
+
+.login-body h2 { font-size: 1.4rem; font-weight: 800; margin-bottom: 4px; }
+.login-body .sub { color: var(--text-muted); font-size: 0.875rem; margin-bottom: 24px; }
+
+.login-form { text-align: left; }
+
+.login-form .field { margin-bottom: 14px; }
+
+.login-form .field-input {
+    background: var(--surface);
+    border-color: var(--border);
+    padding: 12px 16px;
+}
+
+.login-form .row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 0.8rem;
+}
+
+.login-form .row label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+
+.login-form .row a { color: var(--violet); font-weight: 500; }
+
+.login-form .btn { width: 100%; padding: 13px; font-size: 0.95rem; margin-top: 8px; }
+
+.login-bottom {
+    margin-top: 20px;
+    font-size: 0.825rem;
+    color: var(--text-muted);
+}
+
+.login-bottom a { color: var(--violet); font-weight: 600; }
+
+/* ========== NOTIF DROPDOWN ========== */
+.notif-drop {
+    display: none;
+    position: fixed;
+    top: 72px;
+    right: 20px;
+    width: 360px;
+    background: var(--surface-solid);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    z-index: 150;
+    overflow: hidden;
+    animation: popIn 0.25s ease;
+}
+
+.notif-drop.open { display: block; }
+
+.notif-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+}
+
+.notif-top h3 { font-size: 0.95rem; font-weight: 700; }
+
+.notif-top button { font-size: 0.75rem; color: var(--violet); font-weight: 600; }
+
+.notif-list { max-height: 380px; overflow-y: auto; }
+
+.notif-row {
+    display: flex;
+    gap: 12px;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.2s;
+    cursor: pointer;
+}
+
+.notif-row:hover { background: var(--violet-soft); }
+.notif-row.unread { background: var(--pink-soft); }
+
+.notif-dot {
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
+.notif-dot.ok { background: var(--green-soft); color: var(--green); }
+.notif-dot.no { background: var(--red-soft); color: var(--red); }
+.notif-dot.warn { background: var(--orange-soft); color: var(--orange); }
+.notif-dot.chat { background: var(--blue-soft); color: var(--blue); }
+.notif-dot.wait { background: var(--violet-soft); color: var(--violet); }
+
+.notif-info { flex: 1; min-width: 0; }
+.notif-title { font-size: 0.825rem; font-weight: 600; }
+.notif-desc { font-size: 0.775rem; color: var(--text-secondary); }
+.notif-when { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; }
+
+/* ========== PROFILE ========== */
+.profile-overlay .detail { max-width: 400px; }
+
+.profile-body { padding: 32px; text-align: center; }
+
+.profile-pic {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--pink), var(--violet));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: white;
+    margin: 0 auto 14px;
+    box-shadow: 0 8px 30px var(--pink-glow);
+}
+
+.profile-name { font-size: 1.2rem; font-weight: 800; }
+.profile-mail { font-size: 0.825rem; color: var(--text-muted); margin-top: 2px; }
+
+.profile-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.profile-cell {
+    padding: 16px 8px;
+    background: var(--bg);
+    border-radius: var(--radius-md);
+}
+
+.profile-cell .val { font-size: 1.4rem; font-weight: 800; }
+.profile-cell .lbl { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; }
+
+.profile-cell:nth-child(1) .val { color: var(--pink); }
+.profile-cell:nth-child(2) .val { color: var(--violet); }
+.profile-cell:nth-child(3) .val { color: var(--blue); }
+
+.profile-btns { display: flex; gap: 8px; margin-top: 16px; }
+.profile-btns .btn { flex: 1; }
+
+.profile-logout {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+}
+
+/* ========== PAGINATION ========== */
+.pager {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin: 40px 0;
+}
+
+.pager-btn {
+    min-width: 40px;
+    height: 40px;
+    padding: 0 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    backdrop-filter: var(--glass);
+    transition: all 0.2s;
+}
+
+.pager-btn:hover { border-color: var(--violet); color: var(--violet); }
+.pager-btn.active { background: linear-gradient(135deg, var(--pink), var(--violet)); color: white; border-color: transparent; box-shadow: 0 4px 15px var(--pink-glow); }
+
+.pager-info { font-size: 0.8rem; color: var(--text-muted); padding: 0 8px; }
+
+/* ========== FOOTER ========== */
+.footer {
+    text-align: center;
+    padding: 36px 0;
+    border-top: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+.footer-links {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-bottom: 10px;
+}
+
+.footer-links a { transition: color 0.2s; }
+.footer-links a:hover { color: var(--violet); }
+
+/* ========== MOBILE NAV ========== */
+.mob-nav {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--surface-solid);
+    border-top: 1px solid var(--border);
+    z-index: 100;
+    padding: 6px 0;
+    padding-bottom: env(safe-area-inset-bottom, 6px);
+}
+
+.mob-nav-items {
+    display: flex;
+    justify-content: space-around;
+}
+
+.mob-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    font-size: 0.6rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    padding: 4px 16px;
+    transition: color 0.2s;
+}
+
+.mob-nav-item i { font-size: 1.15rem; }
+.mob-nav-item.active { color: var(--violet); }
+
+@media (max-width: 768px) {
+    .nav-tab, .search-inline, .nav-actions .btn { display: none; }
+    .mob-nav { display: block; }
+    body { padding-bottom: 68px; }
+    .hero h1 { font-size: 2rem; }
+    .detail-imgs { grid-template-columns: repeat(2, 1fr); }
+    .overlay { padding: 0; }
+    .detail { border-radius: 0; min-height: 100vh; }
+    .notif-drop { left: 10px; right: 10px; width: auto; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+    <div class="wrap nav-inner">
+        <a href="#" class="nav-logo">
+            <div class="nav-logo-icon"><i class="fas fa-heart"></i></div>
+            LoveCards
+        </a>
+        <a href="#" class="nav-tab active">首页</a>
+        <a href="#" class="nav-tab" onclick="openPub()">发布</a>
+        <a href="#" class="nav-tab">关于</a>
+        <a href="#" class="nav-tab">公示</a>
+        <div class="nav-actions">
+            <div class="search-inline">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="搜索...">
+            </div>
+            <button class="nav-btn" onclick="toggleNotif()" title="通知">
+                <i class="fas fa-bell"></i>
+                <span class="dot"></span>
+            </button>
+            <button class="nav-btn" title="主题"><i class="fas fa-sun"></i></button>
+            <button class="btn btn-primary" onclick="openLogin()" style="padding:8px 18px;font-size:0.8rem;">
+                <i class="fas fa-right-to-bracket"></i> 登录
+            </button>
+        </div>
+    </div>
+</nav>
+
+<!-- NOTIF -->
+<div class="notif-drop" id="notifDrop">
+    <div class="notif-top">
+        <h3>通知</h3>
+        <button onclick="readAll()">全部已读</button>
+    </div>
+    <div class="notif-list">
+        <div class="notif-row unread">
+            <div class="notif-dot ok"><i class="fas fa-check"></i></div>
+            <div class="notif-info">
+                <div class="notif-title">卡片审核通过</div>
+                <div class="notif-desc">你发布的卡片已通过审核</div>
+                <div class="notif-when">5 分钟前</div>
+            </div>
+        </div>
+        <div class="notif-row unread">
+            <div class="notif-dot chat"><i class="fas fa-comment"></i></div>
+            <div class="notif-info">
+                <div class="notif-title">新评论</div>
+                <div class="notif-desc">小明 评论了你的卡片</div>
+                <div class="notif-when">20 分钟前</div>
+            </div>
+        </div>
+        <div class="notif-row unread">
+            <div class="notif-dot no"><i class="fas fa-xmark"></i></div>
+            <div class="notif-info">
+                <div class="notif-title">评论审核拒绝</div>
+                <div class="notif-desc">你的一条评论未通过审核</div>
+                <div class="notif-when">1 小时前</div>
+            </div>
+        </div>
+        <div class="notif-row">
+            <div class="notif-dot ok"><i class="fas fa-check"></i></div>
+            <div class="notif-info">
+                <div class="notif-title">卡片审核通过</div>
+                <div class="notif-desc">你发布的卡片已通过审核</div>
+                <div class="notif-when">昨天 14:30</div>
+            </div>
+        </div>
+        <div class="notif-row">
+            <div class="notif-dot warn"><i class="fas fa-ban"></i></div>
+            <div class="notif-info">
+                <div class="notif-title">卡片被封禁</div>
+                <div class="notif-desc">你发布的一条卡片因违规被处理</div>
+                <div class="notif-when">3 天前</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="wrap">
+        <div class="hero-badge"><i class="fas fa-sparkles"></i> 匿名表白墙</div>
+        <h1>说出你的<br><span class="gradient">心里话</span></h1>
+        <p>在这里，每一份心意都值得被看见</p>
+        <div class="hero-btns">
+            <button class="btn btn-primary" onclick="openPub()">
+                <i class="fas fa-pen-to-square"></i> 发布表白
+            </button>
+            <button class="btn btn-outline" onclick="openLogin()">
+                <i class="fas fa-user-plus"></i> 加入我们
+            </button>
+        </div>
+    </div>
+</section>
+
+<!-- MAIN -->
+<main class="wrap">
+    <div class="filter-bar">
+        <button class="filter-pill active">全部</button>
+        <button class="filter-pill">情感</button>
+        <button class="filter-pill">日常</button>
+        <button class="filter-pill">技术</button>
+        <button class="filter-pill">吐槽</button>
+        <button class="filter-pill">表白</button>
+        <div class="search-inline">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="搜索内容...">
+        </div>
+    </div>
+
+    <div class="feed">
+        <!-- Card 1: pinned + cover -->
+        <div class="card" onclick="openDetail()">
+            <div class="card-banner"><i class="fas fa-thumbtack"></i> 置顶</div>
+            <img src="https://picsum.photos/seed/b1/800/400" style="width:100%;aspect-ratio:2/1;object-fit:cover;display:block">
+            <div class="card-inner">
+                <div class="card-head">
+                    <div class="avatar" style="background:linear-gradient(135deg,#ec4899,#8b5cf6)">小</div>
+                    <div>
+                        <div class="card-author-name">小雨同学</div>
+                        <div class="card-author-time">08-25 14:30</div>
+                    </div>
+                    <button class="card-more"><i class="fas fa-ellipsis"></i></button>
+                </div>
+                <p class="card-text">遇见你的那天，樱花开满南山。从此四季有了颜色，日子有了温度。想和你一起走过每一个春夏秋冬，看遍世间所有美好。</p>
+                <div class="card-tags">
+                    <span class="card-tag">表白</span>
+                </div>
+                <div class="card-actions">
+                    <button class="card-action liked" onclick="event.stopPropagation();this.classList.toggle('liked')"><i class="fas fa-heart"></i> 128</button>
+                    <button class="card-action"><i class="fas fa-comment"></i> 23</button>
+                    <span class="card-action-spacer"></span>
+                    <span class="card-action views"><i class="fas fa-eye"></i> 1,024</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 2: anonymous, no cover -->
+        <div class="card" onclick="openDetail()">
+            <div class="card-inner">
+                <div class="card-head">
+                    <div class="avatar" style="background:var(--bg-pattern)"><i class="fas fa-user-secret" style="font-size:0.85rem;color:var(--text-muted)"></i></div>
+                    <div>
+                        <div class="card-author-name anon">匿名</div>
+                        <div class="card-author-time">08-24 21:15</div>
+                    </div>
+                    <button class="card-more"><i class="fas fa-ellipsis"></i></button>
+                </div>
+                <p class="card-text">图书馆三楼靠窗第二排的那个女生，你每次认真看书的样子真的很美。虽然不知道你的名字，但每天能看到你就已经很幸福了。</p>
+                <div class="card-tags">
+                    <span class="card-tag">日常</span>
+                </div>
+                <div class="card-actions">
+                    <button class="card-action" onclick="event.stopPropagation();this.classList.toggle('liked')"><i class="fas fa-heart"></i> 86</button>
+                    <button class="card-action"><i class="fas fa-comment"></i> 12</button>
+                    <span class="card-action-spacer"></span>
+                    <span class="card-action views"><i class="fas fa-eye"></i> 532</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 3: with images grid -->
+        <div class="card" onclick="openDetail()">
+            <div class="card-inner">
+                <div class="card-head">
+                    <div class="avatar" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">阿</div>
+                    <div>
+                        <div class="card-author-name admin">阿杰</div>
+                        <div class="card-author-time">08-23 09:00</div>
+                    </div>
+                    <button class="card-more"><i class="fas fa-ellipsis"></i></button>
+                </div>
+                <p class="card-text">毕业快乐！四年的时光转瞬即逝，感谢每一个出现在我生命中的你们。🎓</p>
+                <div class="card-gallery g3">
+                    <img src="https://picsum.photos/seed/g1/600/340" alt="">
+                    <img src="https://picsum.photos/seed/g2/300/300" alt="">
+                    <img src="https://picsum.photos/seed/g3/300/300" alt="">
+                </div>
+                <div class="card-tags">
+                    <span class="card-tag">情感</span>
+                    <span class="card-tag">日常</span>
+                </div>
+                <div class="card-actions">
+                    <button class="card-action liked" onclick="event.stopPropagation();this.classList.toggle('liked')"><i class="fas fa-heart"></i> 256</button>
+                    <button class="card-action"><i class="fas fa-comment"></i> 45</button>
+                    <span class="card-action-spacer"></span>
+                    <span class="card-action views"><i class="fas fa-eye"></i> 2,048</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 4: short -->
+        <div class="card" onclick="openDetail()">
+            <div class="card-inner">
+                <div class="card-head">
+                    <div class="avatar" style="background:linear-gradient(135deg,#10b981,#06b6d4)">吃</div>
+                    <div>
+                        <div class="card-author-name">吃货小王</div>
+                        <div class="card-author-time">08-22 12:30</div>
+                    </div>
+                    <button class="card-more"><i class="fas fa-ellipsis"></i></button>
+                </div>
+                <p class="card-text">今天食堂的糖醋排骨超好吃！</p>
+                <div class="card-tags">
+                    <span class="card-tag">吐槽</span>
+                </div>
+                <div class="card-actions">
+                    <button class="card-action" onclick="event.stopPropagation();this.classList.toggle('liked')"><i class="fas fa-heart"></i> 32</button>
+                    <button class="card-action"><i class="fas fa-comment"></i> 8</button>
+                    <span class="card-action-spacer"></span>
+                    <span class="card-action views"><i class="fas fa-eye"></i> 189</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 5: with cover -->
+        <div class="card" onclick="openDetail()">
+            <img src="https://picsum.photos/seed/b5/800/400" style="width:100%;aspect-ratio:2/1;object-fit:cover;display:block">
+            <div class="card-inner">
+                <div class="card-head">
+                    <div class="avatar" style="background:linear-gradient(135deg,#f59e0b,#ef4444)">代</div>
+                    <div>
+                        <div class="card-author-name">代码侠</div>
+                        <div class="card-author-time">08-21 16:45</div>
+                    </div>
+                    <button class="card-more"><i class="fas fa-ellipsis"></i></button>
+                </div>
+                <p class="card-text">有没有人一起组队参加下周的编程比赛？前端后端都可以，主打一个快乐参与！有意向的评论区留言～</p>
+                <div class="card-tags">
+                    <span class="card-tag">技术</span>
+                </div>
+                <div class="card-actions">
+                    <button class="card-action" onclick="event.stopPropagation();this.classList.toggle('liked')"><i class="fas fa-heart"></i> 15</button>
+                    <button class="card-action"><i class="fas fa-comment"></i> 6</button>
+                    <span class="card-action-spacer"></span>
+                    <span class="card-action views"><i class="fas fa-eye"></i> 97</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 6: anonymous long -->
+        <div class="card" onclick="openDetail()">
+            <div class="card-inner">
+                <div class="card-head">
+                    <div class="avatar" style="background:var(--bg-pattern)"><i class="fas fa-user-secret" style="font-size:0.85rem;color:var(--text-muted)"></i></div>
+                    <div>
+                        <div class="card-author-name anon">匿名</div>
+                        <div class="card-author-time">08-20 02:15</div>
+                    </div>
+                    <button class="card-more"><i class="fas fa-ellipsis"></i></button>
+                </div>
+                <p class="card-text">深夜emo时间：为什么每次下定决心要早睡，结果还是刷手机到凌晨两点……有没有人和我一样😭</p>
+                <div class="card-tags">
+                    <span class="card-tag">日常</span>
+                </div>
+                <div class="card-actions">
+                    <button class="card-action liked" onclick="event.stopPropagation();this.classList.toggle('liked')"><i class="fas fa-heart"></i> 203</button>
+                    <button class="card-action"><i class="fas fa-comment"></i> 67</button>
+                    <span class="card-action-spacer"></span>
+                    <span class="card-action views"><i class="fas fa-eye"></i> 1,536</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="pager">
+        <button class="pager-btn"><i class="fas fa-chevron-left"></i></button>
+        <button class="pager-btn active">1</button>
+        <button class="pager-btn">2</button>
+        <button class="pager-btn">3</button>
+        <span class="pager-info">...</span>
+        <button class="pager-btn">8</button>
+        <button class="pager-btn"><i class="fas fa-chevron-right"></i></button>
+    </div>
+</main>
+
+<footer class="footer">
+    <div class="wrap">
+        <div class="footer-links">
+            <a href="#">关于</a>
+            <a href="#">服务条款</a>
+            <a href="#">隐私政策</a>
+            <a href="#">API</a>
+            <a href="#">公示</a>
+        </div>
+        <p>LoveCards &copy; 2026 — 用心传递每一份温暖</p>
+    </div>
+</footer>
+
+<div class="mob-nav">
+    <div class="mob-nav-items">
+        <a href="#" class="mob-nav-item active"><i class="fas fa-home"></i>首页</a>
+        <a href="#" class="mob-nav-item" onclick="openPub()"><i class="fas fa-plus-circle"></i>发布</a>
+        <a href="#" class="mob-nav-item" onclick="toggleNotif()"><i class="fas fa-bell"></i>通知</a>
+        <a href="#" class="mob-nav-item" onclick="openProfile()"><i class="fas fa-user"></i>我的</a>
+    </div>
+</div>
+
+<!-- DETAIL -->
+<div class="overlay" id="detailOv" onclick="if(event.target===this)closeDetail()">
+    <div class="detail">
+        <div class="detail-top">
+            <div class="avatar" style="background:linear-gradient(135deg,#ec4899,#8b5cf6)">小</div>
+            <div class="detail-user">
+                <div class="detail-name">小雨同学</div>
+                <div class="detail-date">2026-08-25 14:30</div>
+            </div>
+            <button class="detail-x" onclick="closeDetail()"><i class="fas fa-xmark"></i></button>
+        </div>
+        <img class="detail-cover" src="https://picsum.photos/seed/b1/800/500" alt="">
+        <div class="detail-body">
+            <div class="detail-content">遇见你的那天，樱花开满南山。从此四季有了颜色，日子有了温度。想和你一起走过每一个春夏秋冬，看遍世间所有美好。
+
+谢谢你出现在我的生命里，让平凡的日子都变得闪闪发光。✨</div>
+            <div class="detail-imgs">
+                <img src="https://picsum.photos/seed/d1/300/300" alt="">
+                <img src="https://picsum.photos/seed/d2/300/300" alt="">
+                <img src="https://picsum.photos/seed/d3/300/300" alt="">
+            </div>
+            <div class="detail-bar">
+                <button class="card-action liked" onclick="this.classList.toggle('liked')"><i class="fas fa-heart"></i> 128</button>
+                <button class="card-action"><i class="fas fa-comment"></i> 23</button>
+                <button class="card-action"><i class="fas fa-eye"></i> 1,024</button>
+            </div>
+        </div>
+        <div class="comments">
+            <div class="comments-head"><i class="fas fa-comment"></i> 评论 (23)</div>
+            <div class="comment-box">
+                <div class="avatar avatar-sm" style="background:var(--bg-pattern)"><i class="fas fa-user" style="font-size:0.55rem;color:var(--text-muted)"></i></div>
+                <textarea placeholder="登录后即可评论..." rows="1" disabled></textarea>
+            </div>
+            <div class="comment-item">
+                <div class="avatar avatar-sm" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">阿</div>
+                <div class="comment-body">
+                    <div class="comment-name">阿杰</div>
+                    <div class="comment-text">好甜！祝你们幸福～</div>
+                    <div class="comment-date">08-25 15:20</div>
+                </div>
+            </div>
+            <div class="comment-item">
+                <div class="avatar avatar-sm" style="background:linear-gradient(135deg,#10b981,#06b6d4)">吃</div>
+                <div class="comment-body">
+                    <div class="comment-name">吃货小王</div>
+                    <div class="comment-text">看饿了，今晚就去吃樱花味的甜品</div>
+                    <div class="comment-date">08-25 16:05</div>
+                </div>
+            </div>
+            <div class="comment-item">
+                <div class="avatar avatar-sm" style="background:var(--bg-pattern)"><i class="fas fa-user-secret" style="font-size:0.55rem;color:var(--text-muted)"></i></div>
+                <div class="comment-body">
+                    <div class="comment-name" style="color:var(--text-muted)">匿名</div>
+                    <div class="comment-text">呜呜呜好羡慕</div>
+                    <div class="comment-date">08-25 18:30</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- PUBLISH -->
+<div class="overlay pub-overlay" id="pubOv" onclick="if(event.target===this)closePub()">
+    <div class="detail">
+        <div class="pub-header">
+            <h2><i class="fas fa-pen-to-square"></i> 发布表白</h2>
+            <button class="detail-x" onclick="closePub()"><i class="fas fa-xmark"></i></button>
+        </div>
+        <div class="pub-body">
+            <div class="field">
+                <label class="field-label">表白内容 <span style="color:var(--red)">*</span></label>
+                <textarea class="field-input" placeholder="写下你想说的话..." rows="5"></textarea>
+            </div>
+            <div class="field">
+                <label class="field-label">封面图片</label>
+                <div class="field-upload">
+                    <i class="fas fa-cloud-arrow-up"></i>
+                    <span>点击上传封面图片</span>
+                </div>
+            </div>
+            <div class="field">
+                <label class="field-label">附加图片</label>
+                <div class="field-upload">
+                    <i class="fas fa-images"></i>
+                    <span>点击选择多张图片</span>
+                </div>
+            </div>
+            <div class="field">
+                <label class="field-label">选择标签</label>
+                <div class="tag-picker">
+                    <span class="tag-pick" onclick="this.classList.toggle('on')">情感</span>
+                    <span class="tag-pick" onclick="this.classList.toggle('on')">日常</span>
+                    <span class="tag-pick" onclick="this.classList.toggle('on')">技术</span>
+                    <span class="tag-pick" onclick="this.classList.toggle('on')">吐槽</span>
+                    <span class="tag-pick" onclick="this.classList.toggle('on')">表白</span>
+                </div>
+            </div>
+            <div class="field">
+                <div class="switch-row">
+                    <div>
+                        <div class="switch-label">匿名发布</div>
+                        <div class="switch-hint">其他用户无法看到你的用户名</div>
+                    </div>
+                    <div class="switch" onclick="this.classList.toggle('on')"></div>
+                </div>
+            </div>
+        </div>
+        <div class="pub-footer">
+            <button class="btn btn-outline" onclick="closePub()">取消</button>
+            <button class="btn btn-primary"><i class="fas fa-paper-plane"></i> 发布</button>
+        </div>
+    </div>
+</div>
+
+<!-- LOGIN -->
+<div class="overlay login-overlay" id="loginOv" onclick="if(event.target===this)closeLogin()">
+    <div class="detail">
+        <div class="login-body">
+            <div class="login-icon"><i class="fas fa-heart"></i></div>
+            <h2>欢迎回来</h2>
+            <p class="sub">登录你的账号，继续探索</p>
+            <div class="login-form">
+                <div class="field">
+                    <label class="field-label">用户名 / 邮箱</label>
+                    <input class="field-input" type="text" placeholder="请输入用户名或邮箱">
+                </div>
+                <div class="field">
+                    <label class="field-label">密码</label>
+                    <input class="field-input" type="password" placeholder="请输入密码">
+                </div>
+                <div class="row">
+                    <label><input type="checkbox" style="accent-color:var(--violet)"> 记住我</label>
+                    <a href="#">忘记密码？</a>
+                </div>
+                <button class="btn btn-primary">登 录</button>
+            </div>
+            <div class="login-bottom">还没有账号？<a href="#">立即注册</a></div>
+        </div>
+    </div>
+</div>
+
+<!-- PROFILE -->
+<div class="overlay profile-overlay" id="profileOv" onclick="if(event.target===this)closeProfile()">
+    <div class="detail">
+        <div class="pub-header">
+            <h2>个人中心</h2>
+            <button class="detail-x" onclick="closeProfile()"><i class="fas fa-xmark"></i></button>
+        </div>
+        <div class="profile-body">
+            <div class="profile-pic">小</div>
+            <div class="profile-name">小雨同学</div>
+            <div class="profile-mail">xiaoyu@example.com</div>
+            <div class="profile-grid">
+                <div class="profile-cell"><div class="val">12</div><div class="lbl">发布</div></div>
+                <div class="profile-cell"><div class="val">386</div><div class="lbl">获赞</div></div>
+                <div class="profile-cell"><div class="val">28</div><div class="lbl">评论</div></div>
+            </div>
+            <div class="profile-btns">
+                <button class="btn btn-soft"><i class="fas fa-pen"></i> 编辑资料</button>
+                <button class="btn btn-soft"><i class="fas fa-shield-halved"></i> 安全设置</button>
+            </div>
+            <button class="btn btn-primary" onclick="openPub();closeProfile()" style="width:100%;margin-top:12px"><i class="fas fa-pen-to-square"></i> 发布表白</button>
+            <div class="profile-logout">
+                <button class="btn btn-outline" style="width:100%;color:var(--red);border-color:var(--red-soft)"><i class="fas fa-right-from-bracket"></i> 退出登录</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function openDetail(){document.getElementById('detailOv').classList.add('open');document.body.style.overflow='hidden'}
+function closeDetail(){document.getElementById('detailOv').classList.remove('open');document.body.style.overflow=''}
+function openPub(){document.getElementById('pubOv').classList.add('open');document.body.style.overflow='hidden'}
+function closePub(){document.getElementById('pubOv').classList.remove('open');document.body.style.overflow=''}
+function openLogin(){document.getElementById('loginOv').classList.add('open');document.body.style.overflow='hidden'}
+function closeLogin(){document.getElementById('loginOv').classList.remove('open');document.body.style.overflow=''}
+function openProfile(){document.getElementById('profileOv').classList.add('open');document.body.style.overflow='hidden'}
+function closeProfile(){document.getElementById('profileOv').classList.remove('open');document.body.style.overflow=''}
+function toggleNotif(){document.getElementById('notifDrop').classList.toggle('open')}
+function readAll(){document.querySelectorAll('.notif-row.unread').forEach(function(e){e.classList.remove('unread')});var d=document.querySelector('.nav-btn .dot');if(d)d.style.display='none'}
+
+document.querySelectorAll('.filter-pill').forEach(function(p){p.addEventListener('click',function(){document.querySelectorAll('.filter-pill').forEach(function(c){c.classList.remove('active')});this.classList.add('active')})});
+
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeDetail();closePub();closeLogin();closeProfile();document.getElementById('notifDrop').classList.remove('open')}});
+
+document.addEventListener('click',function(e){var d=document.getElementById('notifDrop');var b=document.querySelector('.nav-btn[title="通知"]');if(d.classList.contains('open')&&!d.contains(e.target)&&!b.contains(e.target)){d.classList.remove('open')}});
+</script>
+</body>
+</html>
