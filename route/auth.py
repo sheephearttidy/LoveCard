@@ -2,9 +2,8 @@ from flask import Blueprint, request, render_template, jsonify, redirect, url_fo
 from flask_login import login_user, logout_user, login_required, current_user
 
 from model.User import User
-from model.Card import Card
-from model.Comment import Comment
 from model.db import db
+from utils.system import get_config
 
 auth = Blueprint('auth', __name__)
 
@@ -37,6 +36,10 @@ def login():
 def register():
     if current_user.is_authenticated:
         return redirect(url_for('public.index'))
+
+    if get_config('siteAllowRegister') == 'false':
+        flash('站点已关闭注册', 'error')
+        return redirect(url_for('auth.login'))
 
     if request.method == "POST":
         username = request.form["username"]

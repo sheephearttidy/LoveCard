@@ -1,16 +1,15 @@
-from datetime import datetime
-
 from flask import Blueprint, request, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
 from sqlalchemy import desc
 
-from model.User import User
 from model.Card import Card
 from model.Comment import Comment
-from model.Images import Images
 from model.Good import Good
+from model.Images import Images
 from model.Tags import Tags
+from model.User import User
 from model.db import db
+from utils.system import get_config
 from utils.upload import allowed_file, save_upload
 
 api = Blueprint('api', __name__, url_prefix='/api/v1')
@@ -18,6 +17,9 @@ api = Blueprint('api', __name__, url_prefix='/api/v1')
 
 @api.route('/auth/register', methods=['POST'])
 def register():
+    if get_config('siteAllowRegister') == 'false':
+        return jsonify(code=403, message='站点已关闭注册'), 403
+
     data = request.get_json(silent=True) or {}
     username = data.get('username', '').strip()
     email = data.get('email', '').strip()
@@ -35,8 +37,8 @@ def register():
     if db.session.execute(db.select(User).where(User.username == username)).scalar():
         return jsonify(code=409, message='用户名已被占用'), 409
 
-    import random
-    number = str(1000000000 + random.randint(0, 8999999999))
+    max_id_result = db.session.execute(db.select(db.func.max(User.id))).scalar()
+    number = str(1000000000 + (max_id_result or 0))
 
     user = User(number=number, username=username, email=email, status=0, roles_id=[2])
     user.set_password(password)
@@ -247,6 +249,9 @@ def get_card_detail(card_id):
 @api.route('/cards', methods=['POST'])
 @login_required
 def create_card():
+    if get_config('siteAllowPublish') == 'false':
+        return jsonify(code=403, message='站点已关闭发布'), 403
+
     content = request.form.get('content', '').strip()
     is_anonymous = request.form.get('is_anonymous') == '1'
     tag_ids = request.form.getlist('tags', type=int)
@@ -259,12 +264,15 @@ def create_card():
     if cover_file and cover_file.filename and allowed_file(cover_file.filename):
         cover_url = save_upload(cover_file, sub_dir='cards')
 
+    need_review = get_config('siteCardNeedReview') != 'false'
+    initial_status = 0 if need_review else 1
+
     new_card = Card(
         user_id=current_user.id,
         content=content,
         cover=cover_url,
         tags=tag_ids if tag_ids else None,
-        status=0,
+        status=initial_status,
         is_top=0,
         data={'anonymous': is_anonymous}
     )
@@ -279,7 +287,8 @@ def create_card():
             db.session.add(img)
 
     db.session.commit()
-    return jsonify(code=200, message='发布成功，等待审核', data={'id': new_card.id})
+    message = '发布成功，等待审核' if need_review else '发布成功'
+    return jsonify(code=200, message=message, data={'id': new_card.id})
 
 
 @api.route('/cards/<int:card_id>/like', methods=['POST'])

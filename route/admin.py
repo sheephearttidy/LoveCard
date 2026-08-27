@@ -4,17 +4,18 @@ from flask import Blueprint, request, render_template, redirect, url_for, flash,
 from flask_login import login_required, current_user
 from sqlalchemy import desc, func, or_
 
-from model.User import User
+from model.BanRecord import BanRecord
 from model.Card import Card
 from model.Comment import Comment
+from model.DeletedUser import DeletedUser
 from model.Good import Good
 from model.Images import Images
 from model.Tags import Tags
 from model.TagsMap import TagsMap
-from model.System import System
-from model.DeletedUser import DeletedUser
-from model.BanRecord import BanRecord
+from model.User import User
 from model.db import db
+from utils.system import ensure_default_configs, set_config, get_site_config, SITE_CONFIG_LABELS, SITE_CONFIG_GROUPS, \
+    SITE_CONFIG_HINTS
 
 admin = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -253,6 +254,10 @@ def cards_ban_user(user_id):
         flash('用户不存在', 'error')
         return redirect(url_for('admin.cards_list'))
 
+    if user.id == current_user.id:
+        flash('不能封禁自己的卡片', 'error')
+        return redirect(url_for('admin.cards_list'))
+
     count = db.session.execute(
         db.update(Card).where(
             Card.user_id == user_id,
@@ -299,13 +304,22 @@ def users_list():
 @admin_required
 def user_toggle_status(user_id):
     user = db.session.get(User, user_id)
-    if user and user.id != current_user.id:
-        user.status = 1 if user.status == 0 else 0
-        user.updated_at = datetime.now()
-        db.session.commit()
-        flash('用户状态已更新', 'success')
-    else:
+    if not user:
+        flash('用户不存在', 'error')
+        return redirect(request.referrer or url_for('admin.users_list'))
+
+    if user.id == current_user.id:
         flash('不能修改自己的状态', 'error')
+        return redirect(request.referrer or url_for('admin.users_list'))
+
+    if user.is_super_admin and not current_user.is_super_admin:
+        flash('无权修改超级管理员状态', 'error')
+        return redirect(request.referrer or url_for('admin.users_list'))
+
+    user.status = 1 if user.status == 0 else 0
+    user.updated_at = datetime.now()
+    db.session.commit()
+    flash('用户状态已更新', 'success')
     return redirect(request.referrer or url_for('admin.users_list'))
 
 
@@ -313,8 +327,16 @@ def user_toggle_status(user_id):
 @admin_required
 def user_ban(user_id):
     user = db.session.get(User, user_id)
-    if not user or user.id == current_user.id:
+    if not user:
+        flash('用户不存在', 'error')
+        return redirect(request.referrer or url_for('admin.users_list'))
+
+    if user.id == current_user.id:
         flash('不能封禁自己', 'error')
+        return redirect(request.referrer or url_for('admin.users_list'))
+
+    if user.is_super_admin and not current_user.is_super_admin:
+        flash('无权封禁超级管理员', 'error')
         return redirect(request.referrer or url_for('admin.users_list'))
 
     reason = request.form.get('ban_reason', '').strip()
@@ -371,12 +393,21 @@ def user_unban(user_id):
 @admin_required
 def user_delete(user_id):
     user = db.session.get(User, user_id)
-    if user and user.id != current_user.id:
-        user.deleted_at = datetime.now()
-        db.session.commit()
-        flash('用户已删除', 'success')
-    else:
+    if not user:
+        flash('用户不存在', 'error')
+        return redirect(request.referrer or url_for('admin.users_list'))
+
+    if user.id == current_user.id:
         flash('不能删除自己', 'error')
+        return redirect(request.referrer or url_for('admin.users_list'))
+
+    if user.is_super_admin and not current_user.is_super_admin:
+        flash('无权删除超级管理员', 'error')
+        return redirect(request.referrer or url_for('admin.users_list'))
+
+    user.deleted_at = datetime.now()
+    db.session.commit()
+    flash('用户已删除', 'success')
     return redirect(request.referrer or url_for('admin.users_list'))
 
 
@@ -464,23 +495,22 @@ def tag_toggle_status(tag_id):
 @admin.route('/settings', methods=['GET', 'POST'])
 @super_admin_required
 def settings():
+    ensure_default_configs()
+
     if request.method == 'POST':
         for key in request.form:
             value = request.form.get(key)
-            item = db.session.execute(
-                db.select(System).where(System.name == key)
-            ).scalar()
-            if item:
-                item.value = value
-            else:
-                db.session.add(System(name=key, value=value))
+            set_config(key, value)
         db.session.commit()
         flash('配置已保存', 'success')
         return redirect(url_for('admin.settings'))
 
-    configs = db.session.execute(db.select(System).order_by(System.id)).scalars().all()
-    config_dict = {c.name: c.value for c in configs}
-    return render_template("admin/settings.html", configs=configs, config_dict=config_dict)
+    config_dict = get_site_config()
+    return render_template("admin/settings.html",
+                           config_dict=config_dict,
+                           config_labels=SITE_CONFIG_LABELS,
+                           config_groups=SITE_CONFIG_GROUPS,
+                           config_hints=SITE_CONFIG_HINTS)
 
 
 @admin.route('/users/<int:user_id>/set_role', methods=['POST'])

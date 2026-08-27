@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 
-{% block title %}关于 - LoveCards{% endblock %}
+{% block title %}关于 - {{ site_config.siteName }}{% endblock %}
 
 {% block content %}
 <div class="max-w-3xl mx-auto px-4 py-8 sm:py-12">
     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-5 sm:p-8">
         <div class="text-center mb-6 sm:mb-8">
             <i class="fas fa-heart text-primary-500 text-3xl sm:text-5xl mb-3 sm:mb-4"></i>
-            <h1 class="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white">LoveCards</h1>
-            <p class="text-gray-400 dark:text-gray-500 text-sm sm:text-base mt-2">表白墙 · 用心传递每一份情感</p>
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white">{{ site_config.siteName }}</h1>
+            <p class="text-gray-400 dark:text-gray-500 text-sm sm:text-base mt-2">{{ site_config.siteSubTitle }} · {{ site_config.siteFooter }}</p>
         </div>
 
         <div class="space-y-4 sm:space-y-6 text-gray-600 dark:text-gray-300 leading-relaxed text-sm sm:text-base">
@@ -16,7 +16,7 @@
                 <h2 class="text-base sm:text-lg font-semibold text-gray-800 dark:text-white mb-2">
                     <i class="fas fa-star text-yellow-400 mr-2"></i>关于项目
                 </h2>
-                <p>LoveCards 是一个开源的表白墙平台，让每个人都能勇敢地表达自己的情感。无论是对心仪之人的表白、对朋友的感谢、还是对生活的感悟，这里都是你倾诉的地方。</p>
+                <p>{{ site_config.siteName }} 是一个开源的表白墙平台，让每个人都能勇敢地表达自己的情感。无论是对心仪之人的表白、对朋友的感谢、还是对生活的感悟，这里都是你倾诉的地方。</p>
             </div>
 
             <div>

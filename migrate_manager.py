@@ -1,7 +1,8 @@
 from flask_migrate import Migrate
-from app import app
-from model import db, User, Card, Comment, Good, Images, System, Tags, TagsMap
 from werkzeug.security import generate_password_hash
+
+from app import app
+from model import db, User
 
 migrate = Migrate(app, db)
 

@@ -1,8 +1,9 @@
-SECRET_KEY = 'dev-secret-key'
+import os
+
+SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-secret-key-do-not-use-in-production')
 SQLALCHEMY_TRACK_MODIFICATIONS = False
-'''仅开发使用'''
-ADMIN = 'admin'
-ADMIN_PASSWORD = 'admin'
+
+
 
 '''ORM'''
 DB_DRIVER = 'mysqldb'

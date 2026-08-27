@@ -4,9 +4,9 @@
 定义 SQLAlchemy 的 DeclarativeBase 基类和命名约定，
 所有 ORM 模型均继承自 DataBase，通过 db 实例操作数据库。
 """
-from sqlalchemy.orm import DeclarativeBase
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData
+from sqlalchemy.orm import DeclarativeBase
 
 
 class DataBase(DeclarativeBase):

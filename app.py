@@ -1,14 +1,14 @@
 import os
+
 from flask import Flask, render_template, send_from_directory
 from flask_login import LoginManager
 
 import config
 from model import db
 from model.User import User
-from model.DeletedUser import DeletedUser
-from model.BanRecord import BanRecord
 from route import public, auth, admin
 from route.api import api
+from utils.system import get_site_config
 
 app = Flask(__name__)
 app.config.from_object(config)
@@ -35,6 +35,15 @@ def load_user(user_id):
     if user and (user.deleted_at is not None or user.status != 0):
         return None
     return user
+
+
+@app.context_processor
+def inject_site_config():
+    try:
+        return {'site_config': get_site_config()}
+    except Exception:
+        from utils.system import SITE_CONFIG_DEFAULTS
+        return {'site_config': dict(SITE_CONFIG_DEFAULTS)}
 
 
 # 注册蓝图

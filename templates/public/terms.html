@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}服务条款 - LoveCards{% endblock %}
+{% block title %}服务条款 - {{ site_config.siteName }}{% endblock %}
 
 {% block content %}
 <div class="max-w-3xl mx-auto px-4 py-8 sm:py-12">
@@ -12,7 +12,7 @@
             <p><strong class="text-gray-800 dark:text-gray-100">最后更新日期：</strong>2026年8月27日</p>
 
             <h2 class="text-base sm:text-lg font-semibold text-gray-800 dark:text-white mt-4 sm:mt-6">1. 服务说明</h2>
-            <p>LoveCards（以下简称"本平台"）是一个表白墙社区平台，为用户提供信息发布、评论互动等服务。使用本平台即表示您同意遵守以下条款。</p>
+            <p>{{ site_config.siteName }}（以下简称"本平台"）是一个表白墙社区平台，为用户提供信息发布、评论互动等服务。使用本平台即表示您同意遵守以下条款。</p>
 
             <h2 class="text-base sm:text-lg font-semibold text-gray-800 dark:text-white mt-4 sm:mt-6">2. 用户行为规范</h2>
             <ul class="list-disc list-inside space-y-1">

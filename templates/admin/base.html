@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-    <title>{% block title %}管理后台{% endblock %} - LoveCards Admin</title>
+    <title>{% block title %}管理后台{% endblock %} - {{ site_config.siteName }} Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -38,7 +38,7 @@
         <div class="p-5 sm:p-6 border-b border-gray-700">
             <a href="/admin/" class="flex items-center space-x-2">
                 <i class="fas fa-shield-halved text-primary-400 text-xl"></i>
-                <span class="text-lg font-bold text-white">LoveCards</span>
+                <span class="text-lg font-bold text-white">{{ site_config.siteName }}</span>
                 <span class="text-xs bg-primary-500 text-white px-2 py-0.5 rounded">Admin</span>
             </a>
         </div>
@@ -64,7 +64,7 @@
             </a>
             {% if current_user.is_super_admin %}
             <a href="/admin/settings" class="{% if '/settings' in request.path %}active{% endif %}">
-                <i class="fas fa-gear w-5 mr-3"></i>系统配置
+                <i class="fas fa-gear w-5 mr-3"></i>站点配置
             </a>
             <a href="/admin/deleted_users" class="{% if '/deleted_users' in request.path %}active{% endif %}">
                 <i class="fas fa-user-slash w-5 mr-3"></i>已注销用户
@@ -125,6 +125,7 @@
 <div id="adminSidebarOverlay" class="admin-sidebar-overlay"></div>
 
 <script src="{{ url_for('static', filename='js/admin-main.js') }}"></script>
+{% block extra_js %}{% endblock %}
 <script>
 (function(){
     var toggle=document.getElementById('adminDarkToggle');

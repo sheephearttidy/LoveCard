@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}注册 - LoveCards{% endblock %}
+{% block title %}注册 - {{ site_config.siteName }}{% endblock %}
 
 {% block content %}
 <div class="min-h-[80vh] flex items-center justify-center px-4 py-8 sm:py-12">
@@ -11,6 +11,19 @@
                 <h1 class="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white">创建账号</h1>
                 <p class="text-gray-400 dark:text-gray-500 text-xs sm:text-sm mt-1">填写以下信息完成注册</p>
             </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            {% if message %}
+            <div class="mb-4 p-3 rounded-lg flex items-center text-sm
+                 {% if category == 'success' %}bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800{% else %}bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-300 border border-red-200 dark:border-red-800{% endif %}">
+                <i class="fas {% if category == 'success' %}fa-circle-check{% else %}fa-circle-exclamation{% endif %} mr-2"></i>{{ message }}
+            </div>
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
 
             <div id="errorBox" class="hidden mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-300 text-sm" role="alert"></div>
 

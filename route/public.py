@@ -1,17 +1,19 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, get_flashed_messages
-from flask_login import login_required, current_user, logout_user
-from sqlalchemy import desc, asc, or_
 from datetime import datetime, timedelta
 
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask_login import login_required, current_user, logout_user
+from sqlalchemy import desc, or_
+
+from model.BanRecord import BanRecord
 from model.Card import Card
 from model.Comment import Comment
+from model.DeletedUser import DeletedUser
+from model.Good import Good
 from model.Images import Images
 from model.Tags import Tags
 from model.User import User
-from model.Good import Good
-from model.DeletedUser import DeletedUser
-from model.BanRecord import BanRecord
 from model.db import db
+from utils.system import get_config
 from utils.upload import allowed_file, save_upload
 
 public = Blueprint('public', __name__)
@@ -132,6 +134,10 @@ def add_comment():
 @public.route('/publish', methods=['GET', 'POST'])
 @login_required
 def publish():
+    if get_config('siteAllowPublish') == 'false':
+        flash('站点已关闭发布', 'error')
+        return redirect(url_for('public.index'))
+
     if request.method == 'POST':
         content = request.form.get('content', '').strip()
         is_anonymous = request.form.get('is_anonymous') == '1'
@@ -151,12 +157,15 @@ def publish():
         if not cover_url and cover_input:
             cover_url = cover_input
 
+        need_review = get_config('siteCardNeedReview') != 'false'
+        initial_status = 0 if need_review else 1
+
         new_card = Card(
             user_id=current_user.id,
             content=content,
             cover=cover_url,
             tags=tag_ids if tag_ids else None,
-            status=0,
+            status=initial_status,
             is_top=0,
             data={'anonymous': is_anonymous}
         )
@@ -171,7 +180,10 @@ def publish():
                 db.session.add(img)
 
         db.session.commit()
-        flash('发布成功，等待审核通过后将在首页展示', 'success')
+        if need_review:
+            flash('发布成功，等待审核通过后将在首页展示', 'success')
+        else:
+            flash('发布成功', 'success')
         return redirect(url_for('public.index'))
 
     tags = db.session.execute(
@@ -227,6 +239,7 @@ def profile_edit():
         username = request.form.get('username', '').strip()
         email = request.form.get('email', '').strip()
         phone = request.form.get('phone', '').strip()
+        has_error = False
 
         if username and username != current_user.username:
             existing = db.session.execute(
@@ -234,6 +247,7 @@ def profile_edit():
             ).scalar()
             if existing:
                 flash('用户名已被占用', 'error')
+                has_error = True
             else:
                 current_user.username = username
 
@@ -243,6 +257,7 @@ def profile_edit():
             ).scalar()
             if existing:
                 flash('邮箱已被注册', 'error')
+                has_error = True
             else:
                 current_user.email = email
 
@@ -254,7 +269,7 @@ def profile_edit():
             current_user.avatar = avatar_url
 
         db.session.commit()
-        if not any(m[1] == 'error' for m in get_flashed_messages(with_categories=True)):
+        if not has_error:
             flash('个人信息已更新', 'success')
         return redirect(url_for('public.profile_edit'))
 

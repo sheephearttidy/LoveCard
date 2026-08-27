@@ -18,6 +18,6 @@ class System(db.Model):
     # 主键，自增
     id = mapped_column(db.Integer, primary_key=True, autoincrement=True)
     # 配置项名称，如 siteUrl、siteName、smtpSecure 等
-    name = mapped_column(db.String(255), nullable=True, default='')
+    name = mapped_column(db.String(255), nullable=False, unique=True, default='')
     # 配置项值，支持较长的配置内容（如页脚 HTML）
     value = mapped_column(db.String(2555), nullable=False, default='')

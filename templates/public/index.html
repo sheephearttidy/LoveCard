@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}LoveCards - 表白墙{% endblock %}
+{% block title %}{{ site_config.siteName }} - {{ site_config.siteSubTitle }}{% endblock %}
 
 {% block content %}
 <div class="hero-section text-white py-8 sm:py-12 relative overflow-hidden">
@@ -10,18 +10,20 @@
     </div>
     <div class="max-w-4xl mx-auto px-4 text-center relative z-10">
         <h1 class="text-2xl sm:text-3xl font-bold mb-2 tracking-tight">
-            <i class="fas fa-heart mr-2 text-pink-300"></i>LoveCards
+            <i class="fas fa-heart mr-2 text-pink-300"></i>{{ site_config.siteName }}
         </h1>
-        <p class="text-sm sm:text-base opacity-80 mb-4 sm:mb-6 max-w-md mx-auto">用心传递每一份情感，让爱不再沉默</p>
-        {% if current_user.is_authenticated %}
+        <p class="text-sm sm:text-base opacity-80 mb-4 sm:mb-6 max-w-md mx-auto">{{ site_config.siteDesc }}</p>
+        {% if current_user.is_authenticated and site_config.siteAllowPublish != 'false' %}
         <a href="/publish" class="inline-flex items-center bg-white dark:bg-gray-800 text-primary-500 px-5 sm:px-6 py-2 sm:py-2.5 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 text-sm">
             <i class="fas fa-pen-to-square mr-2"></i>发布表白
         </a>
-        {% else %}
+        {% elif not current_user.is_authenticated %}
         <div class="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3">
+            {% if site_config.siteAllowRegister != 'false' %}
             <a href="/register" class="inline-flex items-center bg-white dark:bg-gray-800 text-primary-500 px-5 sm:px-6 py-2 sm:py-2.5 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 text-sm">
                 <i class="fas fa-user-plus mr-2"></i>加入我们
             </a>
+            {% endif %}
             <a href="/login" class="inline-flex items-center bg-white/15 backdrop-blur-sm text-white px-5 sm:px-6 py-2 sm:py-2.5 rounded-xl font-semibold hover:bg-white/25 transition-all duration-300 text-sm border border-white/20">
                 <i class="fas fa-right-to-bracket mr-2"></i>已有帐号
             </a>
