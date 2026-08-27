@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}登录 - {{ site_config.siteName }}{% endblock %}
+{% block content %}
+<div style="flex:1;display:flex;align-items:center;justify-content:center;padding:40px 20px">
+    <div style="width:100%;max-width:420px">
+        <div class="page-card">
+            <div style="text-align:center;margin-bottom:28px">
+                <div style="width:48px;height:48px;background:linear-gradient(135deg,var(--pink),var(--violet));border-radius:16px;display:inline-flex;align-items:center;justify-content:center;color:white;font-size:1.2rem;margin-bottom:12px;box-shadow:0 6px 20px var(--pink-glow)"><i class="fas fa-heart"></i></div>
+                <h1 style="font-size:1.4rem;font-weight:800;margin-bottom:4px">欢迎登录</h1>
+                <p style="color:var(--text-muted);font-size:0.85rem">请输入您的账号信息</p>
+            </div>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            {% if message %}
+            <div class="flash-msg {% if category == 'success' %}success{% else %}error{% endif %}">
+                <i class="fas {% if category == 'success' %}fa-circle-check{% else %}fa-circle-exclamation{% endif %}"></i>{{ message }}
+            </div>
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+            <div id="errorBox" style="display:none;margin-bottom:16px" class="flash-msg error"></div>
+            <form id="loginForm" method="post" action="/login" novalidate>
+                <div class="field">
+                    <label class="field-label">用户名 / 邮箱</label>
+                    <input type="text" name="username" placeholder="请输入用户名或邮箱" autocomplete="username" required class="field-input">
+                </div>
+                <div class="field">
+                    <label class="field-label">密码</label>
+                    <input type="password" name="password" placeholder="请输入密码" autocomplete="current-password" required class="field-input">
+                </div>
+                <div class="field" style="display:flex;align-items:center">
+                    <label style="display:inline-flex;align-items:center;cursor:pointer;font-size:0.85rem;color:var(--text-secondary)">
+                        <input type="checkbox" name="remember" value="1" style="margin-right:6px;accent-color:var(--violet)"> 记住我
+                    </label>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%;padding:12px">登 录</button>
+            </form>
+            <p style="text-align:center;font-size:0.8rem;color:var(--text-muted);margin-top:20px">
+                {% if site_config.siteAllowRegister != 'false' %}
+                还没有账号？<a href="/register" style="color:var(--violet);font-weight:600">立即注册</a>
+                {% else %}
+                站点暂未开放注册
+                {% endif %}
+                <span style="margin:0 8px">|</span>
+                <a href="/forgot_password" style="color:var(--violet);font-weight:600">忘记密码</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/login.js') }}"></script>
+{% endblock %}

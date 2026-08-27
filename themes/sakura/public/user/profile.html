@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}个人主页 - {{ site_config.siteName }}{% endblock %}
+{% block content %}
+<div class="page-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    {% if message %}
+    <div class="flash-msg {% if category == 'success' %}success{% else %}error{% endif %}">
+        <i class="fas {% if category == 'success' %}fa-circle-check{% else %}fa-circle-exclamation{% endif %}"></i>{{ message }}
+    </div>
+    {% endif %}
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+    <div class="page-card">
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:22px">
+            <div class="avatar" style="width:56px;height:56px;font-size:1.2rem;background:linear-gradient(135deg,var(--pink),var(--violet))">
+                {% if current_user.avatar %}
+                <img src="{{ current_user.avatar }}" alt="头像">
+                {% else %}
+                <i class="fas fa-user" style="font-size:1.1rem"></i>
+                {% endif %}
+            </div>
+            <div style="flex:1;min-width:0">
+                <h1 style="font-size:1.2rem;font-weight:800;{% if current_user.is_super_admin %}color:var(--red){% elif current_user.is_admin %}color:var(--blue){% endif %};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ current_user.display_name }}</h1>
+                <p style="font-size:0.8rem;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ current_user.email }}</p>
+            </div>
+            <div style="display:flex;gap:6px;flex-shrink:0">
+                <a href="/profile/edit" class="btn btn-outline" style="padding:6px 14px;font-size:0.75rem"><i class="fas fa-pen"></i> 编辑</a>
+                <a href="/profile/security" class="btn btn-soft" style="padding:6px 14px;font-size:0.75rem"><i class="fas fa-shield-halved"></i> 安全</a>
+            </div>
+        </div>
+        <div class="profile-grid">
+            <a href="/profile/cards" class="profile-cell" style="text-decoration:none">
+                <div class="val">{{ my_cards_count }}</div>
+                <div class="lbl">发布</div>
+            </a>
+            <div class="profile-cell">
+                <div class="val">{{ my_good_count }}</div>
+                <div class="lbl">获赞</div>
+            </div>
+            <a href="/profile/comments" class="profile-cell" style="text-decoration:none">
+                <div class="val">{{ my_comment_count }}</div>
+                <div class="lbl">评论</div>
+            </a>
+        </div>
+        <a href="/publish" class="btn btn-primary" style="width:100%;padding:12px"><i class="fas fa-pen-to-square"></i> 发布表白</a>
+    </div>
+</div>
+{% endblock %}

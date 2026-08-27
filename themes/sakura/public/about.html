@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}关于 - {{ site_config.siteName }}{% endblock %}
+{% block content %}
+<div class="page-container">
+    <div class="page-card">
+        <div style="text-align:center;margin-bottom:32px">
+            <div style="width:56px;height:56px;background:linear-gradient(135deg,var(--pink),var(--violet));border-radius:18px;display:inline-flex;align-items:center;justify-content:center;color:white;font-size:1.5rem;margin-bottom:12px;box-shadow:0 8px 25px var(--pink-glow)"><i class="fas fa-heart"></i></div>
+            <h1 style="font-size:1.6rem;font-weight:800;margin-bottom:6px">{{ site_config.siteName }}</h1>
+            <p style="color:var(--text-muted);font-size:0.9rem">{{ site_config.siteSubTitle }}</p>
+        </div>
+        <div style="color:var(--text-secondary);line-height:1.8;font-size:0.9rem">
+            <div style="margin-bottom:24px">
+                <h2 style="font-size:1rem;font-weight:700;color:var(--text);margin-bottom:8px"><i class="fas fa-star" style="color:var(--orange);margin-right:6px"></i>这个项目是什么</h2>
+                <p style="margin-bottom:8px">{{ site_config.siteName }} 是一个学生个人搭建的表白墙/留言墙网站，不是任何学校、组织或机构的官方平台。</p>
+                <p style="margin-bottom:8px">起因很简单——身边不少同学有话想说但找不到合适的地方说。有人想对喜欢的人表白但不好意思当面讲，有人想感谢一个帮过自己的陌生人，有人只是想留一段话给未来的自己。这些细碎的、不太好意思开口的情感，其实挺值得被认真对待的。</p>
+                <p>所以我就写了这个网站。它本质上就是一个公开的留言板，你可以发一段文字（也可以配图），可以选择署名或匿名，其他人看到后可以点赞和评论。就这么简单。</p>
+            </div>
+            <div style="margin-bottom:24px">
+                <h2 style="font-size:1rem;font-weight:700;color:var(--text);margin-bottom:8px"><i class="fas fa-eye" style="color:var(--blue);margin-right:6px"></i>关于匿名</h2>
+                <p style="margin-bottom:8px">发布的时候可以选择匿名。匿名之后，其他用户看不到你的用户名，但管理员仍然能看到（这是为了处理违规内容，没办法完全绕开）。所以匿名更多是"对其他用户隐藏身份"，而不是"完全不可追踪"。</p>
+                <p>如果你需要真正的匿名，建议不要使用真实可识别的信息作为用户名或邮箱。</p>
+            </div>
+            <div style="margin-bottom:24px">
+                <h2 style="font-size:1rem;font-weight:700;color:var(--text);margin-bottom:8px"><i class="fas fa-gavel" style="color:var(--red);margin-right:6px"></i>免责声明</h2>
+                <div style="background:var(--red-soft);border:1px solid rgba(239,68,68,0.2);border-radius:var(--radius-md);padding:14px;font-size:0.85rem">
+                    <p style="margin-bottom:6px"><strong style="color:var(--red)">本站非官方平台。</strong>{{ site_config.siteName }} 由学生个人利用课余时间开发和维护，与任何学校、教育机构、政府组织均无隶属关系，不代表任何官方立场。</p>
+                    <p style="margin-bottom:6px"><strong style="color:var(--red)">内容责任归属。</strong>用户发布的内容仅代表其个人观点，本站不对内容的真实性、准确性和合法性作任何担保。因用户发布内容引发的任何纠纷，由发布者本人承担法律责任，本站不承担连带责任。</p>
+                    <p style="margin-bottom:6px"><strong style="color:var(--red)">服务按"现状"提供。</strong>本站以个人精力维护，不承诺服务的持续性、稳定性和及时性。可能因服务器故障、学业繁忙、经费不足等原因暂停或终止服务，届时会尽量提前通知，但不作保证。</p>
+                    <p><strong style="color:var(--red)">数据安全有限保障。</strong>虽然已采取合理的技术手段保护数据安全（密码加密存储、数据库访问控制等），但个人运维的资源有限，无法提供企业级的安全保障。建议不要在本站存储重要的、敏感的个人信息。</p>
+                </div>
+            </div>
+            <div style="margin-bottom:24px">
+                <h2 style="font-size:1rem;font-weight:700;color:var(--text);margin-bottom:8px"><i class="fas fa-shield-halved" style="color:var(--green);margin-right:6px"></i>内容审核</h2>
+                <p style="margin-bottom:8px">新发布的内容默认需要管理员审核后才会公开显示。这是为了过滤掉明显违规的东西（广告、人身攻击、涉黄涉政等）。审核速度取决于管理员什么时候有空看，可能几分钟，也可能要等半天，请理解。</p>
+                <p>如果你觉得自己的内容被误删或误拒，可以通过站内联系方式找管理员沟通。</p>
+            </div>
+            <div style="margin-bottom:24px">
+                <h2 style="font-size:1rem;font-weight:700;color:var(--text);margin-bottom:8px"><i class="fas fa-code" style="color:var(--blue);margin-right:6px"></i>技术实现</h2>
+                <p>后端用 Python Flask 写的，数据库 MySQL，前端 Tailwind CSS，服务器跑 Gunicorn，Nginx 做反向代理。整个项目是一个人写的，代码质量嘛……能跑就行（开玩笑的，我有认真写）。</p>
+            </div>
+            <div>
+                <h2 style="font-size:1rem;font-weight:700;color:var(--text);margin-bottom:8px"><i class="fas fa-envelope" style="color:var(--violet);margin-right:6px"></i>联系我</h2>
+                <p>遇到 bug、有建议、或者只是想聊聊天，都可以通过站点上留的联系方式找我。反馈很欢迎，回复速度看缘分。</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

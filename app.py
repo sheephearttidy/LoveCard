@@ -17,6 +17,7 @@ from route import public, auth, admin
 from route.api import api
 from utils.captcha import generate_captcha_text, generate_captcha_svg
 from utils.system import get_site_config
+from utils.theme import setup_theme_loader, render_themed
 
 app = Flask(__name__)
 app.config.from_object(config)
@@ -27,6 +28,8 @@ app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'}
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 86400
 
 Compress(app)
+
+setup_theme_loader(app)
 
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
@@ -95,17 +98,17 @@ def verify_csrf():
 
 @app.errorhandler(404)
 def page_not_found(e):
-    return render_template("public/404.html"), 404
+    return render_themed("public/404.html"), 404
 
 
 @app.errorhandler(403)
 def forbidden(e):
-    return render_template("public/403.html"), 403
+    return render_themed("public/403.html"), 403
 
 
 @app.errorhandler(500)
 def internal_error(e):
-    return render_template("public/500.html"), 500
+    return render_themed("public/500.html"), 500
 
 
 @app.route('/uploads/<path:filename>')

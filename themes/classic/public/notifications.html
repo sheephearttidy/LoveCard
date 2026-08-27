@@ -1,0 +1,104 @@
+﻿﻿{% extends "base.html" %}
+
+{% block title %}通知 - {{ site_config.siteName }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-6 sm:py-8">
+    <div class="flex items-center justify-between mb-6">
+        <h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+            <i class="fas fa-bell text-primary-500 mr-2"></i>我的通知
+        </h1>
+        {% if notifications %}
+        <button onclick="markAllRead()" class="text-sm text-primary-500 hover:text-primary-700 transition">
+            <i class="fas fa-check-double mr-1"></i>全部已读
+        </button>
+        {% endif %}
+    </div>
+
+    {% if not notifications %}
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-12 text-center">
+        <i class="fas fa-bell-slash text-4xl text-gray-300 dark:text-gray-600 mb-3"></i>
+        <p class="text-gray-400 dark:text-gray-500">暂无通知</p>
+    </div>
+    {% else %}
+    <div class="space-y-3" id="notificationList">
+        {% for n in notifications %}
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 hover:shadow-md transition {{ '' if n.is_read else 'border-l-4 border-l-primary-500' }}" data-id="{{ n.id }}">
+            <div class="flex items-start justify-between">
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 mb-1">
+                        {% if n.type == 'card_approved' or n.type == 'comment_approved' %}
+                        <i class="fas fa-circle-check text-green-500 text-sm"></i>
+                        {% elif n.type == 'card_rejected' or n.type == 'comment_rejected' %}
+                        <i class="fas fa-circle-xmark text-red-500 text-sm"></i>
+                        {% elif n.type == 'card_banned' or n.type == 'comment_banned' %}
+                        <i class="fas fa-ban text-orange-500 text-sm"></i>
+                        {% elif n.type == 'new_comment' %}
+                        <i class="fas fa-comment text-blue-500 text-sm"></i>
+                        {% elif n.type == 'card_pending' %}
+                        <i class="fas fa-note-sticky text-amber-500 text-sm"></i>
+                        {% elif n.type == 'comment_pending' %}
+                        <i class="fas fa-comment-dots text-violet-500 text-sm"></i>
+                        {% elif n.type == 'user_pending' %}
+                        <i class="fas fa-user-clock text-cyan-500 text-sm"></i>
+                        {% else %}
+                        <i class="fas fa-bell text-primary-500 text-sm"></i>
+                        {% endif %}
+                        <span class="font-medium text-gray-900 dark:text-white text-sm">{{ n.title }}</span>
+                        {% if not n.is_read %}
+                        <span class="inline-block w-2 h-2 bg-primary-500 rounded-full"></span>
+                        {% endif %}
+                    </div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">{{ n.content }}</p>
+                    <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">{{ n.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                </div>
+                {% if not n.is_read %}
+                <button onclick="markRead({{ n.id }})" class="text-xs text-gray-400 hover:text-primary-500 transition ml-2 flex-shrink-0" title="标记已读">
+                    <i class="fas fa-check"></i>
+                </button>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if pagination.pages > 1 %}
+    <div class="flex justify-center mt-6 space-x-2">
+        {% if pagination.has_prev %}
+        <a href="?page={{ pagination.prev_num }}" class="px-3 py-1.5 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm text-gray-600 dark:text-gray-300 hover:border-primary-500 transition">上一页</a>
+        {% endif %}
+        <span class="px-3 py-1.5 text-sm text-gray-500 dark:text-gray-400">{{ pagination.page }} / {{ pagination.pages }}</span>
+        {% if pagination.has_next %}
+        <a href="?page={{ pagination.next_num }}" class="px-3 py-1.5 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm text-gray-600 dark:text-gray-300 hover:border-primary-500 transition">下一页</a>
+        {% endif %}
+    </div>
+    {% endif %}
+    {% endif %}
+</div>
+
+<script>
+function markRead(nid) {
+    fetch('/notifications/read/' + nid, {method: 'POST', headers: {'Content-Type': 'application/json'}})
+    .then(function(r){ return r.json() })
+    .then(function(data){
+        if(data.success){
+            var el = document.querySelector('[data-id="' + nid + '"]');
+            if(el){
+                el.classList.remove('border-l-4', 'border-l-primary-500');
+                var dot = el.querySelector('.bg-primary-500.rounded-full');
+                if(dot) dot.remove();
+                var btn = el.querySelector('button[onclick*="markRead"]');
+                if(btn) btn.remove();
+            }
+        }
+    });
+}
+function markAllRead() {
+    fetch('/notifications/read_all', {method: 'POST', headers: {'Content-Type': 'application/json'}})
+    .then(function(r){ return r.json() })
+    .then(function(data){
+        if(data.success) location.reload();
+    });
+}
+</script>
+{% endblock %}

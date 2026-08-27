@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}封禁公示 - {{ site_config.siteName }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-6 sm:py-8">
+    <h1 class="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white mb-6">
+        <i class="fas fa-gavel text-orange-400 mr-2"></i>封禁公示
+    </h1>
+
+    {% if records %}
+    <div class="space-y-3">
+        {% for r in records %}
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-4 sm:p-5">
+            <div class="flex items-start justify-between mb-2">
+                <div class="flex items-center">
+                    <div class="w-8 h-8 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mr-3">
+                        <i class="fas fa-ban text-red-500 text-sm"></i>
+                    </div>
+                    <div>
+                        <span class="font-semibold text-gray-800 dark:text-white">{{ r.username }}</span>
+                        <span class="text-xs text-gray-400 dark:text-gray-500 ml-2">{{ r.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                    </div>
+                </div>
+                <span class="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-2 py-0.5 rounded text-xs">封禁中</span>
+            </div>
+            <div class="ml-11">
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                    <span class="text-gray-500 dark:text-gray-500">原因：</span>{{ r.reason }}
+                </p>
+                {% if r.tags %}
+                <div class="flex flex-wrap gap-1.5">
+                    {% for tag in r.tags %}
+                    <span class="inline-block bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 px-2 py-0.5 rounded text-xs">{{ tag }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if pagination and pagination.pages > 1 %}
+    <div class="mt-6 flex justify-center items-center space-x-2">
+        {% if pagination.has_prev %}
+        <a href="/ban_records?page={{ pagination.prev_num }}" class="px-3 py-1.5 border border-gray-200 dark:border-gray-600 rounded-lg text-sm text-gray-600 dark:text-gray-300 hover:border-blue-300 transition">上一页</a>
+        {% endif %}
+        <span class="text-xs text-gray-400 dark:text-gray-500">{{ pagination.page }} / {{ pagination.pages }}</span>
+        {% if pagination.has_next %}
+        <a href="/ban_records?page={{ pagination.next_num }}" class="px-3 py-1.5 border border-gray-200 dark:border-gray-600 rounded-lg text-sm text-gray-600 dark:text-gray-300 hover:border-blue-300 transition">下一页</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="text-center py-16 text-gray-300 dark:text-gray-600">
+        <i class="fas fa-gavel text-4xl mb-3"></i>
+        <p>暂无封禁记录</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

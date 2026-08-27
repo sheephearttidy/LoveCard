@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block title %}{{ site_config.siteName }} - {{ site_config.siteSubTitle }}{% endblock %}
+{% block content %}
+<section class="hero">
+    <div class="wrap">
+        <div class="hero-badge"><i class="fas fa-sparkles"></i> {{ site_config.siteSubTitle }}</div>
+        <h1>{{ site_config.siteName }}<br><span class="gradient">{{ site_config.siteDesc }}</span></h1>
+        <p>在这里，每一份心意都值得被看见</p>
+        <div class="hero-btns">
+            {% if current_user.is_authenticated and site_config.siteAllowPublish != 'false' %}
+            <a href="/publish" class="btn btn-primary"><i class="fas fa-pen-to-square"></i> 发布表白</a>
+            {% elif not current_user.is_authenticated %}
+            {% if site_config.siteAllowRegister != 'false' %}
+            <a href="/register" class="btn btn-primary"><i class="fas fa-user-plus"></i> 加入我们</a>
+            {% endif %}
+            <a href="/login" class="btn btn-outline"><i class="fas fa-right-to-bracket"></i> 已有帐号</a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+<main class="wrap">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    {% if message %}
+    <div class="flash-msg {% if category == 'success' %}success{% else %}error{% endif %}">
+        <i class="fas {% if category == 'success' %}fa-circle-check{% else %}fa-circle-exclamation{% endif %}"></i>{{ message }}
+    </div>
+    {% endif %}
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+    {% if tags %}
+    <div class="filter-bar">
+        <a href="/" class="filter-pill {% if not current_tag %}active{% endif %}">全部</a>
+        {% for tag in tags %}
+        <a href="/?tag={{ tag.id }}" class="filter-pill {% if current_tag == tag.id %}active{% endif %}">{{ tag.name }}</a>
+        {% endfor %}
+        <div class="search-inline">
+            <i class="fas fa-search"></i>
+            <form method="get" action="/" style="display:inline">
+                {% if current_tag %}<input type="hidden" name="tag" value="{{ current_tag }}">{% endif %}
+                <input type="text" name="search" value="{{ search or '' }}" placeholder="搜索内容...">
+            </form>
+        </div>
+    </div>
+    {% endif %}
+    {% if cards %}
+    <div class="feed">
+        {% for card in cards %}
+        <a href="/card/{{ card.id }}" class="card" style="text-decoration:none">
+            {% if card.is_top %}
+            <div class="card-banner"><i class="fas fa-thumbtack"></i> 置顶</div>
+            {% endif %}
+            {% if card.cover and card.cover.strip() %}
+            <img src="{{ card.cover }}" style="width:100%;aspect-ratio:2/1;object-fit:cover;display:block" loading="lazy">
+            {% endif %}
+            <div class="card-inner">
+                <div class="card-head">
+                    {% if card.data and card.data.get('anonymous') %}
+                    <div class="avatar" style="background:var(--bg-pattern)"><i class="fas fa-user-secret" style="font-size:0.85rem;color:var(--text-muted)"></i></div>
+                    <div>
+                        <div class="card-author-name anon">匿名</div>
+                        <div class="card-author-time">{{ card.created_at.strftime('%m-%d %H:%M') }}</div>
+                    </div>
+                    {% else %}
+                    <div class="avatar" style="background:linear-gradient(135deg,var(--pink),var(--violet))">
+                        {% if card.author and card.author.status == 0 and card.author.deleted_at is none and card.author.avatar %}
+                        <img src="{{ card.author.avatar }}" alt="">
+                        {% elif card.author and card.author.status == 0 and card.author.deleted_at is none %}
+                        {{ card.author.display_name[:1] }}
+                        {% else %}
+                        <i class="fas fa-user" style="font-size:0.85rem"></i>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <div class="card-author-name">
+                            {% if card.author and card.author.status == 0 and card.author.deleted_at is none %}
+                                {% if card.author.roles_id and 0 in card.author.roles_id %}
+                                <span style="color:var(--red)">{{ card.author.display_name }}</span>
+                                {% elif card.author.roles_id and 1 in card.author.roles_id %}
+                                <span style="color:var(--blue)">{{ card.author.display_name }}</span>
+                                {% else %}
+                                {{ card.author.display_name }}
+                                {% endif %}
+                            {% elif card.author %}
+                            <span style="color:var(--text-muted)">已注销</span>
+                            {% else %}
+                            未知
+                            {% endif %}
+                        </div>
+                        <div class="card-author-time">{{ card.created_at.strftime('%m-%d %H:%M') }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+                <p class="card-text">{{ card.content[:200] }}{% if card.content|length > 200 %}...{% endif %}</p>
+                {% if card.tags %}
+                <div class="card-tags">
+                    {% for tag_id in card.tags %}
+                    {% for tag in tags %}
+                    {% if tag.id == tag_id %}<span class="card-tag">{{ tag.name }}</span>{% endif %}
+                    {% endfor %}
+                    {% endfor %}
+                </div>
+                {% endif %}
+                <div class="card-actions">
+                    <span class="card-action"><i class="fas fa-heart"></i> {{ card.good }}</span>
+                    <span class="card-action"><i class="fas fa-comment"></i> {{ card.comments }}</span>
+                    <span class="card-action-spacer"></span>
+                    <span class="card-action views"><i class="fas fa-eye"></i> {{ card.views or 0 }}</span>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% if pagination.pages > 1 %}
+    <div class="pager">
+        {% if pagination.has_prev %}
+        <a href="/?page={{ pagination.prev_num }}{% if current_tag %}&tag={{ current_tag }}{% endif %}{% if search %}&search={{ search }}{% endif %}" class="pager-btn"><i class="fas fa-chevron-left"></i></a>
+        {% endif %}
+        <span class="pager-info">第 {{ pagination.page }} / {{ pagination.pages }} 页</span>
+        {% if pagination.has_next %}
+        <a href="/?page={{ pagination.next_num }}{% if current_tag %}&tag={{ current_tag }}{% endif %}{% if search %}&search={{ search }}{% endif %}" class="pager-btn"><i class="fas fa-chevron-right"></i></a>
+        {% endif %}
+    </div>
+    {% endif %}
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-heart-crack"></i>
+        <h3>还没有表白内容</h3>
+        <p>成为第一个勇敢表达的人吧！</p>
+        {% if current_user.is_authenticated %}
+        <a href="/publish" class="btn btn-primary"><i class="fas fa-pen-to-square"></i> 发布表白</a>
+        {% else %}
+        <a href="/register" class="btn btn-primary"><i class="fas fa-user-plus"></i> 加入我们</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</main>
+{% endblock %}

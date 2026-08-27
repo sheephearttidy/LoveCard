@@ -19,6 +19,7 @@ from model.db import db
 from utils.system import get_config
 from utils.upload import allowed_file, save_upload
 from utils.notification import notify_new_comment, notify_admins, get_unread_count
+from utils.theme import render_themed
 
 public = Blueprint('public', __name__)
 
@@ -69,18 +70,18 @@ def index():
         db.select(Tags).where(Tags.status == 0, Tags.deleted_at.is_(None))
     ).scalars().all()
 
-    return render_template("public/index.html", cards=cards, tags=tags, pagination=pagination, current_tag=tag_id, search=search)
+    return render_themed("public/index.html", cards=cards, tags=tags, pagination=pagination, current_tag=tag_id, search=search)
 
 
 @public.route('/card/<int:card_id>')
 def card_detail(card_id):
     card = db.session.get(Card, card_id)
     if not card or card.deleted_at is not None:
-        return render_template("public/404.html"), 404
+        return render_themed("public/404.html"), 404
 
     if card.status != 1:
         if not current_user.is_authenticated or not current_user.is_admin:
-            return render_template("public/404.html"), 404
+            return render_themed("public/404.html"), 404
 
     card.views = (card.views or 0) + 1
     db.session.commit()
@@ -121,7 +122,7 @@ def card_detail(card_id):
             db.select(Good).where(Good.aid == 1, Good.pid == card_id, Good.uid == current_user.id)
         ).scalar() is not None
 
-    return render_template("public/card_detail.html", card=card, comments=comments, images=images, is_liked=is_liked)
+    return render_themed("public/card_detail.html", card=card, comments=comments, images=images, is_liked=is_liked)
 
 
 @public.route('/comment', methods=['POST'])
@@ -245,7 +246,7 @@ def publish():
         db.select(Tags).where(Tags.status == 0, Tags.deleted_at.is_(None))
     ).scalars().all()
 
-    return render_template("public/publish.html", tags=tags)
+    return render_themed("public/publish.html", tags=tags)
 
 
 @public.route('/profile', methods=['GET'])
@@ -279,7 +280,7 @@ def profile():
         ).order_by(Comment.created_at.desc()).limit(10)
     ).scalars().all()
 
-    return render_template("public/user/profile.html",
+    return render_themed("public/user/profile.html",
                            my_cards_count=my_cards_count,
                            my_good_count=my_good_count,
                            my_comment_count=my_comment_count,
@@ -324,13 +325,13 @@ def profile_edit():
             flash('个人信息已更新', 'success')
         return redirect(url_for('public.profile_edit'))
 
-    return render_template("public/user/profile_edit.html")
+    return render_themed("public/user/profile_edit.html")
 
 
 @public.route('/profile/security')
 @login_required
 def profile_security():
-    return render_template("public/user/profile_security.html")
+    return render_themed("public/user/profile_security.html")
 
 
 @public.route('/profile/security/password', methods=['POST'])
@@ -504,7 +505,7 @@ def profile_cards():
     pagination = db.paginate(query, page=page, per_page=per_page, error_out=False)
     cards = pagination.items
 
-    return render_template("public/user/profile_cards.html",
+    return render_themed("public/user/profile_cards.html",
                            my_cards_count=my_cards_count,
                            cards=cards,
                            pagination=pagination)
@@ -529,7 +530,7 @@ def profile_comments():
     pagination = db.paginate(query, page=page, per_page=per_page, error_out=False)
     comments = pagination.items
 
-    return render_template("public/user/profile_comments.html",
+    return render_themed("public/user/profile_comments.html",
                            my_comment_count=my_comment_count,
                            comments=comments,
                            pagination=pagination)
@@ -589,7 +590,7 @@ def ban_records():
     query = db.select(BanRecord).where(BanRecord.unbanned_at.is_(None)).order_by(desc(BanRecord.created_at))
     pagination = db.paginate(query, page=page, per_page=20, error_out=False)
     records = pagination.items
-    return render_template("public/ban_records.html", records=records, pagination=pagination)
+    return render_themed("public/ban_records.html", records=records, pagination=pagination)
 
 
 @public.route('/profile/cards/<int:card_id>/delete', methods=['POST'])
@@ -644,22 +645,22 @@ def profile_comment_delete(comment_id):
 
 @public.route('/about')
 def about():
-    return render_template("public/about.html")
+    return render_themed("public/about.html")
 
 
 @public.route("/terms")
 def terms():
-    return render_template("public/terms.html")
+    return render_themed("public/terms.html")
 
 
 @public.route("/privacy")
 def privacy():
-    return render_template("public/privacy.html")
+    return render_themed("public/privacy.html")
 
 
 @public.route("/api_docs")
 def api_docs():
-    return render_template("public/api_docs.html")
+    return render_themed("public/api_docs.html")
 
 
 @public.route('/notifications')
@@ -671,7 +672,7 @@ def notifications():
     ).order_by(desc(Notification.created_at))
     pagination = db.paginate(query, page=page, per_page=20, error_out=False)
     items = pagination.items
-    return render_template("public/notifications.html", notifications=items, pagination=pagination)
+    return render_themed("public/notifications.html", notifications=items, pagination=pagination)
 
 
 @public.route('/notifications/read/<int:nid>', methods=['POST'])

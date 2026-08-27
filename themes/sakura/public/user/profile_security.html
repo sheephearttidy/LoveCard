@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}安全设置 - {{ site_config.siteName }}{% endblock %}
+{% block content %}
+<div class="page-container" style="display:flex;flex-direction:column;gap:16px">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    {% if message %}
+    <div class="flash-msg {% if category == 'success' %}success{% else %}error{% endif %}">
+        <i class="fas {% if category == 'success' %}fa-circle-check{% else %}fa-circle-exclamation{% endif %}"></i>{{ message }}
+    </div>
+    {% endif %}
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+    <div style="display:flex;align-items:center">
+        <a href="/profile" style="color:var(--text-muted);margin-right:10px"><i class="fas fa-arrow-left"></i></a>
+        <h1 class="page-title" style="margin-bottom:0"><i class="fas fa-shield-halved"></i> 安全设置</h1>
+    </div>
+    <div class="page-card">
+        <div style="display:flex;align-items:center;margin-bottom:16px">
+            <div style="width:32px;height:32px;background:var(--blue-soft);border-radius:10px;display:flex;align-items:center;justify-content:center;margin-right:10px"><i class="fas fa-key" style="color:var(--blue);font-size:0.8rem"></i></div>
+            <div style="flex:1">
+                <h2 style="font-size:0.9rem;font-weight:600">修改密码</h2>
+                <p style="font-size:0.7rem;color:var(--text-muted)">定期更换密码有助于保护账号安全</p>
+            </div>
+        </div>
+        <form method="post" action="/profile/security/password">
+            <div class="field"><label class="field-label">当前密码</label><input type="password" name="old_password" required placeholder="请输入当前密码" class="field-input"></div>
+            <div class="field"><label class="field-label">新密码</label><input type="password" name="new_password" required minlength="6" placeholder="至少 6 位字符" class="field-input"></div>
+            <div class="field"><label class="field-label">确认新密码</label><input type="password" name="confirm_password" required minlength="6" placeholder="再次输入新密码" class="field-input"></div>
+            <button type="submit" class="btn btn-soft" style="width:100%;padding:10px;background:var(--blue);color:white"><i class="fas fa-check"></i> 更新密码</button>
+        </form>
+    </div>
+    <div class="page-card">
+        <div style="display:flex;align-items:center;margin-bottom:16px">
+            <div style="width:32px;height:32px;background:var(--green-soft);border-radius:10px;display:flex;align-items:center;justify-content:center;margin-right:10px"><i class="fas fa-envelope" style="color:var(--green);font-size:0.8rem"></i></div>
+            <div style="flex:1">
+                <h2 style="font-size:0.9rem;font-weight:600">修改邮箱</h2>
+                <p style="font-size:0.7rem;color:var(--text-muted)">邮箱用于登录和接收通知</p>
+            </div>
+            <span style="font-size:0.75rem;color:var(--text-muted);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ current_user.email }}</span>
+        </div>
+        <form method="post" action="/profile/security/email">
+            <div class="field"><label class="field-label">新邮箱</label><input type="email" name="email" required placeholder="请输入新邮箱地址" class="field-input"></div>
+            <div class="field"><label class="field-label">当前密码</label><input type="password" name="password" required placeholder="验证当前密码" class="field-input"></div>
+            <button type="submit" class="btn btn-soft" style="width:100%;padding:10px;background:var(--green);color:white"><i class="fas fa-check"></i> 更新邮箱</button>
+        </form>
+    </div>
+    <div class="page-card">
+        <div style="display:flex;align-items:center;margin-bottom:16px">
+            <div style="width:32px;height:32px;background:var(--violet-soft);border-radius:10px;display:flex;align-items:center;justify-content:center;margin-right:10px"><i class="fas fa-phone" style="color:var(--violet);font-size:0.8rem"></i></div>
+            <div style="flex:1">
+                <h2 style="font-size:0.9rem;font-weight:600">修改手机号</h2>
+                <p style="font-size:0.7rem;color:var(--text-muted)">手机号可用于账号找回</p>
+            </div>
+            <span style="font-size:0.75rem;color:var(--text-muted)">{{ current_user.phone or '未绑定' }}</span>
+        </div>
+        <form method="post" action="/profile/security/phone">
+            <div class="field"><label class="field-label">新手机号</label><input type="tel" name="phone" placeholder="请输入新手机号" class="field-input"></div>
+            <div class="field"><label class="field-label">当前密码</label><input type="password" name="password" required placeholder="验证当前密码" class="field-input"></div>
+            <button type="submit" class="btn btn-soft" style="width:100%;padding:10px;background:var(--violet);color:white"><i class="fas fa-check"></i> 更新手机号</button>
+        </form>
+    </div>
+    <div class="page-card" style="border-color:rgba(239,68,68,0.3)">
+        <div style="display:flex;align-items:center;margin-bottom:16px">
+            <div style="width:32px;height:32px;background:var(--red-soft);border-radius:10px;display:flex;align-items:center;justify-content:center;margin-right:10px"><i class="fas fa-triangle-exclamation" style="color:var(--red);font-size:0.8rem"></i></div>
+            <div style="flex:1">
+                <h2 style="font-size:0.9rem;font-weight:600;color:var(--red)">注销账号</h2>
+                <p style="font-size:0.7rem;color:var(--text-muted)">提交后有3天冷静期，期间可联系管理员恢复。冷静期后数据永久删除</p>
+            </div>
+        </div>
+        <form method="post" action="/profile/security/delete" onsubmit="return confirm('确认提交注销申请？3天冷静期内可联系管理员恢复账号。')">
+            <div class="field"><label class="field-label">当前密码</label><input type="password" name="password" required placeholder="请输入当前密码以确认注销" class="field-input"></div>
+            <button type="submit" class="btn btn-danger" style="width:100%;padding:10px"><i class="fas fa-user-slash"></i> 注销账号</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

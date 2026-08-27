@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}我的评论 - {{ site_config.siteName }}{% endblock %}
+{% block content %}
+<div class="page-container">
+    <div style="display:flex;align-items:center;margin-bottom:22px">
+        <a href="/profile" style="color:var(--text-muted);margin-right:10px"><i class="fas fa-arrow-left"></i></a>
+        <h1 class="page-title" style="margin-bottom:0"><i class="fas fa-comments"></i> 我的评论 <span style="font-size:0.8rem;font-weight:400;color:var(--text-muted)">({{ my_comment_count }})</span></h1>
+    </div>
+    {% if comments %}
+    <div style="display:flex;flex-direction:column;gap:12px">
+        {% for comment in comments %}
+        <div class="page-card" style="padding:18px 22px">
+            <p style="font-size:0.9rem;color:var(--text-secondary);line-height:1.6;margin-bottom:10px">{{ comment.content }}</p>
+            <div style="display:flex;align-items:center;font-size:0.75rem;color:var(--text-muted)">
+                <span><i class="fas fa-clock"></i> {{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                <a href="/card/{{ comment.pid }}" style="color:var(--violet);margin-left:14px">查看卡片 <i class="fas fa-arrow-right"></i></a>
+                <form method="post" action="/profile/comments/{{ comment.id }}/delete" style="margin-left:auto;display:inline" onsubmit="return confirm('确认删除此评论？')">
+                    <button type="submit" style="background:none;border:none;cursor:pointer;color:var(--red);font-size:0.75rem"><i class="fas fa-trash-alt"></i> 删除</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% if pagination and pagination.pages > 1 %}
+    <div class="pager">
+        {% if pagination.has_prev %}
+        <a href="/profile/comments?page={{ pagination.prev_num }}" class="pager-btn"><i class="fas fa-chevron-left"></i></a>
+        {% endif %}
+        <span class="pager-info">第 {{ pagination.page }} / {{ pagination.pages }} 页</span>
+        {% if pagination.has_next %}
+        <a href="/profile/comments?page={{ pagination.next_num }}" class="pager-btn"><i class="fas fa-chevron-right"></i></a>
+        {% endif %}
+    </div>
+    {% endif %}
+    {% else %}
+    <div class="page-card empty-state">
+        <i class="fas fa-comment-slash"></i>
+        <h3>还没有发表过评论</h3>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

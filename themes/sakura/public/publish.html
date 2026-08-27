@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}发布表白 - {{ site_config.siteName }}{% endblock %}
+{% block content %}
+<div class="page-container">
+    <div class="page-card">
+        <h1 class="page-title"><i class="fas fa-pen-to-square"></i> 发布表白</h1>
+        <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:24px">勇敢说出你的心里话</p>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        {% if message %}
+        <div class="flash-msg {% if category == 'success' %}success{% else %}error{% endif %}">
+            <i class="fas {% if category == 'success' %}fa-circle-check{% else %}fa-circle-exclamation{% endif %}"></i>{{ message }}
+        </div>
+        {% endif %}
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+        <form method="post" action="/publish" enctype="multipart/form-data" class="publish-form">
+            <div class="field">
+                <label class="field-label">表白内容 <span style="color:var(--red)">*</span></label>
+                <textarea name="content" rows="6" required placeholder="写下你想说的话..." class="field-input"></textarea>
+                <div style="display:flex;justify-content:space-between;font-size:0.7rem;color:var(--text-muted);margin-top:4px">
+                    <span>支持文字表达</span><span><span id="charCount">0</span> / 2000</span>
+                </div>
+            </div>
+            <div class="field">
+                <label class="field-label">封面图片</label>
+                <div style="display:flex;align-items:center;gap:10px">
+                    <label style="flex:1;cursor:pointer">
+                        <input type="file" name="cover_file" accept="image/*" id="coverFile" style="display:none">
+                        <div class="field-input" style="border-style:dashed;text-align:center;color:var(--text-muted);cursor:pointer;padding:14px">
+                            <i class="fas fa-cloud-upload-alt"></i> 点击上传封面
+                        </div>
+                    </label>
+                    <span style="color:var(--text-muted);font-size:0.75rem">或</span>
+                    <input type="url" name="cover" placeholder="图片 URL" id="coverUrl" class="field-input" style="flex:1">
+                </div>
+                <div id="coverPreview" style="margin-top:10px;display:none">
+                    <div style="position:relative;display:inline-block">
+                        <img id="coverPreviewImg" src="" alt="预览" style="max-height:140px;border-radius:var(--radius-md);border:1px solid var(--border)">
+                        <button type="button" id="coverRemoveBtn" style="position:absolute;top:-6px;right:-6px;width:22px;height:22px;background:var(--red);color:white;border-radius:50%;font-size:0.6rem;display:flex;align-items:center;justify-content:center;cursor:pointer"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+            </div>
+            <div class="field">
+                <label class="field-label">附加图片（可多选）</label>
+                <label style="cursor:pointer;display:block">
+                    <input type="file" name="images" accept="image/*" multiple id="extraImages" style="display:none">
+                    <div class="field-input" style="border-style:dashed;text-align:center;color:var(--text-muted);cursor:pointer;padding:14px">
+                        <i class="fas fa-images"></i> 点击选择多张图片
+                    </div>
+                </label>
+                <div id="imagePreview" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px"></div>
+            </div>
+            {% if tags %}
+            <div class="field">
+                <label class="field-label">选择标签</label>
+                <div class="tag-picker">
+                    {% for tag in tags %}
+                    <label style="display:inline-flex;align-items:center;cursor:pointer">
+                        <input type="checkbox" name="tags" value="{{ tag.id }}" style="display:none" class="peer">
+                        <span class="tag-pick">{{ tag.name }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            <div class="field">
+                <div class="switch-row">
+                    <div>
+                        <div class="switch-label">匿名发布</div>
+                        <div class="switch-hint">开启后其他用户将无法看到你的用户名</div>
+                    </div>
+                    <label style="cursor:pointer">
+                        <input type="checkbox" id="anonymousToggle" style="display:none">
+                        <input type="hidden" id="anonymousValue" name="is_anonymous" value="0">
+                        <div class="switch" id="anonymousSwitch"></div>
+                    </label>
+                </div>
+            </div>
+            <div style="display:flex;gap:10px;margin-top:8px">
+                <button type="submit" class="btn btn-primary" style="flex:1"><i class="fas fa-paper-plane"></i> 发布</button>
+                <a href="/" class="btn btn-outline">取消</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/publish.js') }}"></script>
+<script>
+(function(){
+    var sw=document.getElementById('anonymousSwitch'),val=document.getElementById('anonymousValue');
+    if(sw&&val){sw.addEventListener('click',function(){this.classList.toggle('on');val.value=this.classList.contains('on')?'1':'0'});}
+    document.querySelectorAll('.tag-pick').forEach(function(p){p.addEventListener('click',function(){var cb=this.parentElement.querySelector('input[type=checkbox]');if(cb){cb.checked=!cb.checked;this.classList.toggle('on',cb.checked)}})});
+})();
+</script>
+{% endblock %}

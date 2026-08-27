@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}登录 - {{ site_config.siteName }}{% endblock %}
+
+{% block content %}
+<div class="min-h-[80vh] flex items-center justify-center px-4 py-8 sm:py-12">
+    <div class="w-full max-w-md">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 sm:p-8">
+            <div class="text-center mb-6 sm:mb-8">
+                <i class="fas fa-heart text-primary-500 text-2xl sm:text-3xl mb-2 sm:mb-3"></i>
+                <h1 class="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white">欢迎登录</h1>
+                <p class="text-gray-400 text-xs sm:text-sm mt-1">请输入您的账号信息</p>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            {% if message %}
+            <div class="mb-4 p-3 rounded-lg flex items-center text-sm
+                 {% if category == 'success' %}bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800{% else %}bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-300 border border-red-200 dark:border-red-800{% endif %}">
+                <i class="fas {% if category == 'success' %}fa-circle-check{% else %}fa-circle-exclamation{% endif %} mr-2"></i>{{ message }}
+            </div>
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+
+            <div id="errorBox" class="hidden mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-300 text-sm" role="alert"></div>
+
+            <form id="loginForm" method="post" action="/login" novalidate>
+                <div class="mb-4 sm:mb-5">
+                    <label for="username" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">用户名 / 邮箱</label>
+                    <input type="text" id="username" name="username"
+                           placeholder="请输入用户名或邮箱"
+                           autocomplete="username" required
+                           class="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-800 dark:text-gray-200 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition text-sm sm:text-base bg-white dark:bg-gray-700">
+                </div>
+
+                <div class="mb-4 sm:mb-5">
+                    <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">密码</label>
+                    <input type="password" id="password" name="password"
+                           placeholder="请输入密码"
+                           autocomplete="current-password" required
+                           class="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-800 dark:text-gray-200 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition text-sm sm:text-base bg-white dark:bg-gray-700">
+                </div>
+
+                <div class="mb-5 sm:mb-6">
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="remember" name="remember" value="1"
+                               class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-primary-500 focus:ring-primary-500 bg-white dark:bg-gray-700">
+                        <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">记住我</span>
+                    </label>
+                </div>
+
+                <button type="submit" class="w-full bg-gradient-to-r from-primary-500 to-accent text-white py-2.5 sm:py-3 rounded-xl font-semibold hover:shadow-lg transition transform hover:scale-[1.02] text-sm sm:text-base">
+                    登 录
+                </button>
+            </form>
+
+            <p class="text-center text-xs sm:text-sm text-gray-400 dark:text-gray-500 mt-5 sm:mt-6">
+                {% if site_config.siteAllowRegister != 'false' %}
+                还没有账号？<a href="/register" class="text-primary-500 hover:text-primary-700 font-medium">立即注册</a>
+                {% else %}
+                站点暂未开放注册
+                {% endif %}
+                <span class="mx-2">|</span>
+                <a href="/forgot_password" class="text-primary-500 hover:text-primary-700 font-medium">忘记密码</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/login.js') }}"></script>
+{% endblock %}

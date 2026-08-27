@@ -22,6 +22,7 @@ from utils.audit import log_action
 from utils.notification import notify_card_status, notify_comment_status
 from utils.system import ensure_default_configs, set_config, get_site_config, SITE_CONFIG_LABELS, SITE_CONFIG_GROUPS, \
     SITE_CONFIG_HINTS, AVAILABLE_THEMES
+from utils.theme import clear_template_cache
 
 admin = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -717,6 +718,8 @@ def settings_save():
         value = request.form.get(key)
         set_config(key, value)
     db.session.commit()
+    if group == 'appearance':
+        clear_template_cache()
     return redirect(url_for('admin.settings', group=group, save='1'))
 
 

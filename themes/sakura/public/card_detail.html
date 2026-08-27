@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% block title %}{{ card.content[:30] }}... - {{ site_config.siteName }}{% endblock %}
+{% block content %}
+<div class="page-container">
+    <article class="page-card">
+        {% if card.cover and card.cover.strip() %}
+        <img src="{{ card.cover }}" alt="封面" style="width:100%;max-height:400px;object-fit:cover;border-radius:var(--radius-md);margin-bottom:20px">
+        {% endif %}
+        {% if card.is_top %}
+        <div class="card-banner" style="margin:-32px -32px 20px;border-radius:var(--radius) var(--radius) 0 0"><i class="fas fa-thumbtack"></i> 置顶</div>
+        {% endif %}
+        <div class="card-head" style="margin-bottom:18px">
+            {% if card.data and card.data.get('anonymous') %}
+            <div class="avatar" style="background:var(--bg-pattern)"><i class="fas fa-user-secret" style="font-size:0.85rem;color:var(--text-muted)"></i></div>
+            <div>
+                <div class="card-author-name anon">匿名</div>
+                <div class="card-author-time">{{ card.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+            </div>
+            {% else %}
+            <div class="avatar" style="background:linear-gradient(135deg,var(--pink),var(--violet))">
+                {% if card.author and card.author.status == 0 and card.author.deleted_at is none and card.author.avatar %}
+                <img src="{{ card.author.avatar }}" alt="">
+                {% elif card.author and card.author.status == 0 and card.author.deleted_at is none %}
+                {{ card.author.display_name[:1] }}
+                {% else %}
+                <i class="fas fa-user" style="font-size:0.85rem"></i>
+                {% endif %}
+            </div>
+            <div>
+                <div class="card-author-name">
+                    {% if card.author and card.author.status == 0 and card.author.deleted_at is none %}
+                        {% if card.author.roles_id and 0 in card.author.roles_id %}
+                        <span style="color:var(--red)">{{ card.author.display_name }}</span>
+                        {% elif card.author.roles_id and 1 in card.author.roles_id %}
+                        <span style="color:var(--blue)">{{ card.author.display_name }}</span>
+                        {% else %}
+                        {{ card.author.display_name }}
+                        {% endif %}
+                    {% elif card.author %}
+                    <span style="color:var(--text-muted)">已注销</span>
+                    {% else %}
+                    未知
+                    {% endif %}
+                </div>
+                <div class="card-author-time">{{ card.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+            </div>
+            {% endif %}
+        </div>
+        <div style="font-size:1rem;line-height:1.8;white-space:pre-wrap;margin-bottom:20px;color:var(--text)">{{ card.content }}</div>
+        {% if images %}
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px">
+            {% for img in images %}
+            <img src="{{ img.url }}" alt="图片" style="width:100%;border-radius:var(--radius-sm);object-fit:cover;aspect-ratio:1" loading="lazy">
+            {% endfor %}
+        </div>
+        {% endif %}
+        <div class="card-actions" style="padding-top:16px;border-top:1px solid var(--border)">
+            <button class="card-action like-btn {% if is_liked %}liked{% endif %}" data-card-id="{{ card.id }}">
+                <i class="fas fa-heart"></i> <span class="like-count">{{ card.good }}</span>
+            </button>
+            <span class="card-action"><i class="fas fa-comment"></i> {{ card.comments }}</span>
+            <span class="card-action-spacer"></span>
+            <span class="card-action views"><i class="fas fa-eye"></i> {{ card.views }}</span>
+        </div>
+    </article>
+    <div style="margin-top:28px">
+        <h2 class="page-title"><i class="fas fa-comment"></i> 评论 <span style="font-size:0.8rem;font-weight:400;color:var(--text-muted)">({{ comments|length }})</span></h2>
+        {% if current_user.is_authenticated %}
+        <form method="post" action="/comment" class="page-card comment-form" style="padding:20px;margin-bottom:20px">
+            <input type="hidden" name="aid" value="1">
+            <input type="hidden" name="pid" value="{{ card.id }}">
+            <textarea name="content" rows="3" required placeholder="写下你的评论..." class="field-input" style="margin-bottom:12px"></textarea>
+            <div style="text-align:right">
+                <button type="submit" class="btn btn-primary" style="padding:8px 20px;font-size:0.8rem"><i class="fas fa-paper-plane"></i> 发表评论</button>
+            </div>
+        </form>
+        {% else %}
+        <div class="page-card" style="padding:20px;text-align:center;color:var(--text-muted);font-size:0.85rem;margin-bottom:20px">
+            <i class="fas fa-lock"></i> 请先 <a href="/login" style="color:var(--violet);font-weight:600">登录</a> 后发表评论
+        </div>
+        {% endif %}
+        {% if comments %}
+        <div class="page-card" style="padding:0">
+            {% for comment in comments %}
+            <div class="comment-item" style="padding:16px 24px">
+                <div class="avatar avatar-sm" style="background:linear-gradient(135deg,var(--pink),var(--violet))">
+                    {% if comment.user and comment.user.status == 0 and comment.user.deleted_at is none and comment.user.avatar %}
+                    <img src="{{ comment.user.avatar }}" alt="">
+                    {% else %}
+                    <i class="fas fa-user" style="font-size:0.65rem"></i>
+                    {% endif %}
+                </div>
+                <div class="comment-body">
+                    <div class="comment-name">
+                        {% if comment.user and comment.user.status == 0 and comment.user.deleted_at is none %}
+                            {% if comment.user.roles_id and 0 in comment.user.roles_id %}
+                            <span style="color:var(--red)">{{ comment.user.display_name }}</span>
+                            {% elif comment.user.roles_id and 1 in comment.user.roles_id %}
+                            <span style="color:var(--blue)">{{ comment.user.display_name }}</span>
+                            {% else %}
+                            {{ comment.user.display_name }}
+                            {% endif %}
+                        {% elif comment.user %}
+                        <span style="color:var(--text-muted)">已注销</span>
+                        {% else %}
+                        匿名
+                        {% endif %}
+                    </div>
+                    <div class="comment-text">{{ comment.content }}</div>
+                    <div class="comment-date">
+                        {{ comment.created_at.strftime('%m-%d %H:%M') }}
+                        {% if current_user.is_authenticated %}
+                        <button onclick="toggleCommentGood(this,{{ comment.id }})" class="comment-like-btn" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:0.7rem;margin-left:8px;{% if comment.is_liked %}color:var(--pink){% endif %}">
+                            <i class="fas fa-heart"></i> <span class="comment-goods-count">{{ comment.goods }}</span>
+                        </button>
+                        {% else %}
+                        <span style="color:var(--text-muted);font-size:0.7rem;margin-left:8px"><i class="fas fa-heart"></i> {{ comment.goods }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state" style="padding:40px">
+            <i class="fas fa-comment-slash"></i>
+            <h3>还没有评论</h3>
+            <p>来说点什么吧</p>
+        </div>
+        {% endif %}
+    </div>
+    <div style="text-align:center;margin-top:28px">
+        <a href="/" class="btn btn-soft"><i class="fas fa-arrow-left"></i> 返回首页</a>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+(function(){
+    document.querySelectorAll('.like-btn').forEach(function(btn){
+        btn.addEventListener('click',function(e){
+            e.preventDefault();e.stopPropagation();
+            var cardId=this.dataset.cardId;if(!cardId)return;
+            var fd=new FormData();fd.append('csrf_token','{{ csrf_token }}');
+            fetch('/good/'+cardId,{method:'POST',body:fd,headers:{'X-Requested-With':'XMLHttpRequest'}})
+            .then(function(r){if(!r.ok)return r.text().then(function(t){throw new Error(t)});return r.json()})
+            .then(function(data){
+                if(data.success){
+                    var count=btn.querySelector('.like-count');if(count)count.textContent=data.count;
+                    if(data.liked)btn.classList.add('liked');else btn.classList.remove('liked');
+                }
+            }).catch(function(err){console.error('点赞失败:',err)});
+        });
+    });
+    var commentForm=document.querySelector('.comment-form');
+    if(commentForm){
+        commentForm.addEventListener('submit',function(e){
+            e.preventDefault();
+            var fd=new FormData(this);
+            fetch(this.action,{method:'POST',body:fd,headers:{'X-Requested-With':'XMLHttpRequest'}})
+            .then(function(r){return r.json()})
+            .then(function(data){if(data.success)location.reload();else alert(data.message||'评论失败')})
+            .catch(function(){alert('网络错误')});
+        });
+    }
+})();
+function toggleCommentGood(el,cid){
+    var fd=new FormData();fd.append('csrf_token','{{ csrf_token }}');
+    fetch('/comment_good/'+cid,{method:'POST',body:fd,headers:{'X-Requested-With':'XMLHttpRequest'}})
+    .then(function(r){return r.json()})
+    .then(function(data){
+        if(data.success){var s=el.querySelector('.comment-goods-count');if(s)s.textContent=data.count;if(data.liked)el.style.color='var(--pink)';else el.style.color='var(--text-muted)';}
+    });
+}
+</script>
+{% endblock %}

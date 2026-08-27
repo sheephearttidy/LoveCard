@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}隐私政策 - {{ site_config.siteName }}{% endblock %}
+{% block content %}
+<div class="page-container">
+    <div class="page-card">
+        <h1 class="page-title"><i class="fas fa-shield-halved"></i> 隐私政策</h1>
+        <div style="color:var(--text-secondary);line-height:1.8;font-size:0.85rem">
+            <div style="background:var(--orange-soft);border:1px solid rgba(245,158,11,0.2);border-radius:var(--radius-md);padding:12px;margin-bottom:16px">
+                <strong style="color:var(--orange)">重要提示：</strong>本隐私政策旨在帮助您了解本站如何收集、使用、存储和保护您的个人信息。请您在使用本站服务前，仔细阅读本政策的全部内容。您一旦使用本站服务，即视为您已充分理解并同意本政策的内容。
+            </div>
+            <p style="margin-bottom:4px"><strong>生效日期：2026年8月27日</strong></p>
+            <p style="margin-bottom:16px"><strong>最后更新：2026年8月27日</strong></p>
+            <h2 style="font-size:1rem;font-weight:700;color:var(--text);margin:20px 0 10px">第一章 总则</h2>
+            <h3 style="font-size:0.9rem;font-weight:600;color:var(--text);margin:12px 0 6px">第一条 适用范围</h3>
+            <p style="margin-bottom:6px">本隐私政策适用于 {{ site_config.siteName }}（以下简称"本站"）提供的所有服务。本政策适用于本站以任何形式（包括但不限于网页端、移动端等）收集和使用您的个人信息的情形。</p>
+            <p style="margin-bottom:6px">本政策不适用于其他第三方向您提供的服务。例如，本站可能包含指向第三方网站的链接，该等第三方网站有其独立的隐私政策，本站不对该等第三方网站的隐私实践承担任何责任。</p>
+            <h3 style="font-size:0.9rem;font-weight:600;color:var(--text);margin:12px 0 6px">第二条 基本原则</h3>
+            <p style="margin-bottom:6px">本站在处理您的个人信息时，遵循以下基本原则：</p>
+            <ul style="list-style:disc;padding-left:20px;margin-bottom:8px">
+                <li style="margin-bottom:4px"><strong>合法、正当、必要原则：</strong>仅收集为提供服务所必需的个人信息，不收集与提供服务无关的个人信息。</li>
+                <li style="margin-bottom:4px"><strong>知情同意原则：</strong>在收集、使用您的个人信息前，以本政策等方式告知您并获取您的同意。</li>
+                <li style="margin-bottom:4px"><strong>目的明确原则：</strong>仅在您同意的特定目的范围内处理您的个人信息。</li>
+                <li style="margin-bottom:4px"><strong>最小必要原则：</strong>仅处理满足目的所需的最低限度个人信息。</li>
+                <li style="margin-bottom:4px"><strong>安全保障原则：</strong>采取合理的安全措施保护您的个人信息。</li>
+                <li><strong>透明公开原则：</strong>以清晰、易懂的方式向您说明个人信息处理规则。</li>
+            </ul>
+            <h2 style="font-size:1rem;font-weight:700;color:var(--text);margin:20px 0 10px">第二章 个人信息的收集</h2>
+            <h3 style="font-size:0.9rem;font-weight:600;color:var(--text);margin:12px 0 6px">第三条 我们收集的个人信息</h3>
+            <p style="margin-bottom:6px">在您使用本站服务的过程中，我们会收集以下类别的个人信息：</p>
+            <div style="background:var(--blue-soft);border:1px solid rgba(99,102,241,0.2);border-radius:var(--radius-md);padding:12px;margin-bottom:8px">
+                <p style="font-weight:600;color:var(--blue);margin-bottom:4px">1. 注册信息（必填）</p>
+                <ul style="list-style:disc;padding-left:20px">
+                    <li>用户名：用于在平台上标识您的身份；</li>
+                    <li>电子邮箱：用于账号验证、密码重置及重要通知。</li>
+                </ul>
+            </div>
+            <div style="background:var(--blue-soft);border:1px solid rgba(99,102,241,0.2);border-radius:var(--radius-md);padding:12px;margin-bottom:8px">
+                <p style="font-weight:600;color:var(--blue);margin-bottom:4px">2. 注册信息（选填）</p>
+                <ul style="list-style:disc;padding-left:20px">
+                    <li>手机号码：用于账号找回及安全验证；</li>
+                    <li>头像：用于个性化展示。</li>
+                </ul>
+            </div>
+            <div style="background:var(--blue-soft);border:1px solid rgba(99,102,241,0.2);border-radius:var(--radius-md);padding:12px;margin-bottom:8px">
+                <p style="font-weight:600;color:var(--blue);margin-bottom:4px">3. 内容数据</p>
+                <ul style="list-style:disc;padding-left:20px">
+                    <li>发布的表白/留言内容、图片；</li>
+                    <li>评论内容；</li>
+                    <li>点赞记录。</li>
+                </ul>
+            </div>
+            <div style="background:var(--blue-soft);border:1px solid rgba(99,102,241,0.2);border-radius:var(--radius-md);padding:12px;margin-bottom:8px">
+                <p style="font-weight:600;color:var(--blue);margin-bottom:4px">4. 通知数据</p>
+                <ul style="list-style:disc;padding-left:20px">
+                    <li>站内通知记录：包括内容审核结果通知、评论回复通知等；</li>
+                    <li>密码重置令牌：用于验证密码重置请求的合法性，有效期有限。</li>
+                </ul>
+            </div>
+            <div style="background:var(--blue-soft);border:1px solid rgba(99,102,241,0.2);border-radius:var(--radius-md);padding:12px;margin-bottom:8px">
+                <p style="font-weight:600;color:var(--blue);margin-bottom:4px">5. 日志信息</p>
+                <ul style="list-style:disc;padding-left:20px">
+                    <li>访问时间、页面URL、浏览器类型、IP地址等；</li>
+                    <li>操作行为记录（发布、评论、点赞等）。</li>
+                </ul>
+            </div>
+            <h2 style="font-size:1rem;font-weight:700;color:var(--text);margin:20px 0 10px">第三章 个人信息的使用</h2>
+            <p style="margin-bottom:6px">我们收集的个人信息将用于以下目的：</p>
+            <ul style="list-style:disc;padding-left:20px;margin-bottom:8px">
+                <li style="margin-bottom:4px">提供、维护和改善我们的服务；</li>
+                <li style="margin-bottom:4px">账号验证与安全防护；</li>
+                <li style="margin-bottom:4px">内容审核与管理；</li>
+                <li style="margin-bottom:4px">向您发送服务相关通知；</li>
+                <li style="margin-bottom:4px">处理您提出的请求或反馈；</li>
+                <li>遵守法律法规的要求。</li>
+            </ul>
+            <h2 style="font-size:1rem;font-weight:700;color:var(--text);margin:20px 0 10px">第四章 个人信息的存储与保护</h2>
+            <p style="margin-bottom:6px">我们采取合理的技术措施和管理措施来保护您的个人信息安全，包括但不限于：</p>
+            <ul style="list-style:disc;padding-left:20px;margin-bottom:8px">
+                <li style="margin-bottom:4px">密码使用加密存储，不以明文形式保存；</li>
+                <li style="margin-bottom:4px">数据库访问权限严格控制；</li>
+                <li style="margin-bottom:4px">定期进行安全检查和系统更新；</li>
+                <li>敏感操作需进行身份验证。</li>
+            </ul>
+            <h2 style="font-size:1rem;font-weight:700;color:var(--text);margin:20px 0 10px">第五章 个人信息的共享与披露</h2>
+            <p style="margin-bottom:6px">除以下情形外，我们不会向任何第三方共享您的个人信息：</p>
+            <ul style="list-style:disc;padding-left:20px;margin-bottom:8px">
+                <li style="margin-bottom:4px">获得您的明确同意后；</li>
+                <li style="margin-bottom:4px">根据法律法规的要求，或应政府部门的合法要求；</li>
+                <li style="margin-bottom:4px">为维护本站的合法权益；</li>
+                <li>在紧急情况下为维护用户及公众的安全。</li>
+            </ul>
+            <h2 style="font-size:1rem;font-weight:700;color:var(--text);margin:20px 0 10px">第六章 您的权利</h2>
+            <p style="margin-bottom:6px">您对您的个人信息享有以下权利：</p>
+            <ul style="list-style:disc;padding-left:20px;margin-bottom:8px">
+                <li style="margin-bottom:4px">查询和更正您的个人信息；</li>
+                <li style="margin-bottom:4px">删除您发布的内容；</li>
+                <li style="margin-bottom:4px">注销您的账号（提交后有3天冷静期）；</li>
+                <li>撤回已给予的同意。</li>
+            </ul>
+            <h2 style="font-size:1rem;font-weight:700;color:var(--text);margin:20px 0 10px">第七章 政策更新</h2>
+            <p>本隐私政策可能会不时更新。更新后的政策将在本页面上发布，重大变更时会通过站内通知等方式告知您。继续使用本站服务即视为您同意受修订后的隐私政策约束。</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

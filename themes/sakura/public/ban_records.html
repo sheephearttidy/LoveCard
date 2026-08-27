@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}封禁公示 - {{ site_config.siteName }}{% endblock %}
+{% block content %}
+<div class="page-container">
+    <h1 class="page-title"><i class="fas fa-gavel"></i> 封禁公示</h1>
+    {% if records %}
+    <div style="display:flex;flex-direction:column;gap:12px">
+        {% for r in records %}
+        <div class="page-card" style="padding:18px 22px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                <div style="display:flex;align-items:center;gap:10px">
+                    <div style="width:32px;height:32px;background:var(--red-soft);border-radius:10px;display:flex;align-items:center;justify-content:center"><i class="fas fa-ban" style="color:var(--red);font-size:0.8rem"></i></div>
+                    <div>
+                        <span style="font-weight:600;font-size:0.9rem">{{ r.username }}</span>
+                        <span style="font-size:0.75rem;color:var(--text-muted);margin-left:8px">{{ r.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                    </div>
+                </div>
+                <span style="background:var(--red-soft);color:var(--red);padding:2px 10px;border-radius:50px;font-size:0.7rem;font-weight:600">封禁中</span>
+            </div>
+            <div style="margin-left:42px">
+                <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:6px"><span style="color:var(--text-muted)">原因：</span>{{ r.reason }}</p>
+                {% if r.tags %}
+                <div style="display:flex;flex-wrap:wrap;gap:4px">
+                    {% for tag in r.tags %}
+                    <span style="background:var(--orange-soft);color:var(--orange);padding:2px 10px;border-radius:50px;font-size:0.7rem">{{ tag }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% if pagination and pagination.pages > 1 %}
+    <div class="pager">
+        {% if pagination.has_prev %}
+        <a href="/ban_records?page={{ pagination.prev_num }}" class="pager-btn"><i class="fas fa-chevron-left"></i></a>
+        {% endif %}
+        <span class="pager-info">第 {{ pagination.page }} / {{ pagination.pages }} 页</span>
+        {% if pagination.has_next %}
+        <a href="/ban_records?page={{ pagination.next_num }}" class="pager-btn"><i class="fas fa-chevron-right"></i></a>
+        {% endif %}
+    </div>
+    {% endif %}
+    {% else %}
+    <div class="page-card empty-state">
+        <i class="fas fa-gavel"></i>
+        <h3>暂无封禁记录</h3>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

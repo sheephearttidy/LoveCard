@@ -11,6 +11,7 @@ from utils.email import send_email, is_smtp_configured
 from utils.rate_limit import check_rate_limit, get_remaining_time, record_failed_attempt, clear_attempts
 from utils.system import get_config, get_site_config
 from utils.notification import notify_admins
+from utils.theme import render_themed
 
 auth = Blueprint('auth', __name__)
 
@@ -58,7 +59,7 @@ def login():
         login_user(user, remember=remember)
         return jsonify(success=True, message="登录成功")
 
-    return render_template("public/user/login.html")
+    return render_themed("public/user/login.html")
 
 
 @auth.route('/register', methods=["POST", "GET"])
@@ -135,7 +136,7 @@ def register():
             return jsonify(success=True, message="注册成功，账号正在审核中，审核通过后即可登录")
         return jsonify(success=True, message="注册成功，3 秒后跳转到登录页")
 
-    return render_template("public/user/register.html",
+    return render_themed("public/user/register.html",
                            require_invite_code=require_invite_code,
                            need_review=need_review)
 
@@ -191,7 +192,7 @@ def forgot_password():
         flash('如果该邮箱已注册，重置链接已发送至你的邮箱', 'success')
         return redirect(url_for('auth.forgot_password'))
 
-    return render_template("public/user/forgot_password.html", smtp_ok=smtp_ok)
+    return render_themed("public/user/forgot_password.html", smtp_ok=smtp_ok)
 
 
 @auth.route('/reset_password/<token>', methods=['GET', 'POST'])
@@ -236,4 +237,4 @@ def reset_password(token):
         flash('密码重置成功，请使用新密码登录', 'success')
         return redirect(url_for('auth.login'))
 
-    return render_template("public/user/reset_password.html", token=token)
+    return render_themed("public/user/reset_password.html", token=token)

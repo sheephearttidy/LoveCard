@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}注册 - {{ site_config.siteName }}{% endblock %}
+{% block content %}
+<div style="flex:1;display:flex;align-items:center;justify-content:center;padding:40px 20px">
+    <div style="width:100%;max-width:420px">
+        <div class="page-card">
+            <div style="text-align:center;margin-bottom:28px">
+                <div style="width:48px;height:48px;background:linear-gradient(135deg,var(--pink),var(--violet));border-radius:16px;display:inline-flex;align-items:center;justify-content:center;color:white;font-size:1.2rem;margin-bottom:12px;box-shadow:0 6px 20px var(--pink-glow)"><i class="fas fa-user-plus"></i></div>
+                <h1 style="font-size:1.4rem;font-weight:800;margin-bottom:4px">创建账号</h1>
+                <p style="color:var(--text-muted);font-size:0.85rem">填写以下信息完成注册</p>
+            </div>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            {% if message %}
+            <div class="flash-msg {% if category == 'success' %}success{% else %}error{% endif %}">
+                <i class="fas {% if category == 'success' %}fa-circle-check{% else %}fa-circle-exclamation{% endif %}"></i>{{ message }}
+            </div>
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+            <div id="errorBox" style="display:none;margin-bottom:16px" class="flash-msg error"></div>
+            <form id="registerForm" method="post" action="/register" novalidate>
+                <div class="field">
+                    <label class="field-label">用户名</label>
+                    <input type="text" name="username" placeholder="3-20 个字符" autocomplete="username" required minlength="3" maxlength="20" class="field-input">
+                </div>
+                <div class="field">
+                    <label class="field-label">邮箱</label>
+                    <input type="email" name="email" placeholder="请输入邮箱地址" autocomplete="email" required class="field-input">
+                </div>
+                <div class="field">
+                    <label class="field-label">密码</label>
+                    <input type="password" name="password" placeholder="至少 6 位" autocomplete="new-password" required minlength="6" class="field-input">
+                </div>
+                <div class="field">
+                    <label class="field-label">确认密码</label>
+                    <input type="password" name="confirmPassword" placeholder="请再次输入密码" autocomplete="new-password" required minlength="6" class="field-input">
+                </div>
+                <div class="field">
+                    <label class="field-label">验证码</label>
+                    <div style="display:flex;gap:8px;align-items:center">
+                        <input type="text" name="captcha" placeholder="请输入验证码" required autocomplete="off" class="field-input" style="flex:1">
+                        <img src="/captcha.svg" alt="验证码" id="captchaImg" style="height:42px;border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--border)" onclick="this.src='/captcha.svg?t='+Date.now()" title="点击刷新">
+                    </div>
+                </div>
+                {% if require_invite_code %}
+                <div class="field">
+                    <label class="field-label">邀请码</label>
+                    <input type="text" name="invite_code" placeholder="请输入邀请码" required class="field-input">
+                </div>
+                {% endif %}
+                <div class="field" style="display:flex;align-items:flex-start;gap:6px">
+                    <input type="checkbox" name="agree" value="1" style="margin-top:3px;accent-color:var(--violet)">
+                    <span style="font-size:0.8rem;color:var(--text-secondary);line-height:1.5">
+                        我已阅读并同意 <a href="/terms" style="color:var(--violet)" target="_blank">服务条款</a> 和 <a href="/privacy" style="color:var(--violet)" target="_blank">隐私政策</a>
+                    </span>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%;padding:12px">注 册</button>
+            </form>
+            <p style="text-align:center;font-size:0.8rem;color:var(--text-muted);margin-top:20px">
+                已有账号？<a href="/login" style="color:var(--violet);font-weight:600">去登录</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/register.js') }}"></script>
+{% endblock %}
