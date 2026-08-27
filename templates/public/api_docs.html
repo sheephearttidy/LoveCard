@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API 文档 - LoveCards</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0f0ff', 100: '#e0e0ff', 200: '#c7c7fe', 300: '#a3a3fc',
+                            400: '#8080f8', 500: '#667eea', 600: '#5a67d8', 700: '#4c51bf',
+                            800: '#434190', 900: '#3c366b',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .method-get { background: #dbeafe; color: #1d4ed8; }
+        .method-post { background: #dcfce7; color: #16a34a; }
+        .method-put { background: #fef3c7; color: #d97706; }
+        .method-delete { background: #fee2e2; color: #dc2626; }
+        .sidebar::-webkit-scrollbar { width: 4px; }
+        .sidebar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
+        .sidebar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        details summary { cursor: pointer; list-style: none; }
+        details summary::-webkit-details-marker { display: none; }
+        details[open] > summary .chevron { transform: rotate(90deg); }
+        .chevron { transition: transform 0.15s ease; }
+        .endpoint-card { transition: box-shadow 0.15s ease; }
+        .endpoint-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .param-table th { position: sticky; top: 0; }
+        @media (max-width: 1023px) {
+            .sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 40; display: none; }
+            .sidebar-overlay.active { display: block; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+<div class="flex min-h-screen">
+    <div id="sidebarOverlay" class="sidebar-overlay lg:hidden" onclick="toggleSidebar()"></div>
+
+    <aside id="sidebar" class="sidebar fixed lg:sticky top-0 left-0 z-50 w-72 h-screen bg-white border-r border-gray-200 overflow-y-auto transform -translate-x-full lg:translate-x-0 transition-transform duration-200 flex flex-col">
+        <div class="p-5 border-b border-gray-100">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-primary-500 flex items-center justify-center">
+                    <i class="fas fa-code text-white text-sm"></i>
+                </div>
+                <div>
+                    <div class="font-bold text-gray-900">LoveCards API</div>
+                    <div class="text-[11px] text-gray-400">v1 · 接口文档</div>
+                </div>
+            </div>
+        </div>
+
+        <nav class="flex-1 p-3 space-y-0.5 text-sm">
+            <div class="px-3 py-1.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wider mt-1">API 接口</div>
+
+            <details open>
+                <summary class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 text-gray-700 font-medium">
+                    <i class="fas fa-chevron-right chevron text-[10px] text-gray-400"></i>
+                    <i class="fas fa-shield-halved text-primary-400 w-4 text-center"></i>
+                    认证模块
+                </summary>
+                <div class="ml-5 mt-0.5 space-y-0.5">
+                    <a href="#auth-register" class="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-gray-50 text-gray-600">
+                        <span class="method-post text-[10px] font-bold px-1.5 py-0.5 rounded">POST</span>
+                        用户注册
+                    </a>
+                    <a href="#auth-login" class="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-gray-50 text-gray-600">
+                        <span class="method-post text-[10px] font-bold px-1.5 py-0.5 rounded">POST</span>
+                        用户登录
+                    </a>
+                    <a href="#auth-logout" class="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-gray-50 text-gray-600">
+                        <span class="method-post text-[10px] font-bold px-1.5 py-0.5 rounded">POST</span>
+                        用户登出
+                    </a>
+                    <a href="#auth-me" class="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-gray-50 text-gray-600">
+                        <span class="method-get text-[10px] font-bold px-1.5 py-0.5 rounded">GET</span>
+                        当前用户
+                    </a>
+                </div>
+            </details>
+
+            <details open>
+                <summary class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 text-gray-700 font-medium">
+                    <i class="fas fa-chevron-right chevron text-[10px] text-gray-400"></i>
+                    <i class="fas fa-user text-primary-400 w-4 text-center"></i>
+                    用户模块
+                </summary>
+                <div class="ml-5 mt-0.5 space-y-0.5">
+                    <a href="#user-profile" class="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-gray-50 text-gray-600">
+                        <span class="method-post text-[10px] font-bold px-1.5 py-0.5 rounded">POST</span>
+                        修改资料
+                    </a>
+                    <a href="#user-password" class="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-gray-50 text-gray-600">
+                        <span class="method-post text-[10px] font-bold px-1.5 py-0.5 rounded">POST</span>
+                        修改密码
+                    </a>
+                    <a href="#user-avatar" class="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-gray-50 text-gray-600">
+                        <span class="method-post text-[10px] font-bold px-1.5 py-0.5 rounded">POST</span>
+                        上传头像
+                    </a>
+                </div>
+            </details>
+
+            <details open>
+                <summary class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 text-gray-700 font-medium">
+                    <i class="fas fa-chevron-right chevron text-[10px] text-gray-400"></i>
+                    <i class="fas fa-note-sticky text-primary-400 w-4 text-center"></i>
+                    卡片模块
+                </summary>
+                <div class="ml-5 mt-0.5 space-y-0.5">
+                    <a href="#cards-list" class="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-gray-50 text-gray-600">
+                        <span class="method-get text-[10px] font-bold px-1.5 py-0.5 rounded">GET</span>
+                        卡片列表
+                    </a>
+                    <a href="#cards-detail" class="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-gray-50 text-gray-600">
+                        <span class="method-get text-[10px] font-bold px-1.5 py-0.5 rounded">GET</span>
+                        卡片详情
+                    </a>
+                    <a href="#cards-create" class="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-gray-50 text-gray-600">
+                        <span class="method-post text-[10px] font-bold px-1.5 py-0.5 rounded">POST</span>
+                        发布卡片
+                    </a>
+                    <a href="#cards-like" class="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-gray-50 text-gray-600">
+                        <span class="method-post text-[10px] font-bold px-1.5 py-0.5 rounded">POST</span>
+                        点赞切换
+                    </a>
+                    <a href="#cards-comment" class="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-gray-50 text-gray-600">
+                        <span class="method-post text-[10px] font-bold px-1.5 py-0.5 rounded">POST</span>
+                        发表评论
+                    </a>
+                </div>
+            </details>
+
+            <details open>
+                <summary class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 text-gray-700 font-medium">
+                    <i class="fas fa-chevron-right chevron text-[10px] text-gray-400"></i>
+                    <i class="fas fa-tags text-primary-400 w-4 text-center"></i>
+                    标签模块
+                </summary>
+                <div class="ml-5 mt-0.5 space-y-0.5">
+                    <a href="#tags-list" class="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-gray-50 text-gray-600">
+                        <span class="method-get text-[10px] font-bold px-1.5 py-0.5 rounded">GET</span>
+                        标签列表
+                    </a>
+                </div>
+            </details>
+
+            <details open>
+                <summary class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 text-gray-700 font-medium">
+                    <i class="fas fa-chevron-right chevron text-[10px] text-gray-400"></i>
+                    <i class="fas fa-cloud-arrow-up text-primary-400 w-4 text-center"></i>
+                    通用模块
+                </summary>
+                <div class="ml-5 mt-0.5 space-y-0.5">
+                    <a href="#upload" class="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-gray-50 text-gray-600">
+                        <span class="method-post text-[10px] font-bold px-1.5 py-0.5 rounded">POST</span>
+                        文件上传
+                    </a>
+                </div>
+            </details>
+
+            <div class="px-3 py-1.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wider mt-4">页面路由</div>
+
+            <details>
+                <summary class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 text-gray-700 font-medium">
+                    <i class="fas fa-chevron-right chevron text-[10px] text-gray-400"></i>
+                    <i class="fas fa-globe text-primary-400 w-4 text-center"></i>
+                    前台页面
+                </summary>
+                <div class="ml-5 mt-0.5 space-y-0.5">
+                    <a href="#page-public" class="block px-3 py-1.5 rounded-md hover:bg-gray-50 text-gray-600">公共页面</a>
+                    <a href="#page-auth" class="block px-3 py-1.5 rounded-md hover:bg-gray-50 text-gray-600">认证页面</a>
+                    <a href="#page-interact" class="block px-3 py-1.5 rounded-md hover:bg-gray-50 text-gray-600">卡片交互</a>
+                    <a href="#page-profile" class="block px-3 py-1.5 rounded-md hover:bg-gray-50 text-gray-600">个人中心</a>
+                </div>
+            </details>
+
+            <details>
+                <summary class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 text-gray-700 font-medium">
+                    <i class="fas fa-chevron-right chevron text-[10px] text-gray-400"></i>
+                    <i class="fas fa-shield text-primary-400 w-4 text-center"></i>
+                    后台管理
+                </summary>
+                <div class="ml-5 mt-0.5 space-y-0.5">
+                    <a href="#admin-dashboard" class="block px-3 py-1.5 rounded-md hover:bg-gray-50 text-gray-600">仪表盘</a>
+                    <a href="#admin-cards" class="block px-3 py-1.5 rounded-md hover:bg-gray-50 text-gray-600">卡片管理</a>
+                    <a href="#admin-users" class="block px-3 py-1.5 rounded-md hover:bg-gray-50 text-gray-600">用户管理</a>
+                    <a href="#admin-comments" class="block px-3 py-1.5 rounded-md hover:bg-gray-50 text-gray-600">评论管理</a>
+                    <a href="#admin-tags" class="block px-3 py-1.5 rounded-md hover:bg-gray-50 text-gray-600">标签管理</a>
+                    <a href="#admin-ban" class="block px-3 py-1.5 rounded-md hover:bg-gray-50 text-gray-600">封禁记录</a>
+                    <a href="#admin-deleted" class="block px-3 py-1.5 rounded-md hover:bg-gray-50 text-gray-600">已注销用户</a>
+                    <a href="#admin-settings" class="block px-3 py-1.5 rounded-md hover:bg-gray-50 text-gray-600">系统配置</a>
+                </div>
+            </details>
+        </nav>
+
+        <div class="p-3 border-t border-gray-100">
+            <div class="px-3 py-2 text-[11px] text-gray-400">
+                基础地址：<code class="bg-gray-100 px-1.5 py-0.5 rounded text-gray-600">/api/v1</code>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 min-w-0">
+        <header class="sticky top-0 z-30 bg-white/80 backdrop-blur border-b border-gray-200 px-6 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <button onclick="toggleSidebar()" class="lg:hidden text-gray-500 hover:text-gray-700 p-1">
+                    <i class="fas fa-bars text-lg"></i>
+                </button>
+                <h1 class="text-lg font-bold text-gray-900">API 接口文档</h1>
+            </div>
+            <div class="flex items-center gap-2 text-xs text-gray-400">
+                <span class="bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">v1</span>
+                <span>LoveCards</span>
+            </div>
+        </header>
+
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-8">
+
+            <section class="bg-white rounded-xl border border-gray-200 p-5">
+                <h2 class="text-base font-bold text-gray-900 mb-3">通用说明</h2>
+                <div class="space-y-2 text-sm text-gray-600">
+                    <p>基础地址：<code class="bg-gray-100 px-1.5 py-0.5 rounded text-primary-600 font-mono text-xs">/api/v1</code></p>
+                    <p>统一响应格式：</p>
+                    <pre class="bg-gray-900 text-gray-100 rounded-lg p-3 text-xs overflow-x-auto"><code>{
+  "code": 200,
+  "message": "操作描述",
+  "data": {}
+}</code></pre>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3">
+                        <div class="bg-blue-50 rounded-lg p-2 text-center">
+                            <div class="text-lg font-bold text-blue-600">200</div>
+                            <div class="text-[10px] text-blue-500">成功</div>
+                        </div>
+                        <div class="bg-amber-50 rounded-lg p-2 text-center">
+                            <div class="text-lg font-bold text-amber-600">400</div>
+                            <div class="text-[10px] text-amber-500">参数错误</div>
+                        </div>
+                        <div class="bg-orange-50 rounded-lg p-2 text-center">
+                            <div class="text-lg font-bold text-orange-600">401</div>
+                            <div class="text-[10px] text-orange-500">未认证</div>
+                        </div>
+                        <div class="bg-red-50 rounded-lg p-2 text-center">
+                            <div class="text-lg font-bold text-red-600">403</div>
+                            <div class="text-[10px] text-red-500">无权限</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="space-y-1">
+                <h2 class="text-xl font-bold text-gray-900 px-1">API 接口</h2>
+                <p class="text-sm text-gray-400 px-1">RESTful 风格接口，返回 JSON</p>
+            </div>
+
+            <section id="auth-register" class="endpoint-card bg-white rounded-xl border border-gray-200 overflow-hidden">
+                <div class="p-5">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="method-post text-[11px] font-bold px-2 py-0.5 rounded">POST</span>
+                        <code class="text-sm font-mono text-gray-800">/api/v1/auth/register</code>
+                        <span class="ml-auto text-[11px] text-gray-400 bg-gray-50 px-2 py-0.5 rounded">无需认证</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">用户注册，注册成功后自动登录（若需审核则返回待审核状态）。</p>
+                    <details>
+                        <summary class="flex items-center gap-1.5 text-sm font-medium text-primary-600 hover:text-primary-700 mb-2">
+                            <i class="fas fa-chevron-right chevron text-[10px]"></i>请求参数
+                        </summary>
+                        <div class="overflow-x-auto">
+                            <table class="param-table w-full text-sm">
+                                <thead><tr class="bg-gray-50 text-left"><th class="px-3 py-2 font-medium text-gray-500">参数</th><th class="px-3 py-2 font-medium text-gray-500">类型</th><th class="px-3 py-2 font-medium text-gray-500">必填</th><th class="px-3 py-2 font-medium text-gray-500">说明</th></tr></thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <tr><td class="px-3 py-2 font-mono text-xs text-primary-600">username</td><td class="px-3 py-2 text-gray-500">string</td><td class="px-3 py-2"><span class="text-red-500">是</span></td><td class="px-3 py-2 text-gray-600">用户名，3-20字符</td></tr>
+                                    <tr><td class="px-3 py-2 font-mono text-xs text-primary-600">email</td><td class="px-3 py-2 text-gray-500">string</td><td class="px-3 py-2"><span class="text-red-500">是</span></td><td class="px-3 py-2 text-gray-600">邮箱地址</td></tr>
+                                    <tr><td class="px-3 py-2 font-mono text-xs text-primary-600">password</td><td class="px-3 py-2 text-gray-500">string</td><td class="px-3 py-2"><span class="text-red-500">是</span></td><td class="px-3 py-2 text-gray-600">密码，至少6位</td></tr>
+                                    <tr><td class="px-3 py-2 font-mono text-xs text-primary-600">captcha</td><td class="px-3 py-2 text-gray-500">string</td><td class="px-3 py-2"><span class="text-red-500">是</span></td><td class="px-3 py-2 text-gray-600">图形验证码</td></tr>
+                                    <tr><td class="px-3 py-2 font-mono text-xs text-primary-600">invite_code</td><td class="px-3 py-2 text-gray-500">string</td><td class="px-3 py-2">条件</td><td class="px-3 py-2 text-gray-600">邀请码（启用时必填）</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </details>
+                    <details>
+                        <summary class="flex items-center gap-1.5 text-sm font-medium text-primary-600 hover:text-primary-700 mb-2">
+                            <i class="fas fa-chevron-right chevron text-[10px]"></i>响应示例
+                        </summary>
+                        <pre class="bg-gray-900 text-gray-100 rounded-lg p-3 text-xs overflow-x-auto"><code>{
+  "code": 200,
+  "message": "注册成功",
+  "data": { "id": 2, "username": "testuser" }
+}</code></pre>
+                    </details>
+                    <details>
+                        <summary class="flex items-center gap-1.5 text-sm font-medium text-primary-600 hover:text-primary-700">
+                            <i class="fas fa-chevron-right chevron text-[10px]"></i>错误码
+                        </summary>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm"><tbody class="divide-y divide-gray-100">
+                                <tr><td class="px-3 py-1.5 font-mono text-xs text-red-500">400</td><td class="px-3 py-1.5 text-gray-600">用户名、邮箱和密码不能为空</td></tr>
+                                <tr><td class="px-3 py-1.5 font-mono text-xs text-red-500">400</td><td class="px-3 py-1.5 text-gray-600">验证码错误</td></tr>
+                                <tr><td class="px-3 py-1.5 font-mono text-xs text-red-500">400</td><td class="px-3 py-1.5 text-gray-600">密码至少6位</td></tr>
+                                <tr><td class="px-3 py-1.5 font-mono text-xs text-red-500">409</td><td class="px-3 py-1.5 text-gray-600">邮箱已被注册 / 用户名已被占用</td></tr>
+                                <tr><td class="px-3 py-1.5 font-mono text-xs text-red-500">429</td><td class="px-3 py-1.5 text-gray-600">操作过于频繁，请稍后再试</td></tr>
+                            </tbody></table>
+                        </div>
+                    </details>
+                </div>
+            </section>
+
+            <section id="auth-login" class="endpoint-card bg-white rounded-xl border border-gray-200 overflow-hidden">
+                <div class="p-5">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="method-post text-[11px] font-bold px-2 py-0.5 rounded">POST</span>
+                        <code class="text-sm font-mono text-gray-800">/api/v1/auth/login</code>
+                        <span class="ml-auto text-[11px] text-gray-400 bg-gray-50 px-2 py-0.5 rounded">无需认证</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">用户登录，支持邮箱登录。</p>
+                    <details>
+                        <summary class="flex items-center gap-1.5 text-sm font-medium text-primary-600 hover:text-primary-700 mb-2">
+                            <i class="fas fa-chevron-right chevron text-[10px]"></i>请求参数
+                        </summary>
+                        <div class="overflow-x-auto">
+                            <table class="param-table w-full text-sm">
+                                <thead><tr class="bg-gray-50 text-left"><th class="px-3 py-2 font-medium text-gray-500">参数</th><th class="px-3 py-2 font-medium text-gray-500">类型</th><th class="px-3 py-2 font-medium text-gray-500">必填</th><th class="px-3 py-2 font-medium text-gray-500">说明</th></tr></thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <tr><td class="px-3 py-2 font-mono text-xs text-primary-600">email</td><td class="px-3 py-2 text-gray-500">string</td><td class="px-3 py-2"><span class="text-red-500">是</span></td><td class="px-3 py-2 text-gray-600">邮箱地址</td></tr>
+                                    <tr><td class="px-3 py-2 font-mono text-xs text-primary-600">password</td><td class="px-3 py-2 text-gray-500">string</td><td class="px-3 py-2"><span class="text-red-500">是</span></td><td class="px-3 py-2 text-gray-600">密码</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </details>
+                    <details>
+                        <summary class="flex items-center gap-1.5 text-sm font-medium text-primary-600 hover:text-primary-700 mb-2">
+                            <i class="fas fa-chevron-right chevron text-[10px]"></i>响应示例
+                        </summary>
+                        <pre class="bg-gray-900 text-gray-100 rounded-lg p-3 text-xs overflow-x-auto"><code>{
+  "code": 200,
+  "message": "登录成功",
+  "data": {
+    "id": 2, "username": "testuser", "nickname": "测试",
+    "display_name": "测试", "email": "test@example.com",
+    "avatar": "", "status": 0, "roles_id": [2],
+    "created_at": "2025-01-01T12:00:00"
+  }
+}</code></pre>
+                    </details>
+                    <details>
+                        <summary class="flex items-center gap-1.5 text-sm font-medium text-primary-600 hover:text-primary-700">
+                            <i class="fas fa-chevron-right chevron text-[10px]"></i>错误码
+                        </summary>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm"><tbody class="divide-y divide-gray-100">
+                                <tr><td class="px-3 py-1.5 font-mono text-xs text-red-500">400</td><td class="px-3 py-1.5 text-gray-600">邮箱和密码不能为空</td></tr>
+                                <tr><td class="px-3 py-1.5 font-mono text-xs text-red-500">401</td><td class="px-3 py-1.5 text-gray-600">邮箱或密码错误</td></tr>
+                                <tr><td class="px-3 py-1.5 font-mono text-xs text-red-500">403</td><td class="px-3 py-1.5 text-gray-600">账号正在审核中 / 账号已被禁用</td></tr>
+                            </tbody></table>
+                        </div>
+                    </details>
+                </div>
+            </section>
+
+            <section id="auth-logout" class="endpoint-card bg-white rounded-xl border border-gray-200 overflow-hidden">
+                <div class="p-5">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="method-post text-[11px] font-bold px-2 py-0.5 rounded">POST</span>
+                        <code class="text-sm font-mono text-gray-800">/api/v1/auth/logout</code>
+                        <span class="ml-auto text-[11px] text-amber-600 bg-amber-50 px-2 py-0.5 rounded">需要登录</span>
+                    </div>
+                    <p class="text-sm text-gray-600">退出登录。</p>
+                    <details>
+                        <summary class="flex items-center gap-1.5 text-sm font-medium text-primary-600 hover:text-primary-700">
+                            <i class="fas fa-chevron-right chevron text-[10px]"></i>响应示例
+                        </summary>
+                        <pre class="bg-gray-900 text-gray-100 rounded-lg p-3 text-xs overflow-x-auto"><code>{ "code": 200, "message": "已退出登录" }</code></pre>
+                    </details>
+                </div>
+            </section>
+
+            <section id="auth-me" class="endpoint-card bg-white rounded-xl border border-gray-200 overflow-hidden">
+                <div class="p-5">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="method-get text-[11px] font-bold px-2 py-0.5 rounded">GET</span>
+                        <code class="text-sm font-mono text-gray-800">/api/v1/auth/me</code>
+                        <span class="ml-auto text-[11px] text-amber-600 bg-amber-50 px-2 py-0.5 rounded">需要登录</span>
+                    </div>
+                    <p class="text-sm text-gray-600">获取当前登录用户信息。</p>
+                    <details>
+                        <summary class="flex items-center gap-1.5 text-sm font-medium text-primary-600 hover:text-primary-700">
+                            <i class="fas fa-chevron-right chevron text-[10px]"></i>响应示例
+                        </summary>
+                        <pre class="bg-gray-900 text-gray-100 rounded-lg p-3 text-xs overflow-x-auto"><code>{
+  "code": 200,
+  "data": {
+    "id": 2, "username": "testuser", "nickname": "测试",
+    "display_name": "测试", "email": "test@example.com",
+    "phone": "", "avatar": "", "status": 0,
+    "roles_id": [2], "created_at": "2025-01-01T12:00:00"
+  }
+}</code></pre>
+                    </details>
+                </div>
+            </section>
+
+            <div class="flex items-center gap-3 pt-4">
+                <div class="w-8 h-8 rounded-lg bg-primary-100 flex items-center justify-center"><i class="fas fa-user text-primary-500 text-sm"></i></div>
+                <h2 class="text-lg font-bold text-gray-900">用户模块</h2>
+            </div>
+
+            <section id="user-profile" class="endpoint-card bg-white rounded-xl border border-gray-200 overflow-hidden">
+                <div class="p-5">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="method-post text-[11px] font-bold px-2 py-0.5 rounded">POST</span>
+                        <code class="text-sm font-mono text-gray-800">/api/v1/user/profile</code>
+                        <span class="ml-auto text-[11px] text-amber-600 bg-amber-50 px-2 py-0.5 rounded">需要登录</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">修改个人资料，只需传入需要修改的字段。</p>
+                    <details>
+                        <summary class="flex items-center gap-1.5 text-sm font-medium text-primary-600 hover:text-primary-700 mb-2">
+                            <i class="fas fa-chevron-right chevron text-[10px]"></i>请求参数
+                        </summary>
+                        <div class="overflow-x-auto">
+                            <table class="param-table w-full text-sm">
+                                <thead><tr class="bg-gray-50 text-left"><th class="px-3 py-2 font-medium text-gray-500">参数</th><th class="px-3 py-2 font-medium text-gray-500">类型</th><th class="px-3 py-2 font-medium text-gray-500">必填</th><th class="px-3 py-2 font-medium text-gray-500">说明</th></tr></thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <tr><td class="px-3 py-2 font-mono text-xs text-primary-600">nickname</td><td class="px-3 py-2 text-gray-500">string</td><td class="px-3 py-2">否</td><td class="px-3 py-2 text-gray-600">昵称，最多30字符</td></tr>
+                                    <tr><td class="px-3 py-2 font-mono text-xs text-primary-600">email</td><td class="px-3 py-2 text-gray-500">string</td><td class="px-3 py-2">否</td><td class="px-3 py-2 text-gray-600">邮箱地址</td></tr>
+                                    <tr><td class="px-3 py-2 font-mono text-xs text-primary-600">phone</td><td class="px-3 py-2 text-gray-500">string</td><td class="px-3 py-2">否</td><td class="px-3 py-2 text-gray-600">手机号</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </details>
+                    <details>
+                        <summary class="flex items-center gap-1.5 text-sm font-medium text-primary-600 hover:text-primary-700">
+                            <i class="fas fa-chevron-right chevron text-[10px]"></i>错误码
+                        </summary>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm"><tbody class="divide-y divide-gray-100">
+                                <tr><td class="px-3 py-1.5 font-mono text-xs text-red-500">400</td><td class="px-3 py-1.5 text-gray-600">昵称长度不能超过 30 个字符</td></tr>
+                                <tr><td class="px-3 py-1.5 font-mono text-xs text-red-500">409</td><td class="px-3 py-1.5 text-gray-600">邮箱已被注册</td></tr>
+                            </tbody></table>
+                        </div>
+                    </details>
+                </div>
+            </section>
+
+            <section id="user-password" class="endpoint-card bg-white rounded-xl border border-gray-200 overflow-hidden">
+                <div class="p-5">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="method-post text-[11px] font-bold px-2 py-0.5 rounded">POST</span>
+                        <code class="text-sm font-mono text-gray-800">/api/v1/user/password</code>
+                        <span class="ml-auto text-[11px] text-amber-600 bg-amber-50 px-2 py-0.5 rounded">需要登录</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">修改密码，成功后自动登出需重新登录。</p>
+                    <details>
+                        <summary class="flex items-center gap-1.5 text-sm font-medium text-primary-600 hover:text-primary-700 mb-2">
+                            <i class="fas fa-chevron-right chevron text-[10px]"></i>请求参数
+                        </summary>
+                        <div class="overflow-x-auto">
+                            <table class="param-table w-full text-sm">
+                                <thead><tr class="bg-gray-50 text-left"><th class="px-3 py-2 font-medium text-gray-500">参数</th><th class="px-3 py-2 font-medium text-gray-500">类型</th><th class="px-3 py-2 font-medium text-gray-500">必填</th><th class="px-3 py-2 font-medium text-gray-500">说明</th></tr></thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <tr><td class="px-3 py-2 font-mono text-xs text-primary-600">old_password</td><td class="px-3 py-2 text-gray-500">string</td><td class="px-3 py-2"><span class="text-red-500">是</span></td><td class="px-3 py-2 text-gray-600">旧密码</td></tr>
+                                    <tr><td class="px-3 py-2 font-mono text-xs text-primary-600">new_password</td><td class="px-3 py-2 text-gray-500">string</td><td class="px-3 py-2"><span class="text-red-500">是</span></td><td class="px-3 py-2 text-gray-600">新密码，至少6位</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </details>
+                    <details>
+                        <summary class="flex items-center gap-1.5 text-sm font-medium text-primary-600 hover:text-primary-700">
+                            <i class="fas fa-chevron-right chevron text-[10px]"></i>错误码
+                        </summary>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm"><tbody class="divide-y divide-gray-100">
+                                <tr><td class="px-3 py-1.5 font-mono text-xs text-red-500">400</td><td class="px-3 py-1.5 text-gray-600">旧密码和新密码不能为空 / 新密码至少6位</td></tr>
+                                <tr><td class="px-3 py-1.5 font-mono text-xs text-red-500">401</td><td class="px-3 py-1.5 text-gray-600">旧密码不正确</td></tr>
+                            </tbody></table>
+                        </div>
+                    </details>
+                </div>
+            </section>
+
+            <section id="user-avatar" class="endpoint-card bg-white rounded-xl border border-gray-200 overflow-hidden">
+                <div class="p-5">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="method-post text-[11px] font-bold px-2 py-0.5 rounded">POST</span>
+                        <code class="text-sm font-mono text-gray-800">/api/v1/user/avatar</code>
+                        <span class="ml-auto text-[11px] text-amber-600 bg-amber-50 px-2 py-0.5 rounded">需要登录</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-1">上传头像。<code class="bg-gray-100 px-1 py-0.5 rounded text-xs">Content-Type: multipart/form-data</code></p>
+                    <details>
+                        <summary class="flex items-center gap-1.5 text-sm font-medium text-primary-600 hover:text-primary-700 mb-2">
+                            <i class="fas fa-chevron-right chevron text-[10px]"></i>请求参数
+                        </summary>
+                        <div class="overflow-x-auto">
+                            <table class="param-table w-full text-sm">
+                                <thead><tr class="bg-gray-50 text-left"><th class="px-3 py-2 font-medium text-gray-500">参数</th><th class="px-3 py-2 font-medium text-gray-500">类型</th><th class="px-3 py-2 font-medium text-gray-500">必填</th><th class="px-3 py-2 font-medium text-gray-500">说明</th></tr></thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <tr><td class="px-3 py-2 font-mono text-xs text-primary-600">avatar</td><td class="px-3 py-2 text-gray-500">file</td><td class="px-3 py-2"><span class="text-red-500">是</span></td><td class="px-3 py-2 text-gray-600">图片文件（png/jpg/jpeg/gif/webp/svg）</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </details>
+                </div>
+            </section>
+
+            <div class="flex items-center gap-3 pt-4">
+                <div class="w-8 h-8 rounded-lg bg-primary-100 flex items-center justify-center"><i class="fas fa-note-sticky text-primary-500 text-sm"></i></div>
+                <h2 class="text-lg font-bold text-gray-900">卡片模块</h2>
+            </div>
+
+            <section id="cards-list" class="endpoint-card bg-white rounded-xl border border-gray-200 overflow-hidden">
+                <div class="p-5">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="method-get text-[11px] font-bold px-2 py-0.5 rounded">GET</span>
+                        <code class="text-sm font-mono text-gray-800">/api/v1/cards</code>
+                        <span class="ml-auto text-[11px] text-gray-400 bg-gray-50 px-2 py-0.5 rounded">无需认证</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">获取卡片列表，置顶优先、时间倒序。</p>
+                    <details>
+                        <summary class="flex items-center gap-1.5 text-sm font-medium text-primary-600 hover:text-primary-700 mb-2">
+                            <i class="fas fa-chevron-right chevron text-[10px]"></i>查询参数
+                        </summary>
+                        <div class="overflow-x-auto">
+                            <table class="param-table w-full text-sm">
+                                <thead><tr class="bg-gray-50 text-left"><th class="px-3 py-2 font-medium text-gray-500">参数</th><th class="px-3 py-2 font-medium text-gray-500">类型</th><th class="px-3 py-2 font-medium text-gray-500">默认</th><th class="px-3 py-2 font-medium text-gray-500">说明</th></tr></thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <tr><td class="px-3 py-2 font-mono text-xs text-primary-600">page</td><td class="px-3 py-2 text-gray-500">int</td><td class="px-3 py-2">1</td><td class="px-3 py-2 text-gray-600">页码</td></tr>
+                                    <tr><td class="px-3 py-2 font-mono text-xs text-primary-600">per_page</td><td class="px-3 py-2 text-gray-500">int</td><td class="px-3 py-2">12</td><td class="px-3 py-2 text-gray-600">每页条数（最大50）</td></tr>
+                                    <tr><td class="px-3 py-2 font-mono text-xs text-primary-600">tag</td><td class="px-3 py-2 text-gray-500">int</td><td class="px-3 py-2">—</td><td class="px-3 py-2 text-gray-600">按标签ID筛选</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </details>
+                    <details>
+                        <summary class="flex items-center gap-1.5 text-sm font-medium text-primary-600 hover:text-primary-700">
+                            <i class="fas fa-chevron-right chevron text-[10px]"></i>响应示例
+                        </summary>
+                        <pre class="bg-gray-900 text-gray-100 rounded-lg p-3 text-xs overflow-x-auto"><code>{
+  "code": 200,
+  "data": {
+    "items": [{
+      "id": 1, "content": "...", "cover": "/uploads/...",
+      "good": 5, "views": 100, "comments": 3,
+      "is_top": 1, "author": "测试", "is_anonymous": false,
+      "tags": [1, 2], "created_at": "2025-01-01T12:00:00"
+    }],
+    "page": 1, "pages": 5, "total": 48,
+    "has_prev": false, "has_next": true
+  }
+}</code></pre>
+                    </details>
+                </div>
+            </section>
+
+            <section id="cards-detail" class="endpoint-card bg-white rounded-xl border border-gray-200 overflow-hidden">
+                <div class="p-5">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="method-get text-[11px] font-bold px-2 py-0.5 rounded">GET</span>
+                        <code class="text-sm font-mono text-gray-800">/api/v1/cards/&lt;card_id&gt;</code>
+                        <span class="ml-auto text-[11px] text-gray-400 bg-gray-50 px-2 py-0.5 rounded">无需认证</span>
+                    </div>
+                    <p class="text-sm text-gray-600">获取卡片详情，每次访问浏览数 +1。登录用户可获取点赞状态。</p>
+                </div>
+            </section>
+
+            <section id="cards-create" class="endpoint-card bg-white rounded-xl border border-gray-200 overflow-hidden">
+                <div class="p-5">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="method-post text-[11px] font-bold px-2 py-0.5 rounded">POST</span>
+                        <code class="text-sm font-mono text-gray-800">/api/v1/cards</code>
+                        <span class="ml-auto text-[11px] text-amber-600 bg-amber-50 px-2 py-0.5 rounded">需要登录</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-1">发布卡片。<code class="bg-gray-100 px-1 py-0.5 rounded text-xs">Content-Type: multipart/form-data</code></p>
+                    <details>
+                        <summary class="flex items-center gap-1.5 text-sm font-medium text-primary-600 hover:text-primary-700 mb-2">
+                            <i class="fas fa-chevron-right chevron text-[10px]"></i>请求参数
+                        </summary>
+                        <div class="overflow-x-auto">
+                            <table class="param-table w-full text-sm">
+                                <thead><tr class="bg-gray-50 text-left"><th class="px-3 py-2 font-medium text-gray-500">参数</th><th class="px-3 py-2 font-medium text-gray-500">类型</th><th class="px-3 py-2 font-medium text-gray-500">必填</th><th class="px-3 py-2 font-medium text-gray-500">说明</th></tr></thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <tr><td class="px-3 py-2 font-mono text-xs text-primary-600">content</td><td class="px-3 py-2 text-gray-500">string</td><td class="px-3 py-2"><span class="text-red-500">是</span></td><td class="px-3 py-2 text-gray-600">卡片内容，最多2000字符</td></tr>
+                                    <tr><td class="px-3 py-2 font-mono text-xs text-primary-600">is_anonymous</td><td class="px-3 py-2 text-gray-500">string</td><td class="px-3 py-2">否</td><td class="px-3 py-2 text-gray-600">传 "1" 为匿名发布</td></tr>
+                                    <tr><td class="px-3 py-2 font-mono text-xs text-primary-600">tags</td><td class="px-3 py-2 text-gray-500">int[]</td><td class="px-3 py-2">否</td><td class="px-3 py-2 text-gray-600">标签ID，可传多个</td></tr>
+                                    <tr><td class="px-3 py-2 font-mono text-xs text-primary-600">cover_file</td><td class="px-3 py-2 text-gray-500">file</td><td class="px-3 py-2">否</td><td class="px-3 py-2 text-gray-600">封面图文件</td></tr>
+                                    <tr><td class="px-3 py-2 font-mono text-xs text-primary-600">images</td><td class="px-3 py-2 text-gray-500">file[]</td><td class="px-3 py-2">否</td><td class="px-3 py-2 text-gray-600">附加图片，可传多个</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </details>
+                </div>
+            </section>
+
+            <section id="cards-like" class="endpoint-card bg-white rounded-xl border border-gray-200 overflow-hidden">
+                <div class="p-5">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="method-post text-[11px] font-bold px-2 py-0.5 rounded">POST</span>
+                        <code class="text-sm font-mono text-gray-800">/api/v1/cards/&lt;card_id&gt;/like</code>
+                        <span class="ml-auto text-[11px] text-amber-600 bg-amber-50 px-2 py-0.5 rounded">需要登录</span>
+                    </div>
+                    <p class="text-sm text-gray-600">点赞切换，已点赞则取消，未点赞则添加。</p>
+                    <details>
+                        <summary class="flex items-center gap-1.5 text-sm font-medium text-primary-600 hover:text-primary-700">
+                            <i class="fas fa-chevron-right chevron text-[10px]"></i>响应示例
+                        </summary>
+                        <pre class="bg-gray-900 text-gray-100 rounded-lg p-3 text-xs overflow-x-auto"><code>{ "code": 200, "data": { "liked": true, "count": 6 } }</code></pre>
+                    </details>
+                </div>
+            </section>
+
+            <section id="cards-comment" class="endpoint-card bg-white rounded-xl border border-gray-200 overflow-hidden">
+                <div class="p-5">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="method-post text-[11px] font-bold px-2 py-0.5 rounded">POST</span>
+                        <code class="text-sm font-mono text-gray-800">/api/v1/cards/&lt;card_id&gt;/comments</code>
+                        <span class="ml-auto text-[11px] text-amber-600 bg-amber-50 px-2 py-0.5 rounded">需要登录</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">发表评论，最多500字符。</p>
+                    <details>
+                        <summary class="flex items-center gap-1.5 text-sm font-medium text-primary-600 hover:text-primary-700 mb-2">
+                            <i class="fas fa-chevron-right chevron text-[10px]"></i>请求参数
+                        </summary>
+                        <div class="overflow-x-auto">
+                            <table class="param-table w-full text-sm">
+                                <thead><tr class="bg-gray-50 text-left"><th class="px-3 py-2 font-medium text-gray-500">参数</th><th class="px-3 py-2 font-medium text-gray-500">类型</th><th class="px-3 py-2 font-medium text-gray-500">必填</th><th class="px-3 py-2 font-medium text-gray-500">说明</th></tr></thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <tr><td class="px-3 py-2 font-mono text-xs text-primary-600">content</td><td class="px-3 py-2 text-gray-500">string</td><td class="px-3 py-2"><span class="text-red-500">是</span></td><td class="px-3 py-2 text-gray-600">评论内容</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </details>
+                </div>
+            </section>
+
+            <div class="flex items-center gap-3 pt-4">
+                <div class="w-8 h-8 rounded-lg bg-primary-100 flex items-center justify-center"><i class="fas fa-tags text-primary-500 text-sm"></i></div>
+                <h2 class="text-lg font-bold text-gray-900">标签模块</h2>
+            </div>
+
+            <section id="tags-list" class="endpoint-card bg-white rounded-xl border border-gray-200 overflow-hidden">
+                <div class="p-5">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="method-get text-[11px] font-bold px-2 py-0.5 rounded">GET</span>
+                        <code class="text-sm font-mono text-gray-800">/api/v1/tags</code>
+                        <span class="ml-auto text-[11px] text-gray-400 bg-gray-50 px-2 py-0.5 rounded">无需认证</span>
+                    </div>
+                    <p class="text-sm text-gray-600">获取启用状态的标签列表。</p>
+                    <details>
+                        <summary class="flex items-center gap-1.5 text-sm font-medium text-primary-600 hover:text-primary-700">
+                            <i class="fas fa-chevron-right chevron text-[10px]"></i>响应示例
+                        </summary>
+                        <pre class="bg-gray-900 text-gray-100 rounded-lg p-3 text-xs overflow-x-auto"><code>{
+  "code": 200,
+  "data": [
+    { "id": 1, "name": "技术" },
+    { "id": 2, "name": "生活" }
+  ]
+}</code></pre>
+                    </details>
+                </div>
+            </section>
+
+            <div class="flex items-center gap-3 pt-4">
+                <div class="w-8 h-8 rounded-lg bg-primary-100 flex items-center justify-center"><i class="fas fa-cloud-arrow-up text-primary-500 text-sm"></i></div>
+                <h2 class="text-lg font-bold text-gray-900">通用模块</h2>
+            </div>
+
+            <section id="upload" class="endpoint-card bg-white rounded-xl border border-gray-200 overflow-hidden">
+                <div class="p-5">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="method-post text-[11px] font-bold px-2 py-0.5 rounded">POST</span>
+                        <code class="text-sm font-mono text-gray-800">/api/v1/upload</code>
+                        <span class="ml-auto text-[11px] text-amber-600 bg-amber-50 px-2 py-0.5 rounded">需要登录</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-1">通用文件上传。<code class="bg-gray-100 px-1 py-0.5 rounded text-xs">Content-Type: multipart/form-data</code></p>
+                    <details>
+                        <summary class="flex items-center gap-1.5 text-sm font-medium text-primary-600 hover:text-primary-700 mb-2">
+                            <i class="fas fa-chevron-right chevron text-[10px]"></i>请求参数
+                        </summary>
+                        <div class="overflow-x-auto">
+                            <table class="param-table w-full text-sm">
+                                <thead><tr class="bg-gray-50 text-left"><th class="px-3 py-2 font-medium text-gray-500">参数</th><th class="px-3 py-2 font-medium text-gray-500">类型</th><th class="px-3 py-2 font-medium text-gray-500">必填</th><th class="px-3 py-2 font-medium text-gray-500">默认</th><th class="px-3 py-2 font-medium text-gray-500">说明</th></tr></thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <tr><td class="px-3 py-2 font-mono text-xs text-primary-600">file</td><td class="px-3 py-2 text-gray-500">file</td><td class="px-3 py-2"><span class="text-red-500">是</span></td><td class="px-3 py-2">—</td><td class="px-3 py-2 text-gray-600">图片文件</td></tr>
+                                    <tr><td class="px-3 py-2 font-mono text-xs text-primary-600">sub_dir</td><td class="px-3 py-2 text-gray-500">string</td><td class="px-3 py-2">否</td><td class="px-3 py-2">cards</td><td class="px-3 py-2 text-gray-600">存储子目录</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </details>
+                </div>
+            </section>
+
+            <div class="space-y-1 pt-8">
+                <h2 class="text-xl font-bold text-gray-900 px-1">页面路由</h2>
+                <p class="text-sm text-gray-400 px-1">返回 HTML 页面的服务端路由</p>
+            </div>
+
+            <section id="page-public" class="bg-white rounded-xl border border-gray-200 p-5">
+                <h3 class="font-bold text-gray-900 mb-3 flex items-center gap-2"><i class="fas fa-globe text-primary-400"></i>公共页面</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead><tr class="bg-gray-50 text-left"><th class="px-3 py-2 font-medium text-gray-500">方法</th><th class="px-3 py-2 font-medium text-gray-500">路径</th><th class="px-3 py-2 font-medium text-gray-500">说明</th></tr></thead>
+                        <tbody class="divide-y divide-gray-100">
+                            <tr><td class="px-3 py-2"><span class="method-get text-[10px] font-bold px-1.5 py-0.5 rounded">GET</span></td><td class="px-3 py-2 font-mono text-xs">/</td><td class="px-3 py-2 text-gray-600">首页（支持 page/tag/search）</td></tr>
+                            <tr><td class="px-3 py-2"><span class="method-get text-[10px] font-bold px-1.5 py-0.5 rounded">GET</span></td><td class="px-3 py-2 font-mono text-xs">/card/&lt;id&gt;</td><td class="px-3 py-2 text-gray-600">卡片详情页</td></tr>
+                            <tr><td class="px-3 py-2"><span class="method-get text-[10px] font-bold px-1.5 py-0.5 rounded">GET</span></td><td class="px-3 py-2 font-mono text-xs">/about</td><td class="px-3 py-2 text-gray-600">关于页面</td></tr>
+                            <tr><td class="px-3 py-2"><span class="method-get text-[10px] font-bold px-1.5 py-0.5 rounded">GET</span></td><td class="px-3 py-2 font-mono text-xs">/terms</td><td class="px-3 py-2 text-gray-600">服务条款</td></tr>
+                            <tr><td class="px-3 py-2"><span class="method-get text-[10px] font-bold px-1.5 py-0.5 rounded">GET</span></td><td class="px-3 py-2 font-mono text-xs">/privacy</td><td class="px-3 py-2 text-gray-600">隐私政策</td></tr>
+                            <tr><td class="px-3 py-2"><span class="method-get text-[10px] font-bold px-1.5 py-0.5 rounded">GET</span></td><td class="px-3 py-2 font-mono text-xs">/ban_records</td><td class="px-3 py-2 text-gray-600">封禁记录公示</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="page-auth" class="bg-white rounded-xl border border-gray-200 p-5">
+                <h3 class="font-bold text-gray-900 mb-3 flex items-center gap-2"><i class="fas fa-right-to-bracket text-primary-400"></i>认证页面</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead><tr class="bg-gray-50 text-left"><th class="px-3 py-2 font-medium text-gray-500">方法</th><th class="px-3 py-2 font-medium text-gray-500">路径</th><th class="px-3 py-2 font-medium text-gray-500">说明</th></tr></thead>
+                        <tbody class="divide-y divide-gray-100">
+                            <tr><td class="px-3 py-2"><span class="method-get text-[10px] font-bold px-1.5 py-0.5 rounded">GET</span><span class="method-post text-[10px] font-bold px-1.5 py-0.5 rounded ml-1">POST</span></td><td class="px-3 py-2 font-mono text-xs">/login</td><td class="px-3 py-2 text-gray-600">登录</td></tr>
+                            <tr><td class="px-3 py-2"><span class="method-get text-[10px] font-bold px-1.5 py-0.5 rounded">GET</span><span class="method-post text-[10px] font-bold px-1.5 py-0.5 rounded ml-1">POST</span></td><td class="px-3 py-2 font-mono text-xs">/register</td><td class="px-3 py-2 text-gray-600">注册</td></tr>
+                            <tr><td class="px-3 py-2"><span class="method-get text-[10px] font-bold px-1.5 py-0.5 rounded">GET</span></td><td class="px-3 py-2 font-mono text-xs">/logout</td><td class="px-3 py-2 text-gray-600">登出</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="page-interact" class="bg-white rounded-xl border border-gray-200 p-5">
+                <h3 class="font-bold text-gray-900 mb-3 flex items-center gap-2"><i class="fas fa-heart text-primary-400"></i>卡片交互</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead><tr class="bg-gray-50 text-left"><th class="px-3 py-2 font-medium text-gray-500">方法</th><th class="px-3 py-2 font-medium text-gray-500">路径</th><th class="px-3 py-2 font-medium text-gray-500">说明</th></tr></thead>
+                        <tbody class="divide-y divide-gray-100">
+                            <tr><td class="px-3 py-2"><span class="method-get text-[10px] font-bold px-1.5 py-0.5 rounded">GET</span><span class="method-post text-[10px] font-bold px-1.5 py-0.5 rounded ml-1">POST</span></td><td class="px-3 py-2 font-mono text-xs">/publish</td><td class="px-3 py-2 text-gray-600">发布卡片（需登录）</td></tr>
+                            <tr><td class="px-3 py-2"><span class="method-post text-[10px] font-bold px-1.5 py-0.5 rounded">POST</span></td><td class="px-3 py-2 font-mono text-xs">/comment</td><td class="px-3 py-2 text-gray-600">发表评论</td></tr>
+                            <tr><td class="px-3 py-2"><span class="method-post text-[10px] font-bold px-1.5 py-0.5 rounded">POST</span></td><td class="px-3 py-2 font-mono text-xs">/good/&lt;id&gt;</td><td class="px-3 py-2 text-gray-600">卡片点赞切换</td></tr>
+                            <tr><td class="px-3 py-2"><span class="method-post text-[10px] font-bold px-1.5 py-0.5 rounded">POST</span></td><td class="px-3 py-2 font-mono text-xs">/comment/&lt;id&gt;/good</td><td class="px-3 py-2 text-gray-600">评论点赞切换</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="page-profile" class="bg-white rounded-xl border border-gray-200 p-5">
+                <h3 class="font-bold text-gray-900 mb-3 flex items-center gap-2"><i class="fas fa-user text-primary-400"></i>个人中心</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead><tr class="bg-gray-50 text-left"><th class="px-3 py-2 font-medium text-gray-500">方法</th><th class="px-3 py-2 font-medium text-gray-500">路径</th><th class="px-3 py-2 font-medium text-gray-500">说明</th></tr></thead>
+                        <tbody class="divide-y divide-gray-100">
+                            <tr><td class="px-3 py-2"><span class="method-get text-[10px] font-bold px-1.5 py-0.5 rounded">GET</span></td><td class="px-3 py-2 font-mono text-xs">/profile</td><td class="px-3 py-2 text-gray-600">个人中心首页</td></tr>
+                            <tr><td class="px-3 py-2"><span class="method-get text-[10px] font-bold px-1.5 py-0.5 rounded">GET</span><span class="method-post text-[10px] font-bold px-1.5 py-0.5 rounded ml-1">POST</span></td><td class="px-3 py-2 font-mono text-xs">/profile/edit</td><td class="px-3 py-2 text-gray-600">编辑资料</td></tr>
+                            <tr><td class="px-3 py-2"><span class="method-get text-[10px] font-bold px-1.5 py-0.5 rounded">GET</span></td><td class="px-3 py-2 font-mono text-xs">/profile/security</td><td class="px-3 py-2 text-gray-600">安全设置</td></tr>
+                            <tr><td class="px-3 py-2"><span class="method-post text-[10px] font-bold px-1.5 py-0.5 rounded">POST</span></td><td class="px-3 py-2 font-mono text-xs">/profile/security/password</td><td class="px-3 py-2 text-gray-600">修改密码</td></tr>
+                            <tr><td class="px-3 py-2"><span class="method-post text-[10px] font-bold px-1.5 py-0.5 rounded">POST</span></td><td class="px-3 py-2 font-mono text-xs">/profile/security/email</td><td class="px-3 py-2 text-gray-600">修改邮箱</td></tr>
+                            <tr><td class="px-3 py-2"><span class="method-post text-[10px] font-bold px-1.5 py-0.5 rounded">POST</span></td><td class="px-3 py-2 font-mono text-xs">/profile/security/phone</td><td class="px-3 py-2 text-gray-600">修改手机号</td></tr>
+                            <tr><td class="px-3 py-2"><span class="method-post text-[10px] font-bold px-1.5 py-0.5 rounded">POST</span></td><td class="px-3 py-2 font-mono text-xs">/profile/security/delete</td><td class="px-3 py-2 text-gray-600">注销账号（3天冷静期）</td></tr>
+                            <tr><td class="px-3 py-2"><span class="method-get text-[10px] font-bold px-1.5 py-0.5 rounded">GET</span></td><td class="px-3 py-2 font-mono text-xs">/profile/cards</td><td class="px-3 py-2 text-gray-600">我的卡片</td></tr>
+                            <tr><td class="px-3 py-2"><span class="method-get text-[10px] font-bold px-1.5 py-0.5 rounded">GET</span></td><td class="px-3 py-2 font-mono text-xs">/profile/comments</td><td class="px-3 py-2 text-gray-600">我的评论</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <div class="space-y-1 pt-8">
+                <h2 class="text-xl font-bold text-gray-900 px-1">后台管理路由</h2>
+                <p class="text-sm text-gray-400 px-1">需管理员权限，前缀 /admin</p>
+            </div>
+
+            <section id="admin-dashboard" class="bg-white rounded-xl border border-gray-200 p-5">
+                <h3 class="font-bold text-gray-900 mb-3 flex items-center gap-2"><i class="fas fa-chart-pie text-primary-400"></i>仪表盘</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead><tr class="bg-gray-50 text-left"><th class="px-3 py-2 font-medium text-gray-500">方法</th><th class="px-3 py-2 font-medium text-gray-500">路径</th><th class="px-3 py-2 font-medium text-gray-500">说明</th></tr></thead>
+                        <tbody class="divide-y divide-gray-100">
+                            <tr><td class="px-3 py-2"><span class="method-get text-[10px] font-bold px-1.5 py-0.5 rounded">GET</span></td><td class="px-3 py-2 font-mono text-xs">/admin/</td><td class="px-3 py-2 text-gray-600">统计数据概览</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="admin-cards" class="bg-white rounded-xl border border-gray-200 p-5">
+                <h3 class="font-bold text-gray-900 mb-3 flex items-center gap-2"><i class="fas fa-note-sticky text-primary-400"></i>卡片管理</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead><tr class="bg-gray-50 text-left"><th class="px-3 py-2 font-medium text-gray-500">方法</th><th class="px-3 py-2 font-medium text-gray-500">路径</th><th class="px-3 py-2 font-medium text-gray-500">说明</th></tr></thead>
+                        <tbody class="divide-y divide-gray-100">
+                            <tr><td class="px-3 py-2"><span class="method-get text-[10px] font-bold px-1.5 py-0.5 rounded">GET</span></td><td class="px-3 py-2 font-mono text-xs">/admin/cards</td><td class="px-3 py-2 text-gray-600">卡片列表（page/status/search）</td></tr>
+                            <tr><td class="px-3 py-2"><span class="method-get text-[10px] font-bold px-1.5 py-0.5 rounded">GET</span></td><td class="px-3 py-2 font-mono text-xs">/admin/cards/&lt;id&gt;/detail</td><td class="px-3 py-2 text-gray-600">卡片详情</td></tr>
+                            <tr><td class="px-3 py-2"><span class="method-post text-[10px] font-bold px-1.5 py-0.5 rounded">POST</span></td><td class="px-3 py-2 font-mono text-xs">/admin/cards/&lt;id&gt;/approve</td><td class="px-3 py-2 text-gray-600">审核通过</td></tr>
+                            <tr><td class="px-3 py-2"><span class="method-post text-[10px] font-bold px-1.5 py-0.5 rounded">POST</span></td><td class="px-3 py-2 font-mono text-xs">/admin/cards/&lt;id&gt;/reject</td><td class="px-3 py-2 text-gray-600">审核拒绝</td></tr>
+                            <tr><td class="px-3 py-2"><span class="method-post text-[10px] font-bold px-1.5 py-0.5 rounded">POST</span></td><td class="px-3 py-2 font-mono text-xs">/admin/cards/&lt;id&gt;/ban</td><td class="px-3 py-2 text-gray-600">封禁卡片</td></tr>
+                            <tr><td class="px-3 py-2"><span class="method-post text-[10px] font-bold px-1.5 py-0.5 rounded">POST</span></td><td class="px-3 py-2 font-mono text-xs">/admin/cards/&lt;id&gt;/unban</td><td class="px-3 py-2 text-gray-600">解封卡片</td></tr>
+                            <tr><td class="px-3 py-2"><span class="method-post text-[10px] font-bold px-1.5 py-0.5 rounded">POST</span></td><td class="px-3 py-2 font-mono text-xs">/admin/cards/&lt;id&gt;/toggle_top</td><td class="px-3 py-2 text-gray-600">切换置顶</td></tr>
+                            <tr><td class="px-3 py-2"><span class="method-post text-[10px] font-bold px-1.5 py-0.5 rounded">POST</span></td><td class="px-3 py-2 font-mono text-xs">/admin/cards/&lt;id&gt;/delete</td><td class="px-3 py-2 text-gray-600">删除卡片</td></tr>
+                            <tr><td class="px-3 py-2"><span class="method-post text-[10px] font-bold px-1.5 py-0.5 rounded">POST</span></td><td class="px-3 py-2 font-mono text-xs">/admin/cards/batch</td><td class="px-3 py-2 text-gray-600">批量操作</td></tr>
+                            <tr><td class="px-3 py-2"><span class="method-post text-[10px] font-bold px-1.5 py-0.5 rounded">POST</span></td><td class="px-3 py-2 font-mono text-xs">/admin/cards/ban_user/&lt;uid&gt;</td><td class="px-3 py-2 text-gray-600">封禁用户所有卡片</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="admin-users" class="bg-white rounded-xl border border-gray-200 p-5">
+                <h3 class="font-bold text-gray-900 mb-3 flex items-center gap-2"><i class="fas fa-users text-primary-400"></i>用户管理</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead><tr class="bg-gray-50 text-left"><th class="px-3 py-2 font-medium text-gray-500">方法</th><th class="px-3 py-2 font-medium text-gray-500">路径</th><th class="px-3 py-2 font-medium text-gray-500">说明</th></tr></thead>
+                        <tbody class="divide-y divide-gray-100">
+                            <tr><td class="px-3 py-2"><span class="method-get text-[10px] font-bold px-1.5 py-0.5 rounded">GET</span></td><td class="px-3 py-2 font-mono text-xs">/admin/users</td><td class="px-3 py-2 text-gray-600">用户列表（page/status/role/search）</td></tr>
+                            <tr><td class="px-3 py-2"><span class="method-post text-[10px] font-bold px-1.5 py-0.5 rounded">POST</span></td><td class="px-3 py-2 font-mono text-xs">/admin/users/&lt;id&gt;/toggle_status</td><td class="px-3 py-2 text-gray-600">启用/禁用</td></tr>
+                            <tr><td class="px-3 py-2"><span class="method-post text-[10px] font-bold px-1.5 py-0.5 rounded">POST</span></td><td class="px-3 py-2 font-mono text-xs">/admin/users/&lt;id&gt;/ban</td><td class="px-3 py-2 text-gray-600">封禁用户</td></tr>
+                            <tr><td class="px-3 py-2"><span class="method-post text-[10px] font-bold px-1.5 py-0.5 rounded">POST</span></td><td class="px-3 py-2 font-mono text-xs">/admin/users/&lt;id&gt;/unban</td><td class="px-3 py-2 text-gray-600">解封用户</td></tr>
+                            <tr><td class="px-3 py-2"><span class="method-post text-[10px] font-bold px-1.5 py-0.5 rounded">POST</span></td><td class="px-3 py-2 font-mono text-xs">/admin/users/&lt;id&gt;/delete</td><td class="px-3 py-2 text-gray-600">删除用户</td></tr>
+                            <tr><td class="px-3 py-2"><span class="method-post text-[10px] font-bold px-1.5 py-0.5 rounded">POST</span></td><td class="px-3 py-2 font-mono text-xs">/admin/users/&lt;id&gt;/set_role</td><td class="px-3 py-2 text-gray-600">设置角色 <span class="text-red-500 text-[10px]">超管</span></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="admin-comments" class="bg-white rounded-xl border border-gray-200 p-5">
+                <h3 class="font-bold text-gray-900 mb-3 flex items-center gap-2"><i class="fas fa-comments text-primary-400"></i>评论管理</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead><tr class="bg-gray-50 text-left"><th class="px-3 py-2 font-medium text-gray-500">方法</th><th class="px-3 py-2 font-medium text-gray-500">路径</th><th class="px-3 py-2 font-medium text-gray-500">说明</th></tr></thead>
+                        <tbody class="divide-y divide-gray-100">
+                            <tr><td class="px-3 py-2"><span class="method-get text-[10px] font-bold px-1.5 py-0.5 rounded">GET</span></td><td class="px-3 py-2 font-mono text-xs">/admin/comments</td><td class="px-3 py-2 text-gray-600">评论列表（page/search）</td></tr>
+                            <tr><td class="px-3 py-2"><span class="method-post text-[10px] font-bold px-1.5 py-0.5 rounded">POST</span></td><td class="px-3 py-2 font-mono text-xs">/admin/comments/&lt;id&gt;/delete</td><td class="px-3 py-2 text-gray-600">删除评论</td></tr>
+                            <tr><td class="px-3 py-2"><span class="method-post text-[10px] font-bold px-1.5 py-0.5 rounded">POST</span></td><td class="px-3 py-2 font-mono text-xs">/admin/comment/&lt;id&gt;/toggle_good</td><td class="px-3 py-2 text-gray-600">评论点赞切换</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="admin-tags" class="bg-white rounded-xl border border-gray-200 p-5">
+                <h3 class="font-bold text-gray-900 mb-3 flex items-center gap-2"><i class="fas fa-tags text-primary-400"></i>标签管理</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead><tr class="bg-gray-50 text-left"><th class="px-3 py-2 font-medium text-gray-500">方法</th><th class="px-3 py-2 font-medium text-gray-500">路径</th><th class="px-3 py-2 font-medium text-gray-500">说明</th></tr></thead>
+                        <tbody class="divide-y divide-gray-100">
+                            <tr><td class="px-3 py-2"><span class="method-get text-[10px] font-bold px-1.5 py-0.5 rounded">GET</span><span class="method-post text-[10px] font-bold px-1.5 py-0.5 rounded ml-1">POST</span></td><td class="px-3 py-2 font-mono text-xs">/admin/tags</td><td class="px-3 py-2 text-gray-600">标签列表 / 创建标签</td></tr>
+                            <tr><td class="px-3 py-2"><span class="method-post text-[10px] font-bold px-1.5 py-0.5 rounded">POST</span></td><td class="px-3 py-2 font-mono text-xs">/admin/tags/&lt;id&gt;/delete</td><td class="px-3 py-2 text-gray-600">删除标签</td></tr>
+                            <tr><td class="px-3 py-2"><span class="method-post text-[10px] font-bold px-1.5 py-0.5 rounded">POST</span></td><td class="px-3 py-2 font-mono text-xs">/admin/tags/&lt;id&gt;/toggle_status</td><td class="px-3 py-2 text-gray-600">切换标签状态</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="admin-ban" class="bg-white rounded-xl border border-gray-200 p-5">
+                <h3 class="font-bold text-gray-900 mb-3 flex items-center gap-2"><i class="fas fa-gavel text-primary-400"></i>封禁记录</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead><tr class="bg-gray-50 text-left"><th class="px-3 py-2 font-medium text-gray-500">方法</th><th class="px-3 py-2 font-medium text-gray-500">路径</th><th class="px-3 py-2 font-medium text-gray-500">说明</th></tr></thead>
+                        <tbody class="divide-y divide-gray-100">
+                            <tr><td class="px-3 py-2"><span class="method-get text-[10px] font-bold px-1.5 py-0.5 rounded">GET</span></td><td class="px-3 py-2 font-mono text-xs">/admin/ban_records</td><td class="px-3 py-2 text-gray-600">封禁记录列表</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="admin-deleted" class="bg-white rounded-xl border border-gray-200 p-5">
+                <h3 class="font-bold text-gray-900 mb-3 flex items-center gap-2"><i class="fas fa-user-slash text-primary-400"></i>已注销用户 <span class="text-red-500 text-[10px] font-normal">超管专属</span></h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead><tr class="bg-gray-50 text-left"><th class="px-3 py-2 font-medium text-gray-500">方法</th><th class="px-3 py-2 font-medium text-gray-500">路径</th><th class="px-3 py-2 font-medium text-gray-500">说明</th></tr></thead>
+                        <tbody class="divide-y divide-gray-100">
+                            <tr><td class="px-3 py-2"><span class="method-get text-[10px] font-bold px-1.5 py-0.5 rounded">GET</span></td><td class="px-3 py-2 font-mono text-xs">/admin/deleted_users</td><td class="px-3 py-2 text-gray-600">已注销用户列表</td></tr>
+                            <tr><td class="px-3 py-2"><span class="method-post text-[10px] font-bold px-1.5 py-0.5 rounded">POST</span></td><td class="px-3 py-2 font-mono text-xs">/admin/deleted_users/&lt;id&gt;/restore</td><td class="px-3 py-2 text-gray-600">恢复用户</td></tr>
+                            <tr><td class="px-3 py-2"><span class="method-post text-[10px] font-bold px-1.5 py-0.5 rounded">POST</span></td><td class="px-3 py-2 font-mono text-xs">/admin/deleted_users/&lt;id&gt;/purge</td><td class="px-3 py-2 text-gray-600">永久删除</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="admin-settings" class="bg-white rounded-xl border border-gray-200 p-5">
+                <h3 class="font-bold text-gray-900 mb-3 flex items-center gap-2"><i class="fas fa-gear text-primary-400"></i>系统配置 <span class="text-red-500 text-[10px] font-normal">超管专属</span></h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead><tr class="bg-gray-50 text-left"><th class="px-3 py-2 font-medium text-gray-500">方法</th><th class="px-3 py-2 font-medium text-gray-500">路径</th><th class="px-3 py-2 font-medium text-gray-500">说明</th></tr></thead>
+                        <tbody class="divide-y divide-gray-100">
+                            <tr><td class="px-3 py-2"><span class="method-get text-[10px] font-bold px-1.5 py-0.5 rounded">GET</span><span class="method-post text-[10px] font-bold px-1.5 py-0.5 rounded ml-1">POST</span></td><td class="px-3 py-2 font-mono text-xs">/admin/settings</td><td class="px-3 py-2 text-gray-600">查看/修改系统配置</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </div>
+    </main>
+</div>
+
+<script>
+function toggleSidebar() {
+    var s = document.getElementById('sidebar');
+    var o = document.getElementById('sidebarOverlay');
+    s.classList.toggle('-translate-x-full');
+    o.classList.toggle('active');
+}
+document.querySelectorAll('#sidebar a[href^="#"]').forEach(function(a) {
+    a.addEventListener('click', function() {
+        if (window.innerWidth < 1024) toggleSidebar();
+    });
+});
+</script>
+
+</body>
+</html>

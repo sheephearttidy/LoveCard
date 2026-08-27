@@ -636,3 +636,8 @@ def terms():
 @public.route("/privacy")
 def privacy():
     return render_template("public/privacy.html")
+
+
+@public.route("/api_docs")
+def api_docs():
+    return render_template("public/api_docs.html")
