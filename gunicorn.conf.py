@@ -1,4 +1,5 @@
 import os
+import warnings
 
 bind = "127.0.0.1:8000"
 workers = 4
@@ -13,7 +14,9 @@ errorlog = "-"
 loglevel = "info"
 
 if not os.environ.get('SECRET_KEY'):
-    raise RuntimeError(
-        "SECRET_KEY environment variable is required in production. "
-        "Generate one with: python -c \"import secrets; print(secrets.token_hex(32))\""
+    warnings.warn(
+        "SECRET_KEY is not set! Using default value is insecure in production. "
+        "Set SECRET_KEY environment variable: python -c \"import secrets; print(secrets.token_hex(32))\"",
+        RuntimeWarning,
+        stacklevel=1
     )
