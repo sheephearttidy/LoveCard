@@ -169,6 +169,7 @@
             var cardId = this.dataset.cardId;
             if(!cardId) return;
             var fd = new FormData();
+            fd.append('csrf_token', '{{ csrf_token }}');
             fetch('/good/' + cardId, {method:'POST', body:fd, headers:{'X-Requested-With':'XMLHttpRequest'}})
             .then(function(r){
                 if(!r.ok) return r.text().then(function(t){throw new Error(t)});
@@ -228,6 +229,7 @@
 
 function toggleCommentGood(btn, commentId) {
     var fd = new FormData();
+    fd.append('csrf_token', '{{ csrf_token }}');
     fetch('/comment/' + commentId + '/good', {method:'POST', body:fd, headers:{'X-Requested-With':'XMLHttpRequest'}})
     .then(function(r){
         if(!r.ok) return r.text().then(function(t){throw new Error(t)});

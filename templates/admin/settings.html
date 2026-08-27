@@ -1,78 +1,79 @@
 {% extends "admin/base.html" %}
 
-{% block title %}站点配置{% endblock %}
-{% block page_title %}站点配置{% endblock %}
+{% block title %}{{ active_group.title }} - 站点配置{% endblock %}
+{% block page_title %}{{ active_group.title }}{% endblock %}
 
 {% block content %}
-<div class="space-y-4">
-    <form method="post" action="/admin/settings" id="settingsForm">
-    {% for group in config_groups %}
+<div class="mb-4 flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500">
+    <a href="/admin/settings/basic" class="hover:text-primary-500 transition">站点配置</a>
+    <i class="fas fa-chevron-right text-[8px]"></i>
+    <span class="text-gray-600 dark:text-gray-300">{{ active_group.title }}</span>
+</div>
+
+<form method="post" action="/admin/settings/save" id="settingsForm">
+    <input type="hidden" name="_group" value="{{ current_group }}">
     <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700/50">
         <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-700/50">
             <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                <i class="fas {{ group.icon }} text-gray-400 dark:text-gray-500 mr-1.5"></i>{{ group.title }}
+                <i class="fas {{ active_group.icon }} text-gray-400 dark:text-gray-500 mr-1.5"></i>{{ active_group.title }}
             </h2>
         </div>
 
-            <div class="divide-y divide-gray-50 dark:divide-gray-700/30">
-                {% for key in group.fields %}
-                <div class="px-4 py-3 hover:bg-gray-50/50 dark:hover:bg-gray-700/20 transition">
-                    <div class="flex items-start gap-3">
-                        <div class="w-28 flex-shrink-0 pt-1.5">
-                            <label class="text-xs font-medium text-gray-600 dark:text-gray-400" for="config-{{ key }}">
-                                {{ config_labels.get(key, key) }}
-                            </label>
+        <div class="divide-y divide-gray-50 dark:divide-gray-700/30">
+            {% for key in active_group.fields %}
+            <div class="px-4 py-3 hover:bg-gray-50/50 dark:hover:bg-gray-700/20 transition">
+                <div class="flex items-start gap-3">
+                    <div class="w-28 flex-shrink-0 pt-1.5">
+                        <label class="text-xs font-medium text-gray-600 dark:text-gray-400" for="config-{{ key }}">
+                            {{ config_labels.get(key, key) }}
+                        </label>
+                    </div>
+                    <div class="flex-1">
+                        {% if key in ['siteAllowRegister', 'siteAllowPublish', 'siteCardNeedReview', 'siteCommentNeedReview', 'siteRequireInviteCode', 'siteRegisterNeedReview'] %}
+                        <div class="flex items-center gap-2.5">
+                            <button type="button" id="toggle-{{ key }}"
+                                    class="relative w-9 h-5 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 {% if config_dict.get(key) == 'true' %}bg-primary-500{% else %}bg-gray-300 dark:bg-gray-600{% endif %}"
+                                    onclick="toggleSwitch('{{ key }}')">
+                                <span class="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 {% if config_dict.get(key) == 'true' %}translate-x-4{% endif %}"></span>
+                            </button>
+                            <span id="label-{{ key }}" class="text-xs font-medium {% if config_dict.get(key) == 'true' %}text-green-600 dark:text-green-400{% else %}text-red-500 dark:text-red-400{% endif %}">
+                                {% if config_dict.get(key) == 'true' %}已开启{% else %}已关闭{% endif %}
+                            </span>
+                            <input type="hidden" name="{{ key }}" id="input-{{ key }}" value="{{ config_dict.get(key, 'true') }}">
                         </div>
-                        <div class="flex-1">
-                            {% if key in ['siteAllowRegister', 'siteAllowPublish', 'siteCardNeedReview', 'siteCommentNeedReview', 'siteRequireInviteCode', 'siteRegisterNeedReview'] %}
-                            <div class="flex items-center gap-2.5">
-                                <button type="button" id="toggle-{{ key }}"
-                                        class="relative w-9 h-5 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 {% if config_dict.get(key) == 'true' %}bg-primary-500{% else %}bg-gray-300 dark:bg-gray-600{% endif %}"
-                                        onclick="toggleSwitch('{{ key }}')">
-                                    <span class="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 {% if config_dict.get(key) == 'true' %}translate-x-4{% endif %}"></span>
-                                </button>
-                                <span id="label-{{ key }}" class="text-xs font-medium {% if config_dict.get(key) == 'true' %}text-green-600 dark:text-green-400{% else %}text-red-500 dark:text-red-400{% endif %}">
-                                    {% if config_dict.get(key) == 'true' %}已开启{% else %}已关闭{% endif %}
-                                </span>
-                                <input type="hidden" name="{{ key }}" id="input-{{ key }}" value="{{ config_dict.get(key, 'true') }}">
-                            </div>
-                            {% elif key in ['siteDesc', 'siteFooter'] %}
-                            <textarea id="config-{{ key }}" name="{{ key }}" rows="2"
-                                      class="w-full px-3 py-1.5 border border-gray-200 dark:border-gray-600 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-primary-500 transition resize-none bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200">{{ config_dict.get(key, '') }}</textarea>
-                            {% else %}
-                            <input type="text" id="config-{{ key }}" name="{{ key }}"
+                        {% elif key in ['siteDesc', 'siteFooter'] %}
+                        <textarea id="config-{{ key }}" name="{{ key }}" rows="2"
+                                  class="w-full px-3 py-1.5 border border-gray-200 dark:border-gray-600 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-primary-500 transition resize-none bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200">{{ config_dict.get(key, '') }}</textarea>
+                        {% elif key == 'smtpPassword' %}
+                        <div class="relative">
+                            <input type="password" id="config-{{ key }}" name="{{ key }}"
                                    value="{{ config_dict.get(key, '') }}"
-                                   class="w-full px-3 py-1.5 border border-gray-200 dark:border-gray-600 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-primary-500 transition bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200">
-                            {% endif %}
-                            {% if config_hints.get(key) %}
-                            <p class="mt-1 text-[11px] text-gray-400 dark:text-gray-500">{{ config_hints.get(key) }}</p>
-                            {% endif %}
+                                   class="w-full px-3 py-1.5 pr-8 border border-gray-200 dark:border-gray-600 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-primary-500 transition bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200">
+                            <button type="button" onclick="togglePwdVisibility('config-{{ key }}')" class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                                <i class="fas fa-eye text-[10px]"></i>
+                            </button>
                         </div>
+                        {% else %}
+                        <input type="text" id="config-{{ key }}" name="{{ key }}"
+                               value="{{ config_dict.get(key, '') }}"
+                               class="w-full px-3 py-1.5 border border-gray-200 dark:border-gray-600 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-primary-500 transition bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200">
+                        {% endif %}
+                        {% if config_hints.get(key) %}
+                        <p class="mt-1 text-[11px] text-gray-400 dark:text-gray-500">{{ config_hints.get(key) }}</p>
+                        {% endif %}
                     </div>
                 </div>
-                {% endfor %}
             </div>
+            {% endfor %}
+        </div>
     </div>
-    {% endfor %}
 
-    <div class="flex justify-end">
+    <div class="mt-4 flex justify-end">
         <button type="submit" class="bg-primary-500 text-white px-5 py-2 rounded-lg text-xs font-medium hover:bg-primary-600 transition">
-            <i class="fas fa-save mr-1"></i>保存所有配置
+            <i class="fas fa-save mr-1"></i>保存配置
         </button>
     </div>
-    </form>
-
-    <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700/50">
-        <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-700/50">
-            <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                <i class="fas fa-database text-gray-400 dark:text-gray-500 mr-1.5"></i>自定义配置项
-            </h2>
-        </div>
-        <div class="px-4 py-3">
-            <p class="text-xs text-gray-500 dark:text-gray-400">以上配置项已覆盖站点核心设置。如需添加更多自定义配置，可直接在数据库 <code class="bg-gray-100 dark:bg-gray-700 px-1 py-0.5 rounded text-[11px]">system</code> 表中添加键值对。</p>
-        </div>
-    </div>
-</div>
+</form>
 {% endblock %}
 
 {% block extra_js %}
@@ -100,6 +101,15 @@ function toggleSwitch(key) {
         label.textContent = '已开启';
         label.classList.remove('text-red-500', 'dark:text-red-400');
         label.classList.add('text-green-600', 'dark:text-green-400');
+    }
+}
+
+function togglePwdVisibility(id) {
+    var el = document.getElementById(id);
+    if (el.type === 'password') {
+        el.type = 'text';
+    } else {
+        el.type = 'password';
     }
 }
 </script>

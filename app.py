@@ -3,20 +3,20 @@ import uuid
 from datetime import datetime
 
 from flask import Flask, render_template, send_from_directory, session, Response, request
-from flask_login import LoginManager
 from flask_compress import Compress
+from flask_login import LoginManager, current_user
 
 import config
 from model import db
-from model.User import User
-from model.DeletedUser import DeletedUser
 from model.Card import Card
 from model.Comment import Comment
+from model.DeletedUser import DeletedUser
 from model.Good import Good
+from model.User import User
 from route import public, auth, admin
 from route.api import api
-from utils.system import get_site_config
 from utils.captcha import generate_captcha_text, generate_captcha_svg
+from utils.system import get_site_config
 
 app = Flask(__name__)
 app.config.from_object(config)
@@ -57,6 +57,14 @@ def inject_site_config():
     if 'csrf_token' not in session:
         session['csrf_token'] = uuid.uuid4().hex
     ctx['csrf_token'] = session['csrf_token']
+    if current_user.is_authenticated:
+        try:
+            from utils.notification import get_unread_count
+            ctx['unread_count'] = get_unread_count(current_user.id)
+        except Exception:
+            ctx['unread_count'] = 0
+    else:
+        ctx['unread_count'] = 0
     return ctx
 
 

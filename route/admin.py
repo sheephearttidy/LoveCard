@@ -3,7 +3,9 @@ from datetime import datetime
 from flask import Blueprint, request, render_template, redirect, url_for, flash, jsonify, abort, session
 from flask_login import login_required, current_user
 from sqlalchemy import desc, func, or_
+from sqlalchemy.orm import joinedload
 
+from model.AuditLog import AuditLog
 from model.BanRecord import BanRecord
 from model.Card import Card
 from model.Comment import Comment
@@ -11,10 +13,13 @@ from model.DeletedUser import DeletedUser
 from model.Good import Good
 from model.Images import Images
 from model.InviteCode import InviteCode
+from model.Notification import Notification
 from model.Tags import Tags
 from model.TagsMap import TagsMap
 from model.User import User
 from model.db import db
+from utils.audit import log_action
+from utils.notification import notify_card_status, notify_comment_status
 from utils.system import ensure_default_configs, set_config, get_site_config, SITE_CONFIG_LABELS, SITE_CONFIG_GROUPS, \
     SITE_CONFIG_HINTS
 
@@ -59,6 +64,7 @@ def dashboard():
     users_total = db.session.execute(db.select(func.count()).select_from(User)).scalar() or 0
     users_pending = db.session.execute(db.select(func.count()).select_from(User).where(User.status == 2)).scalar() or 0
     comments_total = db.session.execute(db.select(func.count()).select_from(Comment).where(Comment.deleted_at.is_(None))).scalar() or 0
+    comments_pending = db.session.execute(db.select(func.count()).select_from(Comment).where(Comment.status == 0, Comment.deleted_at.is_(None))).scalar() or 0
     goods_total = db.session.execute(db.select(func.count()).select_from(Good)).scalar() or 0
 
     recent_cards = db.session.execute(
@@ -73,7 +79,8 @@ def dashboard():
                            cards_total=cards_total, cards_pending=cards_pending,
                            cards_approved=cards_approved, cards_banned=cards_banned,
                            users_total=users_total, users_pending=users_pending,
-                           comments_total=comments_total, goods_total=goods_total,
+                           comments_total=comments_total, comments_pending=comments_pending,
+                           goods_total=goods_total,
                            recent_cards=recent_cards, recent_users=recent_users)
 
 
@@ -143,6 +150,8 @@ def card_approve(card_id):
     if card:
         card.status = 1
         card.updated_at = datetime.now()
+        log_action('card_approve', 'card', card_id, f'卡片 #{card_id} 审核通过')
+        notify_card_status(card, current_user.id)
         db.session.commit()
         flash('卡片已审核通过', 'success')
     return redirect(request.referrer or url_for('admin.cards_list'))
@@ -155,6 +164,8 @@ def card_reject(card_id):
     if card:
         card.status = 2
         card.updated_at = datetime.now()
+        log_action('card_reject', 'card', card_id, f'卡片 #{card_id} 审核拒绝')
+        notify_card_status(card, current_user.id)
         db.session.commit()
         flash('卡片已拒绝', 'success')
     return redirect(request.referrer or url_for('admin.cards_list'))
@@ -167,6 +178,8 @@ def card_ban(card_id):
     if card:
         card.status = 3
         card.updated_at = datetime.now()
+        log_action('card_ban', 'card', card_id, f'卡片 #{card_id} 已封禁')
+        notify_card_status(card, current_user.id)
         db.session.commit()
         flash('卡片已封禁', 'success')
     return redirect(request.referrer or url_for('admin.cards_list'))
@@ -179,6 +192,8 @@ def card_unban(card_id):
     if card:
         card.status = 1
         card.updated_at = datetime.now()
+        log_action('card_unban', 'card', card_id, f'卡片 #{card_id} 已解封')
+        notify_card_status(card, current_user.id)
         db.session.commit()
         flash('卡片已解封', 'success')
     return redirect(request.referrer or url_for('admin.cards_list'))
@@ -191,6 +206,7 @@ def card_toggle_top(card_id):
     if card:
         card.is_top = 0 if card.is_top else 1
         card.updated_at = datetime.now()
+        log_action('card_toggle_top', 'card', card_id, f'卡片 #{card_id} 置顶状态: {card.is_top}')
         db.session.commit()
         flash('置顶状态已更新', 'success')
     return redirect(request.referrer or url_for('admin.cards_list'))
@@ -208,6 +224,7 @@ def card_delete(card_id):
         ).scalars().all()
         for c in related_comments:
             c.deleted_at = now
+        log_action('card_delete', 'card', card_id, f'卡片 #{card_id} 已删除')
         db.session.commit()
         flash('卡片已删除', 'success')
     return redirect(request.referrer or url_for('admin.cards_list'))
@@ -249,6 +266,7 @@ def cards_batch():
 
     db.session.commit()
     action_names = {'approve': '通过', 'reject': '拒绝', 'ban': '封禁', 'delete': '删除'}
+    log_action('cards_batch', 'card', 0, f'批量{action_names.get(action, "操作")} {count} 条卡片')
     flash(f'已{action_names.get(action, "操作")} {count} 条卡片', 'success')
     return redirect(request.referrer or url_for('admin.cards_list'))
 
@@ -272,6 +290,7 @@ def cards_ban_user(user_id):
             Card.status == 1
         ).values(status=3, updated_at=datetime.now())
     ).rowcount
+    log_action('cards_ban_user', 'user', user_id, f'封禁用户 {user.display_name} 的 {count} 条卡片')
     db.session.commit()
     flash(f'已封禁用户 {user.display_name} 的 {count} 条已通过卡片', 'success')
     return redirect(request.referrer or url_for('admin.cards_list'))
@@ -327,6 +346,8 @@ def user_toggle_status(user_id):
 
     user.status = 1 if user.status == 0 else 0
     user.updated_at = datetime.now()
+    action_text = '封禁' if user.status == 1 else '解封'
+    log_action('user_toggle_status', 'user', user.id, f'{action_text}用户 {user.display_name}')
     db.session.commit()
     flash('用户状态已更新', 'success')
     return redirect(request.referrer or url_for('admin.users_list'))
@@ -368,6 +389,7 @@ def user_ban(user_id):
         banned_by_name=current_user.display_name
     )
     db.session.add(record)
+    log_action('user_ban', 'user', user.id, f'封禁用户 {user.display_name}，原因: {reason}')
     db.session.commit()
     flash(f'用户 {user.display_name} 已封禁', 'success')
     return redirect(request.referrer or url_for('admin.users_list'))
@@ -393,6 +415,7 @@ def user_unban(user_id):
     if active_ban:
         active_ban.unbanned_at = datetime.now()
 
+    log_action('user_unban', 'user', user.id, f'解封用户 {user.display_name}')
     db.session.commit()
     flash(f'用户 {user.display_name} 已解封', 'success')
     return redirect(request.referrer or url_for('admin.users_list'))
@@ -435,6 +458,7 @@ def user_delete(user_id):
         db.session.delete(g)
 
     user.deleted_at = now
+    log_action('user_delete', 'user', user.id, f'删除用户 {user.display_name}')
     db.session.commit()
     flash('用户已删除', 'success')
     return redirect(request.referrer or url_for('admin.users_list'))
@@ -478,6 +502,8 @@ def comment_approve(comment_id):
         card = db.session.get(Card, comment.pid)
         if card:
             card.comments = (card.comments or 0) + 1
+    log_action('comment_approve', 'comment', comment_id, f'评论 #{comment_id} 审核通过')
+    notify_comment_status(comment, current_user.id)
     db.session.commit()
     flash('评论已通过', 'success')
     return redirect(request.referrer or url_for('admin.comments_list'))
@@ -492,6 +518,8 @@ def comment_reject(comment_id):
         return redirect(request.referrer or url_for('admin.comments_list'))
     comment.status = 2
     comment.updated_at = datetime.now()
+    log_action('comment_reject', 'comment', comment_id, f'评论 #{comment_id} 审核拒绝')
+    notify_comment_status(comment, current_user.id)
     db.session.commit()
     flash('评论已拒绝', 'success')
     return redirect(request.referrer or url_for('admin.comments_list'))
@@ -511,6 +539,8 @@ def comment_ban(comment_id):
         card = db.session.get(Card, comment.pid)
         if card and card.comments > 0:
             card.comments -= 1
+    log_action('comment_ban', 'comment', comment_id, f'评论 #{comment_id} 已封禁')
+    notify_comment_status(comment, current_user.id)
     db.session.commit()
     flash('评论已封禁', 'success')
     return redirect(request.referrer or url_for('admin.comments_list'))
@@ -529,6 +559,8 @@ def comment_unban(comment_id):
         card = db.session.get(Card, comment.pid)
         if card:
             card.comments = (card.comments or 0) + 1
+    log_action('comment_unban', 'comment', comment_id, f'评论 #{comment_id} 已解封')
+    notify_comment_status(comment, current_user.id)
     db.session.commit()
     flash('评论已解封', 'success')
     return redirect(request.referrer or url_for('admin.comments_list'))
@@ -579,6 +611,7 @@ def comments_batch():
 
     db.session.commit()
     action_names = {'approve': '通过', 'reject': '拒绝', 'ban': '封禁', 'delete': '删除'}
+    log_action('comments_batch', 'comment', 0, f'批量{action_names.get(action, "操作")} {count} 条评论')
     flash(f'已{action_names.get(action, "操作")} {count} 条评论', 'success')
     return redirect(request.referrer or url_for('admin.comments_list'))
 
@@ -593,6 +626,7 @@ def comment_delete(comment_id):
             card = db.session.get(Card, comment.pid)
             if card and card.comments > 0:
                 card.comments -= 1
+        log_action('comment_delete', 'comment', comment_id, f'评论 #{comment_id} 已删除')
         db.session.commit()
         flash('评论已删除', 'success')
     return redirect(request.referrer or url_for('admin.comments_list'))
@@ -606,6 +640,8 @@ def tags_list():
         if name:
             new_tag = Tags(aid=1, user_id=current_user.id, name=name, status=0)
             db.session.add(new_tag)
+            db.session.flush()
+            log_action('tag_create', 'tag', new_tag.id, f'创建标签 {name}')
             db.session.commit()
             flash('标签已创建', 'success')
         else:
@@ -627,6 +663,7 @@ def tag_delete(tag_id):
         db.session.execute(
             db.update(TagsMap).where(TagsMap.tag_id == tag_id).values(deleted_at=datetime.now())
         )
+        log_action('tag_delete', 'tag', tag_id, f'删除标签 {tag.name}')
         db.session.commit()
         flash('标签已删除', 'success')
     return redirect(request.referrer or url_for('admin.tags_list'))
@@ -638,30 +675,48 @@ def tag_toggle_status(tag_id):
     tag = db.session.get(Tags, tag_id)
     if tag:
         tag.status = 1 if tag.status == 0 else 0
+        log_action('tag_toggle_status', 'tag', tag_id, f'标签 {tag.name} 状态切换为 {"禁用" if tag.status == 1 else "启用"}')
         db.session.commit()
         flash('标签状态已更新', 'success')
     return redirect(request.referrer or url_for('admin.tags_list'))
 
 
-@admin.route('/settings', methods=['GET', 'POST'])
+@admin.route('/settings')
+@admin.route('/settings/<group>')
 @super_admin_required
-def settings():
+def settings(group=None):
     ensure_default_configs()
 
-    if request.method == 'POST':
-        for key in request.form:
-            value = request.form.get(key)
-            set_config(key, value)
-        db.session.commit()
+    group_dict = {g['key']: g for g in SITE_CONFIG_GROUPS}
+    if group and group not in group_dict:
+        abort(404)
+
+    if request.method == 'GET' and request.args.get('save') == '1':
         flash('配置已保存', 'success')
-        return redirect(url_for('admin.settings'))
 
     config_dict = get_site_config()
+    active_group = group_dict.get(group) if group else group_dict.get('basic')
+
     return render_template("admin/settings.html",
                            config_dict=config_dict,
                            config_labels=SITE_CONFIG_LABELS,
                            config_groups=SITE_CONFIG_GROUPS,
-                           config_hints=SITE_CONFIG_HINTS)
+                           config_hints=SITE_CONFIG_HINTS,
+                           active_group=active_group,
+                           current_group=group or 'basic')
+
+
+@admin.route('/settings/save', methods=['POST'])
+@super_admin_required
+def settings_save():
+    group = request.form.get('_group', 'basic')
+    for key in request.form:
+        if key.startswith('_'):
+            continue
+        value = request.form.get(key)
+        set_config(key, value)
+    db.session.commit()
+    return redirect(url_for('admin.settings', group=group, save='1'))
 
 
 @admin.route('/users/<int:user_id>/set_role', methods=['POST'])
@@ -689,9 +744,9 @@ def user_set_role(user_id):
 
     user.roles_id = role_map[role]
     user.updated_at = datetime.now()
-    db.session.commit()
-
     role_names = {'super_admin': '超级管理员', 'admin': '管理员', 'user': '普通用户'}
+    log_action('user_set_role', 'user', user.id, f'用户 {user.display_name} 角色设为 {role_names[role]}')
+    db.session.commit()
     flash(f'已将 {user.display_name} 的角色设置为 {role_names[role]}', 'success')
     return redirect(request.referrer or url_for('admin.users_list'))
 
@@ -732,6 +787,7 @@ def deleted_user_restore(archive_id):
     user.updated_at = datetime.now()
 
     db.session.delete(archive)
+    log_action('user_restore', 'user', user.id, f'恢复用户 {user.display_name}')
     db.session.commit()
     flash(f'用户 {user.display_name} 已恢复（其发布的内容需在卡片/评论管理中单独恢复）', 'success')
     return redirect(url_for('admin.deleted_users_list'))
@@ -765,6 +821,7 @@ def deleted_user_purge(archive_id):
         user.status = 1
 
     db.session.delete(archive)
+    log_action('user_purge', 'user', archive.original_id, f'永久删除用户数据（归档 #{archive_id}）')
     db.session.commit()
     flash('用户数据已永久删除', 'success')
     return redirect(url_for('admin.deleted_users_list'))
@@ -782,7 +839,7 @@ def ban_records_list():
 
 
 @admin.route('/comment/<int:comment_id>/toggle_good', methods=['POST'])
-@login_required
+@admin_required
 def comment_toggle_good(comment_id):
     comment = db.session.get(Comment, comment_id)
     if not comment or comment.deleted_at is not None:
@@ -824,6 +881,7 @@ def pending_user_approve(user_id):
         return redirect(request.referrer or url_for('admin.pending_users_list'))
     user.status = 0
     user.updated_at = datetime.now()
+    log_action('user_approve', 'user', user.id, f'审核通过用户 {user.display_name}')
     db.session.commit()
     flash(f'用户 {user.display_name} 已审核通过', 'success')
     return redirect(request.referrer or url_for('admin.pending_users_list'))
@@ -838,6 +896,7 @@ def pending_user_reject(user_id):
         return redirect(request.referrer or url_for('admin.pending_users_list'))
     user.status = 1
     user.updated_at = datetime.now()
+    log_action('user_reject', 'user', user.id, f'拒绝用户 {user.display_name} 注册')
     db.session.commit()
     flash(f'用户 {user.display_name} 已拒绝', 'success')
     return redirect(request.referrer or url_for('admin.pending_users_list'))
@@ -870,6 +929,7 @@ def pending_users_batch():
 
     db.session.commit()
     action_names = {'approve': '通过', 'reject': '拒绝'}
+    log_action('users_batch_review', 'user', 0, f'批量{action_names.get(action, "操作")} {count} 个用户')
     flash(f'已{action_names.get(action, "操作")} {count} 个用户', 'success')
     return redirect(request.referrer or url_for('admin.pending_users_list'))
 
@@ -939,6 +999,7 @@ def invite_codes_generate():
 
     db.session.commit()
     session['generated_invite_codes'] = generated_codes
+    log_action('invite_codes_generate', 'invite_code', 0, f'生成 {len(generated_codes)} 个邀请码')
     flash(f'已生成 {len(generated_codes)} 个邀请码', 'success')
     return redirect(url_for('admin.invite_codes_list'))
 
@@ -949,6 +1010,7 @@ def invite_code_toggle_status(code_id):
     code = db.session.get(InviteCode, code_id)
     if code:
         code.status = 1 if code.status == 0 else 0
+        log_action('invite_code_toggle', 'invite_code', code_id, f'邀请码 {code.code} 状态切换')
         db.session.commit()
         flash('邀请码状态已更新', 'success')
     return redirect(request.referrer or url_for('admin.invite_codes_list'))
@@ -960,6 +1022,7 @@ def invite_code_delete(code_id):
     code = db.session.get(InviteCode, code_id)
     if code:
         db.session.delete(code)
+        log_action('invite_code_delete', 'invite_code', code_id, f'删除邀请码 {code.code}')
         db.session.commit()
         flash('邀请码已删除', 'success')
     return redirect(request.referrer or url_for('admin.invite_codes_list'))
@@ -992,3 +1055,34 @@ def invite_codes_export():
         mimetype='text/csv; charset=utf-8-sig',
         headers={'Content-Disposition': 'attachment; filename=invite_codes.csv'}
     )
+
+
+@admin.route('/audit_logs')
+@admin_required
+def audit_logs():
+    page = request.args.get('page', 1, type=int)
+    action_filter = request.args.get('action', '').strip()
+    search = request.args.get('search', '').strip()
+
+    query = db.select(AuditLog).order_by(desc(AuditLog.created_at))
+    if action_filter:
+        query = query.where(AuditLog.action == action_filter)
+    if search:
+        escaped = search.replace('\\', '\\\\').replace('%', '\\%').replace('_', '\\_')
+        query = query.where(
+            or_(
+                AuditLog.username.ilike(f'%{escaped}%'),
+                AuditLog.detail.ilike(f'%{escaped}%'),
+            )
+        )
+
+    pagination = db.paginate(query, page=page, per_page=30, error_out=False)
+    logs = pagination.items
+
+    action_types = db.session.execute(
+        db.select(AuditLog.action).distinct()
+    ).scalars().all()
+
+    return render_template("admin/audit_logs.html", logs=logs, pagination=pagination,
+                           action_filter=action_filter, search=search,
+                           action_types=action_types)

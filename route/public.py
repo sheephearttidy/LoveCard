@@ -4,6 +4,7 @@ import re
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user, logout_user
 from sqlalchemy import desc, or_
+from sqlalchemy.orm import joinedload
 
 from model.BanRecord import BanRecord
 from model.Card import Card
@@ -11,11 +12,13 @@ from model.Comment import Comment
 from model.DeletedUser import DeletedUser
 from model.Good import Good
 from model.Images import Images
+from model.Notification import Notification
 from model.Tags import Tags
 from model.User import User
 from model.db import db
 from utils.system import get_config
 from utils.upload import allowed_file, save_upload
+from utils.notification import notify_new_comment, notify_admins, get_unread_count
 
 public = Blueprint('public', __name__)
 
@@ -42,7 +45,7 @@ def index():
     tag_id = request.args.get('tag', type=int)
     search = request.args.get('search', '').strip()
 
-    query = db.select(Card).where(
+    query = db.select(Card).options(joinedload(Card.author)).where(
         Card.status == 1,
         Card.deleted_at.is_(None)
     )
@@ -75,11 +78,15 @@ def card_detail(card_id):
     if not card or card.deleted_at is not None:
         return render_template("public/404.html"), 404
 
+    if card.status != 1:
+        if not current_user.is_authenticated or not current_user.is_admin:
+            return render_template("public/404.html"), 404
+
     card.views = (card.views or 0) + 1
     db.session.commit()
 
     comments = db.session.execute(
-        db.select(Comment).where(
+        db.select(Comment).options(joinedload(Comment.user)).where(
             Comment.aid == 1,
             Comment.pid == card_id,
             Comment.status == 1,
@@ -88,10 +95,17 @@ def card_detail(card_id):
     ).scalars().all()
 
     if current_user.is_authenticated:
+        comment_ids = [c.id for c in comments]
+        liked_comment_ids = set()
+        if comment_ids:
+            liked_rows = db.session.execute(
+                db.select(Good.pid).where(
+                    Good.aid == 2, Good.pid.in_(comment_ids), Good.uid == current_user.id
+                )
+            ).scalars().all()
+            liked_comment_ids = set(liked_rows)
         for c in comments:
-            c.is_liked = db.session.execute(
-                db.select(Good).where(Good.aid == 2, Good.pid == c.id, Good.uid == current_user.id)
-            ).scalar() is not None
+            c.is_liked = c.id in liked_comment_ids
 
     images = db.session.execute(
         db.select(Images).where(
@@ -150,6 +164,9 @@ def add_comment():
 
     if comment_status == 1:
         card.comments = (card.comments or 0) + 1
+        notify_new_comment(card, current_user.id)
+    else:
+        notify_admins('comment_pending', '新评论待审核', f'用户 {current_user.display_name} 的评论待审核', {'card_id': card.id})
     db.session.commit()
 
     if comment_status == 0:
@@ -215,6 +232,8 @@ def publish():
                 img = Images(aid=1, pid=new_card.id, user_id=current_user.id, url=img_url)
                 db.session.add(img)
 
+        if need_review:
+            notify_admins('card_pending', '新卡片待审核', f'用户 {current_user.display_name} 发布的卡片待审核', {'card_id': new_card.id})
         db.session.commit()
         if need_review:
             flash('发布成功，等待审核通过后将在首页展示', 'success')
@@ -641,3 +660,45 @@ def privacy():
 @public.route("/api_docs")
 def api_docs():
     return render_template("public/api_docs.html")
+
+
+@public.route('/notifications')
+@login_required
+def notifications():
+    page = request.args.get('page', 1, type=int)
+    query = db.select(Notification).where(
+        Notification.user_id == current_user.id
+    ).order_by(desc(Notification.created_at))
+    pagination = db.paginate(query, page=page, per_page=20, error_out=False)
+    items = pagination.items
+    return render_template("public/notifications.html", notifications=items, pagination=pagination)
+
+
+@public.route('/notifications/read/<int:nid>', methods=['POST'])
+@login_required
+def notification_read(nid):
+    n = db.session.get(Notification, nid)
+    if n and n.user_id == current_user.id:
+        n.is_read = 1
+        db.session.commit()
+    return jsonify(success=True)
+
+
+@public.route('/notifications/read_all', methods=['POST'])
+@login_required
+def notification_read_all():
+    db.session.execute(
+        db.update(Notification).where(
+            Notification.user_id == current_user.id,
+            Notification.is_read == 0
+        ).values(is_read=1)
+    )
+    db.session.commit()
+    return jsonify(success=True)
+
+
+@public.route('/notifications/count')
+@login_required
+def notification_count():
+    count = get_unread_count(current_user.id)
+    return jsonify(count=count)

@@ -81,6 +81,16 @@
 </div>
 {% endif %}
 
+{% if comments_pending > 0 %}
+<div class="bg-violet-50 dark:bg-violet-900/15 border border-violet-200/60 dark:border-violet-800/30 rounded-xl px-4 py-3 mb-5 flex items-center justify-between">
+    <div class="flex items-center gap-2.5">
+        <i class="fas fa-comment-dots text-violet-500"></i>
+        <span class="text-sm font-medium text-violet-700 dark:text-violet-300">有 {{ comments_pending }} 条评论待审核</span>
+    </div>
+    <a href="/admin/comments?status=0" class="text-xs font-medium text-violet-600 dark:text-violet-400 hover:underline">前往审核 →</a>
+</div>
+{% endif %}
+
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
     <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700/50">
         <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-700/50 flex items-center gap-2">

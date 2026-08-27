@@ -3,6 +3,7 @@ import re
 from flask import Blueprint, request, jsonify, session
 from flask_login import login_user, logout_user, login_required, current_user
 from sqlalchemy import desc
+from sqlalchemy.orm import joinedload
 
 from model.Card import Card
 from model.Comment import Comment
@@ -12,6 +13,8 @@ from model.InviteCode import InviteCode
 from model.Tags import Tags
 from model.User import User
 from model.db import db
+from utils.notification import notify_new_comment, notify_admins
+from utils.rate_limit import check_rate_limit, get_remaining_time, record_failed_attempt, clear_attempts
 from utils.system import get_config
 from utils.upload import allowed_file, save_upload
 
@@ -95,6 +98,8 @@ def register():
     if require_invite_code and invite:
         invite.used_count += 1
 
+    if need_review:
+        notify_admins('user_pending', '新用户待审核', f'用户 {username} 注册待审核', {'user_id': user.id})
     db.session.commit()
 
     if need_review:
@@ -104,16 +109,26 @@ def register():
 
 @api.route('/auth/login', methods=['POST'])
 def login():
+    ip = request.remote_addr or '0.0.0.0'
+    if not check_rate_limit(ip, max_attempts=10, window=300):
+        remaining = get_remaining_time(ip, window=300)
+        return jsonify(code=429, message=f'登录尝试过于频繁，请 {remaining} 秒后再试'), 429
+
     data = request.get_json(silent=True) or {}
-    email = data.get('email', '').strip()
+    account = data.get('account', '').strip() or data.get('email', '').strip()
     password = data.get('password', '')
 
-    if not email or not password:
-        return jsonify(code=400, message='邮箱和密码不能为空'), 400
+    if not account or not password:
+        return jsonify(code=400, message='账号和密码不能为空'), 400
 
-    user = db.session.execute(db.select(User).where(User.email == email)).scalar()
+    if '@' in account:
+        user = db.session.execute(db.select(User).where(User.email == account)).scalar()
+    else:
+        user = db.session.execute(db.select(User).where(User.username == account)).scalar()
+
     if not user or not user.check_password(password):
-        return jsonify(code=401, message='邮箱或密码错误'), 401
+        record_failed_attempt(ip)
+        return jsonify(code=401, message='账号或密码错误'), 401
 
     if user.status == 2:
         return jsonify(code=403, message='账号正在审核中，请等待管理员通过'), 403
@@ -121,6 +136,7 @@ def login():
     if user.status != 0:
         return jsonify(code=403, message='账号已被禁用'), 403
 
+    clear_attempts(ip)
     login_user(user, remember=True)
     return jsonify(code=200, message='登录成功', data=_user_info(user))
 
@@ -208,7 +224,7 @@ def get_cards():
     per_page = min(per_page, 50)
     tag_id = request.args.get('tag', type=int)
 
-    query = db.select(Card).where(Card.status == 1, Card.deleted_at.is_(None))
+    query = db.select(Card).options(joinedload(Card.author)).where(Card.status == 1, Card.deleted_at.is_(None))
     if tag_id:
         query = query.where(Card.tags.contains(tag_id))
     query = query.order_by(desc(Card.is_top), desc(Card.created_at))
@@ -259,7 +275,7 @@ def get_card_detail(card_id):
         author_name = card.author.display_name if card.author else '未知'
 
     comments = db.session.execute(
-        db.select(Comment).where(
+        db.select(Comment).options(joinedload(Comment.user)).where(
             Comment.aid == 1, Comment.pid == card_id,
             Comment.status == 1, Comment.deleted_at.is_(None)
         ).order_by(Comment.created_at.desc())
@@ -347,6 +363,8 @@ def create_card():
             img = Images(aid=1, pid=new_card.id, user_id=current_user.id, url=img_url)
             db.session.add(img)
 
+    if need_review:
+        notify_admins('card_pending', '新卡片待审核', f'用户 {current_user.display_name} 发布的卡片待审核', {'card_id': new_card.id})
     db.session.commit()
     message = '发布成功，等待审核' if need_review else '发布成功'
     return jsonify(code=200, message=message, data={'id': new_card.id})
@@ -402,6 +420,9 @@ def add_comment(card_id):
     db.session.add(new_comment)
     if comment_status == 1:
         card.comments = (card.comments or 0) + 1
+        notify_new_comment(card, current_user.id)
+    else:
+        notify_admins('comment_pending', '新评论待审核', f'用户 {current_user.display_name} 的评论待审核', {'card_id': card.id})
     db.session.commit()
 
     message = '评论成功，等待审核' if comment_status == 0 else '评论成功'

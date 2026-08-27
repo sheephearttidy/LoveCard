@@ -1,8 +1,8 @@
 # LoveCards API 接口文档
 
-> 基础地址：`http://localhost:8000/api/v1`
+> 基础地址：`/api/v1`
 >
-> 所有接口统一返回 JSON 格式，结构为 `{"code": int, "message": string, "data": object}`
+> 所有接口统一返回 JSON，结构为 `{"code": int, "message": string, "data": object}`
 
 ---
 
@@ -53,9 +53,11 @@ Content-Type: application/json
 
 | 参数名 | 类型 | 必填 | 说明 |
 |--------|------|------|------|
-| `username` | string | 是 | 用户名 |
+| `username` | string | 是 | 用户名（3-20位，字母/数字/下划线/中文） |
 | `email` | string | 是 | 邮箱地址 |
 | `password` | string | 是 | 密码（至少 6 位） |
+| `captcha` | string | 是 | 图形验证码 |
+| `invite_code` | string | 否 | 邀请码（站点开启时必填） |
 
 **请求示例：**
 
@@ -63,7 +65,8 @@ Content-Type: application/json
 {
   "username": "testuser",
   "email": "test@example.com",
-  "password": "123456"
+  "password": "123456",
+  "captcha": "a3b5"
 }
 ```
 
@@ -80,14 +83,36 @@ Content-Type: application/json
 }
 ```
 
+当站点开启注册审核时，返回：
+
+```json
+{
+  "code": 200,
+  "message": "注册成功，账号正在审核中",
+  "data": {
+    "id": 2,
+    "username": "testuser",
+    "status": "pending_review"
+  }
+}
+```
+
 **失败响应：**
 
 | code | message | 场景 |
 |------|---------|------|
 | 400 | 用户名、邮箱和密码不能为空 | 缺少必填字段 |
+| 400 | 验证码错误 | 验证码不正确 |
+| 400 | 验证码已过期，请刷新重试 | 验证码超过5分钟 |
+| 400 | 用户名长度需在 3-20 个字符之间 | 用户名长度不符 |
+| 400 | 用户名只能包含字母、数字、下划线和中文 | 用户名格式不符 |
 | 400 | 密码至少6位 | 密码过短 |
+| 400 | 邀请码不能为空 | 开启邀请码但未提供 |
+| 400 | 邀请码无效或已过期 | 邀请码不合法 |
+| 403 | 站点已关闭注册 | 注册已关闭 |
 | 409 | 邮箱已被注册 | 邮箱重复 |
 | 409 | 用户名已被占用 | 用户名重复 |
+| 429 | 操作过于频繁，请稍后再试 | 10秒内重复请求 |
 
 ---
 
@@ -109,14 +134,15 @@ Content-Type: application/json
 
 | 参数名 | 类型 | 必填 | 说明 |
 |--------|------|------|------|
-| `email` | string | 是 | 邮箱地址 |
+| `account` | string | 是 | 用户名或邮箱 |
+| `email` | string | 否 | 邮箱（兼容旧版，与account二选一） |
 | `password` | string | 是 | 密码 |
 
 **请求示例：**
 
 ```json
 {
-  "email": "test@example.com",
+  "account": "test@example.com",
   "password": "123456"
 }
 ```
@@ -130,12 +156,14 @@ Content-Type: application/json
   "data": {
     "id": 2,
     "username": "testuser",
+    "nickname": "测试用户",
+    "display_name": "测试用户",
     "email": "test@example.com",
     "phone": "",
     "avatar": "",
     "status": 0,
     "roles_id": [2],
-    "created_at": "2025-01-01T12:00:00"
+    "created_at": "2026-01-01T12:00:00"
   }
 }
 ```
@@ -144,9 +172,11 @@ Content-Type: application/json
 
 | code | message | 场景 |
 |------|---------|------|
-| 400 | 邮箱和密码不能为空 | 缺少必填字段 |
-| 401 | 邮箱或密码错误 | 凭证错误 |
-| 403 | 账号已被禁用 | 账号状态异常 |
+| 400 | 账号和密码不能为空 | 缺少必填字段 |
+| 401 | 账号或密码错误 | 凭证错误 |
+| 403 | 账号正在审核中，请等待管理员通过 | 账号待审核 |
+| 403 | 账号已被禁用 | 账号被禁用 |
+| 429 | 登录尝试过于频繁，请 N 秒后再试 | 频率限制（10次/5分钟） |
 
 ---
 
@@ -185,12 +215,14 @@ Content-Type: application/json
   "data": {
     "id": 2,
     "username": "testuser",
+    "nickname": "测试用户",
+    "display_name": "测试用户",
     "email": "test@example.com",
     "phone": "",
     "avatar": "",
     "status": 0,
     "roles_id": [2],
-    "created_at": "2025-01-01T12:00:00"
+    "created_at": "2026-01-01T12:00:00"
   }
 }
 ```
@@ -217,7 +249,7 @@ Content-Type: application/json
 
 | 参数名 | 类型 | 必填 | 说明 |
 |--------|------|------|------|
-| `username` | string | 否 | 新用户名 |
+| `nickname` | string | 否 | 昵称（最多30字符） |
 | `email` | string | 否 | 新邮箱 |
 | `phone` | string | 否 | 新手机号 |
 
@@ -227,7 +259,7 @@ Content-Type: application/json
 
 ```json
 {
-  "username": "newname",
+  "nickname": "新昵称",
   "phone": "13800138000"
 }
 ```
@@ -240,13 +272,15 @@ Content-Type: application/json
   "message": "更新成功",
   "data": {
     "id": 2,
-    "username": "newname",
+    "username": "testuser",
+    "nickname": "新昵称",
+    "display_name": "新昵称",
     "email": "test@example.com",
     "phone": "13800138000",
     "avatar": "",
     "status": 0,
     "roles_id": [2],
-    "created_at": "2025-01-01T12:00:00"
+    "created_at": "2026-01-01T12:00:00"
   }
 }
 ```
@@ -255,7 +289,7 @@ Content-Type: application/json
 
 | code | message | 场景 |
 |------|---------|------|
-| 409 | 用户名已被占用 | 用户名重复 |
+| 400 | 昵称长度不能超过 30 个字符 | 昵称过长 |
 | 409 | 邮箱已被注册 | 邮箱重复 |
 
 ---
@@ -286,9 +320,11 @@ Content-Type: application/json
 ```json
 {
   "code": 200,
-  "message": "密码修改成功"
+  "message": "密码修改成功，请重新登录"
 }
 ```
+
+> 修改密码后会自动登出，需重新登录。
 
 **失败响应：**
 
@@ -327,7 +363,7 @@ Content-Type: multipart/form-data
   "code": 200,
   "message": "头像上传成功",
   "data": {
-    "avatar": "/uploads/avatars/20250101_a1b2c3d4.jpg"
+    "avatar": "/uploads/avatars/20260101_a1b2c3d4.jpg"
   }
 }
 ```
@@ -374,7 +410,7 @@ GET /api/v1/cards?page=1&per_page=12&tag=1
       {
         "id": 1,
         "content": "卡片内容",
-        "cover": "/uploads/cards/20250101_a1b2c3d4.jpg",
+        "cover": "/uploads/cards/20260101_a1b2c3d4.jpg",
         "good": 5,
         "views": 100,
         "comments": 3,
@@ -382,7 +418,7 @@ GET /api/v1/cards?page=1&per_page=12&tag=1
         "author": "testuser",
         "is_anonymous": false,
         "tags": [1, 2],
-        "created_at": "2025-01-01T12:00:00"
+        "created_at": "2026-01-01T12:00:00"
       }
     ],
     "page": 1,
@@ -421,7 +457,7 @@ GET /api/v1/cards?page=1&per_page=12&tag=1
   "data": {
     "id": 1,
     "content": "卡片内容",
-    "cover": "/uploads/cards/20250101_a1b2c3d4.jpg",
+    "cover": "/uploads/cards/20260101_a1b2c3d4.jpg",
     "good": 5,
     "views": 101,
     "comments": 3,
@@ -429,20 +465,20 @@ GET /api/v1/cards?page=1&per_page=12&tag=1
     "author": "testuser",
     "is_anonymous": false,
     "tags": [1, 2],
-    "created_at": "2025-01-01T12:00:00",
+    "created_at": "2026-01-01T12:00:00",
     "is_liked": false,
     "comment_list": [
       {
         "id": 1,
         "content": "评论内容",
         "author": "commenter",
-        "created_at": "2025-01-01T13:00:00"
+        "created_at": "2026-01-01T13:00:00"
       }
     ],
     "image_list": [
       {
         "id": 1,
-        "url": "/uploads/cards/20250101_e5f6g7h8.jpg"
+        "url": "/uploads/cards/20260101_e5f6g7h8.jpg"
       }
     ]
   }
@@ -478,7 +514,7 @@ Content-Type: multipart/form-data
 
 | 参数名 | 类型 | 必填 | 说明 |
 |--------|------|------|------|
-| `content` | string | 是 | 卡片内容 |
+| `content` | string | 是 | 卡片内容（最多2000字） |
 | `is_anonymous` | string | 否 | 匿名发布，传 `"1"` 为匿名 |
 | `tags` | int (可多选) | 否 | 标签 ID，可传多个 |
 | `cover_file` | file | 否 | 封面图文件 |
@@ -511,12 +547,15 @@ curl -X POST http://localhost:8000/api/v1/cards \
 ```
 
 > 新发布的卡片 `status=0`（待审核），需管理员审核通过后才会在列表中展示。
+> 发布成功后管理员会收到通知。
 
 **失败响应：**
 
 | code | message | 场景 |
 |------|---------|------|
 | 400 | 内容不能为空 | 未填写内容 |
+| 400 | 内容不能超过 2000 个字符 | 内容过长 |
+| 403 | 站点已关闭发布 | 发布已关闭 |
 
 ---
 
@@ -580,7 +619,7 @@ Content-Type: application/json
 
 | 参数名 | 类型 | 必填 | 说明 |
 |--------|------|------|------|
-| `content` | string | 是 | 评论内容 |
+| `content` | string | 是 | 评论内容（最多500字） |
 
 **请求示例：**
 
@@ -600,16 +639,20 @@ Content-Type: application/json
     "id": 5,
     "content": "很棒的卡片！",
     "author": "testuser",
-    "created_at": "2025-01-01T14:00:00"
+    "created_at": "2026-01-01T14:00:00"
   }
 }
 ```
+
+> 站点开启评论审核时，`message` 返回 "评论成功，等待审核"，评论需管理员审核后才展示。
+> 评论成功后卡片作者会收到通知；待审核时管理员会收到通知。
 
 **失败响应：**
 
 | code | message | 场景 |
 |------|---------|------|
 | 400 | 评论内容不能为空 | 评论为空 |
+| 400 | 评论内容不能超过 500 个字符 | 评论过长 |
 | 404 | 卡片不存在 | 卡片不存在或已删除 |
 
 ---
@@ -671,7 +714,7 @@ Content-Type: multipart/form-data
   "code": 200,
   "message": "上传成功",
   "data": {
-    "url": "/uploads/cards/20250101_a1b2c3d4.jpg"
+    "url": "/uploads/cards/20260101_a1b2c3d4.jpg"
   }
 }
 ```
@@ -686,7 +729,7 @@ Content-Type: multipart/form-data
 
 ## 6. 前台页面路由
 
-> 以下路由由 `public` 和 `auth` 蓝图提供，返回 HTML 页面。
+> 以下路由返回 HTML 页面，POST 请求需携带 `csrf_token`。
 
 ### 公共页面
 
@@ -698,23 +741,26 @@ Content-Type: multipart/form-data
 | GET | `/terms` | 服务条款 |
 | GET | `/privacy` | 隐私政策 |
 | GET | `/ban_records` | 封禁记录公示 |
+| GET | `/api_docs` | API 文档 |
 
 ### 认证
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| GET/POST | `/login` | 登录（POST 为 form 提交，返回 JSON） |
-| GET/POST | `/register` | 注册（POST 为 form 提交，返回 JSON） |
+| GET/POST | `/login` | 登录 |
+| GET/POST | `/register` | 注册 |
 | GET | `/logout` | 登出 |
+| GET/POST | `/forgot_password` | 忘记密码 |
+| GET/POST | `/reset_password/<token>` | 重置密码（1小时有效） |
 
 ### 卡片交互
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
 | GET/POST | `/publish` | 发布卡片（需登录） |
-| POST | `/comment` | 发表评论（form 提交，支持 AJAX） |
-| POST | `/good/<card_id>` | 卡片点赞切换（返回 JSON） |
-| POST | `/comment/<comment_id>/good` | 评论点赞切换（返回 JSON） |
+| POST | `/comment` | 发表评论（支持 AJAX） |
+| POST | `/good/<card_id>` | 卡片点赞切换 |
+| POST | `/comment/<comment_id>/good` | 评论点赞切换 |
 
 ### 个人中心
 
@@ -729,25 +775,35 @@ Content-Type: multipart/form-data
 | POST | `/profile/security/delete` | 注销账号（3天冷静期） |
 | GET | `/profile/cards` | 我的卡片 |
 | GET | `/profile/comments` | 我的评论 |
+| POST | `/profile/cards/<id>/delete` | 删除我的卡片 |
+| POST | `/profile/comments/<id>/delete` | 删除我的评论 |
+
+### 通知
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/notifications` | 通知列表（需登录） |
+| POST | `/notifications/read/<id>` | 标记已读 |
+| POST | `/notifications/read_all` | 全部标记已读 |
+| GET | `/notifications/count` | 未读数量 |
 
 ---
 
 ## 7. 后台管理路由
 
-> 以下路由由 `admin` 蓝图提供，前缀 `/admin`，需管理员权限。
-> 标注 **[超管]** 的接口需要超级管理员角色（roles_id 包含 0）。
+> 前缀 `/admin`，需管理员权限。标注 **[超管]** 的需要超级管理员角色。
 
 ### 仪表盘
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| GET | `/admin/` | 仪表盘（统计数据概览） |
+| GET | `/admin/` | 仪表盘（统计+待审核） |
 
 ### 卡片管理
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| GET | `/admin/cards` | 卡片列表（支持 `page`、`status`、`search` 筛选） |
+| GET | `/admin/cards` | 卡片列表（`page`/`status`/`search` 筛选） |
 | GET | `/admin/cards/<id>/detail` | 卡片详情 |
 | POST | `/admin/cards/<id>/approve` | 审核通过 |
 | POST | `/admin/cards/<id>/reject` | 审核拒绝 |
@@ -762,19 +818,28 @@ Content-Type: multipart/form-data
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| GET | `/admin/users` | 用户列表（支持 `page`、`status`、`role`、`search` 筛选） |
-| POST | `/admin/users/<id>/toggle_status` | 切换用户状态（启用/禁用） |
-| POST | `/admin/users/<id>/ban` | 封禁用户（需填写原因） |
+| GET | `/admin/users` | 用户列表（`page`/`status`/`role`/`search` 筛选） |
+| POST | `/admin/users/<id>/toggle_status` | 切换用户状态 |
+| POST | `/admin/users/<id>/ban` | 封禁用户 |
 | POST | `/admin/users/<id>/unban` | 解封用户 |
-| POST | `/admin/users/<id>/delete` | 删除用户（软删除） |
-| POST | `/admin/users/<id>/set_role` | 设置用户角色 **[超管]** |
+| POST | `/admin/users/<id>/delete` | 删除用户 |
+| POST | `/admin/users/<id>/set_role` | 设置角色 **[超管]** |
+
+### 注册审核
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/admin/pending_users` | 待审核用户列表 |
+| POST | `/admin/pending_users/<id>/approve` | 通过审核 |
+| POST | `/admin/pending_users/<id>/reject` | 拒绝审核 |
+| POST | `/admin/pending_users/batch` | 批量审核 |
 
 ### 评论管理
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| GET | `/admin/comments` | 评论列表（支持 `page`、`search` 筛选） |
-| POST | `/admin/comments/<id>/delete` | 删除评论（软删除） |
+| GET | `/admin/comments` | 评论列表（`page`/`search` 筛选） |
+| POST | `/admin/comments/<id>/delete` | 删除评论 |
 | POST | `/admin/comment/<id>/toggle_good` | 评论点赞切换 |
 
 ### 标签管理
@@ -785,11 +850,25 @@ Content-Type: multipart/form-data
 | POST | `/admin/tags/<id>/delete` | 删除标签 |
 | POST | `/admin/tags/<id>/toggle_status` | 切换标签状态 |
 
+### 邀请码管理
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET/POST | `/admin/invite_codes` | 邀请码列表 / 生成邀请码 |
+| POST | `/admin/invite_codes/<id>/toggle` | 启停邀请码 |
+| POST | `/admin/invite_codes/<id>/delete` | 删除邀请码 |
+
 ### 封禁记录
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
 | GET | `/admin/ban_records` | 封禁记录列表 |
+
+### 审计日志
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/admin/audit_logs` | 审计日志列表（`page`/`action`/`target_type` 筛选） |
 
 ### 已注销用户 **[超管]**
 
@@ -811,8 +890,6 @@ Content-Type: multipart/form-data
 
 ### API 接口（`/api/v1`）
 
-所有 API 接口统一使用以下 JSON 格式：
-
 ```json
 {
   "code": 200,
@@ -823,13 +900,11 @@ Content-Type: multipart/form-data
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
-| `code` | int | 状态码，200=成功，400=参数错误，401=未认证，403=无权限，404=不存在，409=冲突 |
+| `code` | int | 200=成功，400=参数错误，401=未认证，403=无权限，404=不存在，409=冲突，429=频率限制 |
 | `message` | string | 提示信息 |
-| `data` | object/null | 响应数据，无数据时为 null |
+| `data` | object/null | 响应数据 |
 
 ### 前台 AJAX 接口
-
-部分前台页面交互使用 `success/message` 格式：
 
 ```json
 {

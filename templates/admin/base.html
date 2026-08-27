@@ -70,6 +70,9 @@
             <a href="/admin/ban_records" class="{% if '/ban_records' in request.path %}active{% endif %}">
                 <i class="fas fa-gavel w-4 mr-2 text-center"></i>封禁公示
             </a>
+            <a href="/admin/audit_logs" class="{% if '/audit_logs' in request.path %}active{% endif %}">
+                <i class="fas fa-clipboard-list w-4 mr-2 text-center"></i>审计日志
+            </a>
             {% if current_user.is_super_admin %}
             <a href="/admin/deleted_users" class="{% if '/deleted_users' in request.path %}active{% endif %}">
                 <i class="fas fa-user-slash w-4 mr-2 text-center"></i>已注销用户
@@ -86,8 +89,17 @@
                 <i class="fas fa-chevron-down text-[9px] transition-transform duration-200 sidebar-arrow {% if '/settings' in request.path %}rotate-180{% endif %}"></i>
             </button>
             <div id="sysMenu" class="sidebar-submenu pl-3 space-y-0.5 overflow-hidden transition-all duration-200 {% if '/settings' in request.path %}max-h-40{% else %}max-h-0{% endif %}">
-                <a href="/admin/settings" class="{% if '/settings' in request.path %}active{% endif %}">
-                    <i class="fas fa-sliders w-4 mr-2 text-center"></i>基本设置
+                <a href="/admin/settings/basic" class="{% if '/settings/basic' in request.path %}active{% endif %}">
+                    <i class="fas fa-globe w-4 mr-2 text-center"></i>基本设置
+                </a>
+                <a href="/admin/settings/footer" class="{% if '/settings/footer' in request.path %}active{% endif %}">
+                    <i class="fas fa-file-contract w-4 mr-2 text-center"></i>页脚与备案
+                </a>
+                <a href="/admin/settings/features" class="{% if '/settings/features' in request.path %}active{% endif %}">
+                    <i class="fas fa-toggle-on w-4 mr-2 text-center"></i>功能开关
+                </a>
+                <a href="/admin/settings/email" class="{% if '/settings/email' in request.path %}active{% endif %}">
+                    <i class="fas fa-envelope w-4 mr-2 text-center"></i>邮件服务
                 </a>
             </div>
             {% endif %}

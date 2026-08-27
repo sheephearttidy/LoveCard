@@ -15,19 +15,21 @@ from werkzeug.security import generate_password_hash
 
 from app import app
 from model import db, User
+from model.AuditLog import AuditLog
+from model.BanRecord import BanRecord
 from model.Card import Card
 from model.Comment import Comment
+from model.DeletedUser import DeletedUser
 from model.Good import Good
 from model.Images import Images
+from model.InviteCode import InviteCode
+from model.Notification import Notification
+from model.System import System
 from model.Tags import Tags
 from model.TagsMap import TagsMap
-from model.System import System
-from model.DeletedUser import DeletedUser
-from model.BanRecord import BanRecord
-from model.InviteCode import InviteCode
 from utils.system import ensure_default_configs, SITE_CONFIG_DEFAULTS
 
-ALL_MODELS = [User, Card, Comment, Good, Images, Tags, TagsMap, System, DeletedUser, BanRecord, InviteCode]
+ALL_MODELS = [User, Card, Comment, Good, Images, Tags, TagsMap, System, DeletedUser, BanRecord, InviteCode, Notification, AuditLog]
 
 
 def create_tables():

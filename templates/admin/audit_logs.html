@@ -1,0 +1,71 @@
+﻿{% extends "admin/base.html" %}
+
+{% block title %}审计日志{% endblock %}
+{% block page_title %}审计日志{% endblock %}
+
+{% block content %}
+<div class="p-4 sm:p-6">
+    <div class="flex flex-col sm:flex-row gap-3 mb-6">
+        <form method="GET" action="/admin/audit_logs" class="flex flex-col sm:flex-row gap-3 flex-1">
+            <select name="action" class="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-primary-500">
+                <option value="">全部操作</option>
+                {% for at in action_types %}
+                <option value="{{ at }}" {{ 'selected' if action_filter == at else '' }}>{{ at }}</option>
+                {% endfor %}
+            </select>
+            <input type="text" name="search" value="{{ search }}" placeholder="搜索用户名或详情..."
+                class="flex-1 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-primary-500">
+            <button type="submit" class="px-4 py-2 bg-primary-500 text-white rounded-lg text-sm hover:bg-primary-600 transition">
+                <i class="fas fa-search mr-1"></i>筛选
+            </button>
+        </form>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead class="bg-gray-50 dark:bg-gray-700/50">
+                    <tr>
+                        <th class="px-4 py-3 text-left font-medium text-gray-500 dark:text-gray-400">时间</th>
+                        <th class="px-4 py-3 text-left font-medium text-gray-500 dark:text-gray-400">操作人</th>
+                        <th class="px-4 py-3 text-left font-medium text-gray-500 dark:text-gray-400">操作</th>
+                        <th class="px-4 py-3 text-left font-medium text-gray-500 dark:text-gray-400">目标</th>
+                        <th class="px-4 py-3 text-left font-medium text-gray-500 dark:text-gray-400">详情</th>
+                        <th class="px-4 py-3 text-left font-medium text-gray-500 dark:text-gray-400">IP</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                    {% for log in logs %}
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition">
+                        <td class="px-4 py-3 text-gray-500 dark:text-gray-400 whitespace-nowrap">{{ log.created_at.strftime('%m-%d %H:%M') }}</td>
+                        <td class="px-4 py-3 text-gray-900 dark:text-white font-medium">{{ log.username }}</td>
+                        <td class="px-4 py-3">
+                            <span class="inline-flex px-2 py-0.5 rounded text-xs font-medium bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300">{{ log.action }}</span>
+                        </td>
+                        <td class="px-4 py-3 text-gray-600 dark:text-gray-400">{{ log.target_type }}{% if log.target_id %} #{{ log.target_id }}{% endif %}</td>
+                        <td class="px-4 py-3 text-gray-600 dark:text-gray-400 max-w-xs truncate">{{ log.detail }}</td>
+                        <td class="px-4 py-3 text-gray-400 dark:text-gray-500 font-mono text-xs">{{ log.ip }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="px-4 py-8 text-center text-gray-400 dark:text-gray-500">暂无审计日志</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if pagination.pages > 1 %}
+    <div class="flex justify-center mt-6 space-x-2">
+        {% if pagination.has_prev %}
+        <a href="?page={{ pagination.prev_num }}&action={{ action_filter }}&search={{ search }}" class="px-3 py-1.5 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm text-gray-600 dark:text-gray-300 hover:border-primary-500 transition">上一页</a>
+        {% endif %}
+        <span class="px-3 py-1.5 text-sm text-gray-500 dark:text-gray-400">{{ pagination.page }} / {{ pagination.pages }}</span>
+        {% if pagination.has_next %}
+        <a href="?page={{ pagination.next_num }}&action={{ action_filter }}&search={{ search }}" class="px-3 py-1.5 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm text-gray-600 dark:text-gray-300 hover:border-primary-500 transition">下一页</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
