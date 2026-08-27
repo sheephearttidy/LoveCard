@@ -76,9 +76,9 @@ bash deploy/baota_setup.sh
 
 | 变量 | 必填 | 默认值 | 说明 |
 |------|------|--------|------|
-| SECRET_KEY | 是 | dev-secret-key... | 会话签名密钥 |
-| DB_USER | 是 | lovecard | 数据库用户名 |
-| DB_PASSWORD | 是 | lovecard | 数据库密码 |
+| SECRET_KEY | 是 | *自动生成* | 会话签名密钥，**请勿使用默认值** |
+| DB_USER | 是 | *自定义* | 数据库用户名 |
+| DB_PASSWORD | 是 | *自定义* | 数据库密码，**请使用强密码** |
 | DB_HOST | | 127.0.0.1 | 数据库地址 |
 | DB_PORT | | 3306 | 数据库端口 |
 | DB_NAME | 是 | lovecard | 数据库名 |
