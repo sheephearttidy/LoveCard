@@ -54,6 +54,24 @@ gunicorn -c gunicorn.conf.py wsgi:app
 
 宝塔面板用 `wsgi:app`。
 
+### 生产部署
+
+项目提供现成的 Nginx 和宝塔配置，详见 [deploy/](deploy/) 目录。
+
+**Nginx 配置：**
+
+- [nginx.conf](deploy/nginx.conf) — HTTPS + 反向代理 + 静态资源缓存
+- [nginx_nossl.conf](deploy/nginx_nossl.conf) — 纯 HTTP 版本，适合宝塔面板自动管理 SSL
+
+**宝塔一键部署：**
+
+```bash
+# 项目放到 /www/wwwroot/LoveCards 后执行
+bash deploy/baota_setup.sh
+```
+
+脚本会自动：创建虚拟环境 → 安装依赖 → 生成 SECRET_KEY → 初始化数据库 → 创建 systemd 服务 → 配置 Nginx。
+
 ## 环境变量
 
 | 变量 | 必填 | 默认值 | 说明 |
@@ -112,6 +130,10 @@ gunicorn -c gunicorn.conf.py wsgi:app
 ├── wsgi.py             # 生产入口
 ├── db_init.py          # 建表/种子/重置
 ├── gunicorn.conf.py    # gunicorn 配置
+├── deploy/             # 部署配置
+│   ├── nginx.conf      # Nginx HTTPS 反向代理
+│   ├── nginx_nossl.conf# Nginx HTTP 版本（宝塔用）
+│   └── baota_setup.sh  # 宝塔一键部署脚本
 ├── model/              # ORM 模型
 │   ├── db.py           # SQLAlchemy 实例
 │   ├── User.py         # 用户（角色/认证/软删除）
