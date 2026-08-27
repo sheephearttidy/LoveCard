@@ -1,0 +1,25 @@
+[project]
+name = "lovecards"
+version = "1.0.0"
+description = "LoveCards - A Flask-based card wall application"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "flask>=3.1",
+    "flask-sqlalchemy>=3.1",
+    "flask-login>=0.6",
+    "flask-compress>=1.24",
+    "flask-migrate>=4.1",
+    "mysqlclient>=2.2",
+    "pymysql>=1.2",
+    "sqlalchemy>=2.0",
+    "wtforms>=3.2",
+    "passlib>=1.7",
+    "python-dotenv>=1.2",
+    "alembic>=1.19",
+]
+
+[project.optional-dependencies]
+dev = [
+    "flask-admin>=2.2",
+]

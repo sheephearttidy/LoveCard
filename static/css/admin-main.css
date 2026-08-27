@@ -111,45 +111,9 @@ body {
 }
 
 input[type="checkbox"] {
-    appearance: none;
-    -webkit-appearance: none;
-    width: 0.875rem;
-    height: 0.875rem;
-    border: 1.5px solid #d1d5db;
-    border-radius: 0.25rem;
-    background: white;
+    accent-color: #667eea;
     cursor: pointer;
-    transition: all 0.15s;
-    position: relative;
     flex-shrink: 0;
-}
-
-input[type="checkbox"]:checked {
-    background: #667eea;
-    border-color: #667eea;
-}
-
-input[type="checkbox"]:checked::after {
-    content: "";
-    position: absolute;
-    left: 2px;
-    top: -0.5px;
-    width: 4px;
-    height: 7px;
-    border: solid white;
-    border-width: 0 1.5px 1.5px 0;
-    transform: rotate(45deg);
-}
-
-@media (prefers-color-scheme: dark) {
-    input[type="checkbox"] {
-        border-color: #4b5563;
-        background: #374151;
-    }
-    input[type="checkbox"]:checked {
-        background: #667eea;
-        border-color: #667eea;
-    }
 }
 
 .flash-msg {
