@@ -284,6 +284,10 @@ def cards_ban_user(user_id):
         flash('不能封禁自己的卡片', 'error')
         return redirect(url_for('admin.cards_list'))
 
+    if user.is_super_admin and not current_user.is_super_admin:
+        flash('无权封禁超级管理员的卡片', 'error')
+        return redirect(url_for('admin.cards_list'))
+
     count = db.session.execute(
         db.update(Card).where(
             Card.user_id == user_id,
@@ -712,12 +716,17 @@ def settings(group=None):
 @super_admin_required
 def settings_save():
     group = request.form.get('_group', 'basic')
-    for key in request.form:
-        if key.startswith('_'):
-            continue
-        value = request.form.get(key)
-        set_config(key, value)
-    db.session.commit()
+    try:
+        for key in request.form:
+            if key.startswith('_'):
+                continue
+            value = request.form.get(key)
+            set_config(key, value)
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        flash('保存设置失败，请重试', 'error')
+        return redirect(url_for('admin.settings', group=group))
     if group == 'appearance':
         clear_template_cache()
     return redirect(url_for('admin.settings', group=group, save='1'))

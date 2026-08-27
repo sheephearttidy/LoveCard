@@ -37,6 +37,8 @@ class User(db.Model, UserMixin):
     password = mapped_column(db.String(255), nullable=False)
     # 账号状态：0=正常，其他值=禁用等
     status = mapped_column(db.Integer, nullable=False, default=0)
+    # 邮箱是否已验证
+    email_verified = mapped_column(db.Boolean, nullable=False, default=False)
     # 角色 ID 列表，JSON 格式存储：0=超级管理员, 1=管理员, 2=普通用户
     roles_id = mapped_column(db.JSON, nullable=False, default=list)
 

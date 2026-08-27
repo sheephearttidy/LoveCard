@@ -205,7 +205,11 @@ def publish():
         cover_url = None
         cover_file = request.files.get('cover_file')
         if cover_file and cover_file.filename and allowed_file(cover_file.filename):
-            cover_url = save_upload(cover_file, sub_dir='cards')
+            try:
+                cover_url = save_upload(cover_file, sub_dir='cards')
+            except ValueError:
+                flash('封面图片格式无效，请上传真实的图片文件', 'error')
+                return redirect(url_for('public.publish'))
 
         cover_input = request.form.get('cover', '').strip()
         if not cover_url:
@@ -229,9 +233,12 @@ def publish():
         extra_files = request.files.getlist('images')
         for f in extra_files:
             if f and f.filename and allowed_file(f.filename):
-                img_url = save_upload(f, sub_dir='cards')
-                img = Images(aid=1, pid=new_card.id, user_id=current_user.id, url=img_url)
-                db.session.add(img)
+                try:
+                    img_url = save_upload(f, sub_dir='cards')
+                    img = Images(aid=1, pid=new_card.id, user_id=current_user.id, url=img_url)
+                    db.session.add(img)
+                except ValueError:
+                    pass
 
         if need_review:
             notify_admins('card_pending', '新卡片待审核', f'用户 {current_user.display_name} 发布的卡片待审核', {'card_id': new_card.id})
@@ -317,8 +324,12 @@ def profile_edit():
 
         avatar_file = request.files.get('avatar')
         if avatar_file and avatar_file.filename and allowed_file(avatar_file.filename):
-            avatar_url = save_upload(avatar_file, sub_dir='avatars')
-            current_user.avatar = avatar_url
+            try:
+                avatar_url = save_upload(avatar_file, sub_dir='avatars')
+                current_user.avatar = avatar_url
+            except ValueError:
+                flash('头像图片格式无效，请上传真实的图片文件', 'error')
+                has_error = True
 
         db.session.commit()
         if not has_error:
@@ -390,8 +401,9 @@ def security_email():
         return redirect(url_for('public.profile_security'))
 
     current_user.email = email
+    current_user.email_verified = False
     db.session.commit()
-    flash('邮箱修改成功', 'success')
+    flash('邮箱修改成功，如需验证请前往邮箱验证', 'success')
     return redirect(url_for('public.profile_security'))
 
 

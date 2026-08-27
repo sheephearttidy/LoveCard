@@ -57,7 +57,7 @@ fi
 read -p "是否需要初始化数据库（建表+种子数据）？[y/N] " INIT_DB
 if [[ "$INIT_DB" =~ ^[Yy]$ ]]; then
     info "初始化数据库..."
-    python db_init.py reset
+    python manager.py reset
     warn "初始管理员: admin / admin，上线后务必修改密码！"
 fi
 

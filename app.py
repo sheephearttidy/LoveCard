@@ -1,8 +1,9 @@
+import hmac
 import os
 import uuid
 from datetime import datetime
 
-from flask import Flask, render_template, send_from_directory, session, Response, request
+from flask import Flask, render_template, send_from_directory, session, Response, request, abort
 from flask_compress import Compress
 from flask_login import LoginManager, current_user
 
@@ -24,7 +25,7 @@ app.config.from_object(config)
 
 app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'uploads')
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
-app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'}
+app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 86400
 
 Compress(app)
@@ -47,7 +48,24 @@ def load_user(user_id):
     user = db.session.get(User, int(user_id))
     if user and (user.deleted_at is not None or user.status != 0):
         return None
+    if user and not user.email_verified and get_config('siteRequireEmailVerify') == 'true':
+        return None
     return user
+
+
+@app.before_request
+def _check_user_status():
+    if current_user.is_authenticated:
+        if current_user.deleted_at is not None or current_user.status != 0:
+            from flask_login import logout_user
+            logout_user()
+            session.clear()
+            return
+        if not current_user.email_verified and get_config('siteRequireEmailVerify') == 'true':
+            from flask_login import logout_user
+            logout_user()
+            session.clear()
+            return
 
 
 @app.context_processor
@@ -81,19 +99,34 @@ app.register_blueprint(admin)
 app.register_blueprint(api)
 
 
+@app.after_request
+def set_security_headers(response):
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+    if os.environ.get('FLASK_ENV') == 'production':
+        response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+    return response
+
+
 @app.before_request
 def verify_csrf():
     if request.method != 'POST':
         return
     if request.blueprint == 'api':
-        return
-    if request.is_json:
-        return
+        api_token = request.headers.get('X-API-Token')
+        if api_token:
+            from utils.system import get_config
+            expected = get_config('apiToken') or ''
+            if expected and hmac.compare_digest(api_token, expected):
+                return
     token = session.get('csrf_token')
     form_token = request.form.get('csrf_token')
-    if not token or not form_token or form_token != token:
-        from flask import abort
-        abort(403)
+    header_token = request.headers.get('X-CSRF-Token')
+    if token and ((form_token and hmac.compare_digest(form_token, token)) or (header_token and hmac.compare_digest(header_token, token))):
+        return
+    abort(403)
 
 
 @app.errorhandler(404)
@@ -113,6 +146,14 @@ def internal_error(e):
 
 @app.route('/uploads/<path:filename>')
 def uploaded_file(filename):
+    safe_dir = os.path.normpath(app.config['UPLOAD_FOLDER'])
+    filepath = os.path.normpath(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+    try:
+        common = os.path.commonpath([safe_dir, filepath])
+        if common != safe_dir:
+            abort(403)
+    except ValueError:
+        abort(403)
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 
@@ -160,4 +201,7 @@ def _cleanup_expired_deletions():
 
 if __name__ == '__main__':
     _cleanup_expired_deletions()
+    from utils.rate_limit import cleanup_expired_records, start_cleanup_scheduler
+    cleanup_expired_records()
+    start_cleanup_scheduler(app)
     app.run(debug=True, port=8000,host='0.0.0.0')

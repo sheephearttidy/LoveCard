@@ -36,12 +36,13 @@ def register():
     if get_config('siteAllowRegister') == 'false':
         return jsonify(code=403, message='站点已关闭注册'), 403
 
+    ip = request.remote_addr
+    if not check_rate_limit(ip, max_attempts=5, window=300):
+        remaining = get_remaining_time(ip, window=300)
+        return jsonify(code=429, message=f'操作过于频繁，请{remaining}秒后再试'), 429
+
     import time
     now = int(time.time())
-    last_attempt = session.get('register_last_attempt', 0)
-    if now - last_attempt < 10:
-        return jsonify(code=429, message='操作过于频繁，请稍后再试'), 429
-    session['register_last_attempt'] = now
 
     data = request.get_json(silent=True) or {}
     username = data.get('username', '').strip()
@@ -53,9 +54,10 @@ def register():
     if not username or not email or not password:
         return jsonify(code=400, message='用户名、邮箱和密码不能为空'), 400
 
-    captcha_answer = session.pop('captcha', '')
-    captcha_time = session.pop('captcha_time', 0)
-    if not captcha_answer or not captcha_input or captcha_input != captcha_answer:
+    captcha_answer = session.pop('api_captcha', '') or session.pop('captcha', '')
+    captcha_time = session.pop('api_captcha_time', 0) or session.pop('captcha_time', 0)
+    if not captcha_answer or not captcha_input or captcha_input.upper() != captcha_answer.upper():
+        record_failed_attempt(ip, 'register')
         return jsonify(code=400, message='验证码错误'), 400
     if captcha_time and (now - captcha_time) > 300:
         return jsonify(code=400, message='验证码已过期，请刷新重试'), 400
@@ -69,11 +71,11 @@ def register():
     if len(password) < 6:
         return jsonify(code=400, message='密码至少6位'), 400
 
-    if db.session.execute(db.select(User).where(User.email == email)).scalar():
-        return jsonify(code=409, message='邮箱已被注册'), 409
-
-    if db.session.execute(db.select(User).where(User.username == username)).scalar():
-        return jsonify(code=409, message='用户名已被占用'), 409
+    existing = db.session.execute(db.select(User).where(User.email == email)).scalar()
+    username_existing = db.session.execute(db.select(User).where(User.username == username)).scalar()
+    if existing or username_existing:
+        record_failed_attempt(ip, 'register')
+        return jsonify(code=409, message='用户名或邮箱已被使用'), 409
 
     require_invite_code = get_config('siteRequireInviteCode') == 'true'
     invite = None
@@ -87,9 +89,10 @@ def register():
             return jsonify(code=400, message='邀请码无效或已过期'), 400
 
     need_review = get_config('siteRegisterNeedReview') == 'true'
+    require_email_verify = get_config('siteRequireEmailVerify') == 'true'
     initial_status = 2 if need_review else 0
 
-    user = User(number='0', username=username, nickname=username, email=email, status=initial_status, roles_id=[2])
+    user = User(number='0', username=username, nickname=username, email=email, status=initial_status, roles_id=[2], email_verified=not require_email_verify)
     user.set_password(password)
     db.session.add(user)
     db.session.flush()
@@ -100,10 +103,40 @@ def register():
 
     if need_review:
         notify_admins('user_pending', '新用户待审核', f'用户 {username} 注册待审核', {'user_id': user.id})
-    db.session.commit()
+
+    if require_email_verify and not need_review:
+        from itsdangerous import URLSafeTimedSerializer
+        from flask import current_app
+        s = URLSafeTimedSerializer(current_app.secret_key, salt='email-verify')
+        token = s.dumps({'user_id': user.id, 'email': email})
+        from utils.system import get_site_config
+        from utils.email import send_email
+        site_config = get_site_config()
+        site_url = site_config.get('siteUrl', '').rstrip('/')
+        verify_url = f"{site_url}/verify_email/{token}"
+        html = f"""
+        <div style="max-width:480px;margin:0 auto;font-family:sans-serif;">
+            <h2 style="color:#667eea;">邮箱验证</h2>
+            <p>你好，{username}：</p>
+            <p>请点击下方按钮验证你的邮箱地址：</p>
+            <a href="{verify_url}" style="display:inline-block;padding:10px 24px;background:#667eea;color:#fff;border-radius:8px;text-decoration:none;margin:12px 0;">验证邮箱</a>
+            <p style="color:#999;font-size:13px;">此链接 24 小时内有效。如非本人操作，请忽略此邮件。</p>
+            <p style="color:#999;font-size:13px;">如按钮无法点击，请复制链接到浏览器：<br>{verify_url}</p>
+        </div>
+        """
+        send_email(email, f'{site_config.get("siteName", "LoveCards")} - 邮箱验证', html)
+
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        return jsonify(code=409, message='用户名或邮箱已被使用'), 409
+    clear_attempts(ip)
 
     if need_review:
         return jsonify(code=200, message='注册成功，账号正在审核中', data={'id': user.id, 'username': user.username, 'status': 'pending_review'})
+    if require_email_verify:
+        return jsonify(code=200, message='注册成功，验证邮件已发送至你的邮箱，请查收并完成验证后登录', data={'id': user.id, 'username': user.username, 'need_verify': True})
     return jsonify(code=200, message='注册成功', data={'id': user.id, 'username': user.username})
 
 
@@ -136,7 +169,12 @@ def login():
     if user.status != 0:
         return jsonify(code=403, message='账号已被禁用'), 403
 
+    if not user.email_verified and get_config('siteRequireEmailVerify') == 'true':
+        return jsonify(code=403, message='邮箱未验证，请先验证邮箱后再登录', need_verify=True), 403
+
     clear_attempts(ip)
+    import uuid as _uuid
+    session['csrf_token'] = _uuid.uuid4().hex
     login_user(user, remember=True)
     return jsonify(code=200, message='登录成功', data=_user_info(user))
 
@@ -174,6 +212,7 @@ def update_profile():
         if existing:
             return jsonify(code=409, message='邮箱已被注册'), 409
         current_user.email = email
+        current_user.email_verified = False
 
     if phone is not None:
         current_user.phone = phone
@@ -211,7 +250,10 @@ def upload_avatar():
     if not file or not file.filename or not allowed_file(file.filename):
         return jsonify(code=400, message='请上传有效的图片文件'), 400
 
-    url = save_upload(file, sub_dir='avatars')
+    try:
+        url = save_upload(file, sub_dir='avatars')
+    except ValueError:
+        return jsonify(code=400, message='图片格式无效，请上传真实的图片文件'), 400
     current_user.avatar = url
     db.session.commit()
     return jsonify(code=200, message='头像上传成功', data={'avatar': url})
@@ -335,7 +377,10 @@ def create_card():
     cover_url = None
     cover_file = request.files.get('cover_file')
     if cover_file and cover_file.filename and allowed_file(cover_file.filename):
-        cover_url = save_upload(cover_file, sub_dir='cards')
+        try:
+            cover_url = save_upload(cover_file, sub_dir='cards')
+        except ValueError:
+            return jsonify(code=400, message='封面图片格式无效'), 400
 
     cover_input = request.form.get('cover', '').strip()
     if not cover_url:
@@ -359,9 +404,12 @@ def create_card():
     extra_files = request.files.getlist('images')
     for f in extra_files:
         if f and f.filename and allowed_file(f.filename):
-            img_url = save_upload(f, sub_dir='cards')
-            img = Images(aid=1, pid=new_card.id, user_id=current_user.id, url=img_url)
-            db.session.add(img)
+            try:
+                img_url = save_upload(f, sub_dir='cards')
+                img = Images(aid=1, pid=new_card.id, user_id=current_user.id, url=img_url)
+                db.session.add(img)
+            except ValueError:
+                pass
 
     if need_review:
         notify_admins('card_pending', '新卡片待审核', f'用户 {current_user.display_name} 发布的卡片待审核', {'card_id': new_card.id})
@@ -454,7 +502,10 @@ def upload_file():
         return jsonify(code=400, message='不支持的文件类型'), 400
 
     sub_dir = request.form.get('sub_dir', 'cards')
-    url = save_upload(file, sub_dir=sub_dir)
+    try:
+        url = save_upload(file, sub_dir=sub_dir)
+    except ValueError:
+        return jsonify(code=400, message='图片格式无效，请上传真实的图片文件'), 400
     return jsonify(code=200, message='上传成功', data={'url': url})
 
 

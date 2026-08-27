@@ -1,15 +1,18 @@
 """
-数据库初始化脚本
+LoveCards 管理脚本
 
-提供数据库创建、迁移和种子数据初始化功能。
+提供数据库初始化、迁移、种子数据和密钥生成功能。
 使用方式：
-    python db_init.py create     - 创建所有表（开发用，不会删除已有表）
-    python db_init.py drop       - 删除所有表（危险！会丢失所有数据）
-    python db_init.py recreate   - 删除并重建所有表（危险！会丢失所有数据）
-    python db_init.py seed       - 初始化种子数据（管理员账号、默认配置）
-    python db_init.py reset      - 完整重置：删表 + 建表 + 种子数据
+    python manager.py create       - 创建所有表（开发用，不会删除已有表）
+    python manager.py drop         - 删除所有表（危险！会丢失所有数据）
+    python manager.py recreate     - 删除并重建所有表（危险！会丢失所有数据）
+    python manager.py seed         - 初始化种子数据（管理员账号、默认配置）
+    python manager.py reset        - 完整重置：删表 + 建表 + 种子数据
+    python manager.py secret_key   - 生成安全的 SECRET_KEY 并写入 .env 文件
 """
+import os
 import sys
+import secrets
 
 from werkzeug.security import generate_password_hash
 
@@ -24,12 +27,13 @@ from model.Good import Good
 from model.Images import Images
 from model.InviteCode import InviteCode
 from model.Notification import Notification
+from model.RateLimitAttempt import RateLimitAttempt
 from model.System import System
 from model.Tags import Tags
 from model.TagsMap import TagsMap
 from utils.system import ensure_default_configs, SITE_CONFIG_DEFAULTS
 
-ALL_MODELS = [User, Card, Comment, Good, Images, Tags, TagsMap, System, DeletedUser, BanRecord, InviteCode, Notification, AuditLog]
+ALL_MODELS = [User, Card, Comment, Good, Images, Tags, TagsMap, System, DeletedUser, BanRecord, InviteCode, Notification, AuditLog, RateLimitAttempt]
 
 
 def create_tables():
@@ -47,6 +51,7 @@ def _migrate_add_columns():
     migrations = [
         ('users', 'nickname', "ALTER TABLE users ADD COLUMN nickname VARCHAR(255) NOT NULL DEFAULT '' AFTER username"),
         ('deleted_users', 'nickname', "ALTER TABLE deleted_users ADD COLUMN nickname VARCHAR(255) NOT NULL DEFAULT '' AFTER username"),
+        ('users', 'email_verified', "ALTER TABLE users ADD COLUMN email_verified TINYINT(1) NOT NULL DEFAULT 0 AFTER status"),
     ]
     for table, column, sql in migrations:
         if table in insp.get_table_names():
@@ -94,7 +99,8 @@ def _seed_admin():
             nickname='admin',
             password=generate_password_hash('admin'),
             status=0,
-            roles_id=[0]
+            roles_id=[0],
+            email_verified=True
         )
         db.session.add(admin_user)
         db.session.flush()
@@ -118,6 +124,49 @@ def _print_tables():
         print("  (无表)")
 
 
+def generate_secret_key():
+    """生成安全的 SECRET_KEY 并写入 .env 文件"""
+    key = secrets.token_hex(32)
+    env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.env')
+
+    existing_lines = []
+    key_updated = False
+    if os.path.isfile(env_path):
+        with open(env_path, 'r', encoding='utf-8') as f:
+            existing_lines = f.readlines()
+
+    new_lines = []
+    for line in existing_lines:
+        stripped = line.strip()
+        if stripped.startswith('SECRET_KEY='):
+            new_lines.append(f'SECRET_KEY={key}\n')
+            key_updated = True
+        else:
+            new_lines.append(line)
+
+    if not key_updated:
+        if new_lines and not new_lines[-1].endswith('\n'):
+            new_lines.append('\n')
+        new_lines.append(f'SECRET_KEY={key}\n')
+
+    with open(env_path, 'w', encoding='utf-8') as f:
+        f.writelines(new_lines)
+
+    print(f"  SECRET_KEY 已生成: {key[:8]}...{key[-8:]}")
+    if key_updated:
+        print(f"  已更新 .env 文件中的 SECRET_KEY")
+    else:
+        print(f"  已写入 .env 文件: {env_path}")
+
+    if not os.path.isfile(os.path.join(os.path.dirname(os.path.abspath(__file__)), '.gitignore')):
+        print("  ⚠️  建议创建 .gitignore 并添加 .env 以防密钥泄露")
+    else:
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), '.gitignore'), 'r', encoding='utf-8') as f:
+            gitignore = f.read()
+        if '.env' not in gitignore:
+            print("  ⚠️  .gitignore 中未包含 .env，建议添加以防密钥泄露")
+
+
 def main():
     if len(sys.argv) < 2:
         print(__doc__)
@@ -130,6 +179,7 @@ def main():
         'recreate': lambda: (drop_tables(), create_tables()),
         'seed': lambda: seed_data(),
         'reset': lambda: (drop_tables(), create_tables(), seed_data()),
+        'secret_key': lambda: generate_secret_key(),
     }
 
     if command not in commands:

@@ -33,6 +33,13 @@ document.getElementById('loginForm').addEventListener('submit', function (e) {
         } else {
             errorBox.textContent = data.message;
             errorBox.style.display = 'block';
+            if (data.need_verify) {
+                var link = document.createElement('a');
+                link.href = '/resend_verify';
+                link.textContent = ' 重新发送验证邮件';
+                link.style.cssText = 'color:#8b5cf6;font-weight:600;text-decoration:underline;margin-left:4px;';
+                errorBox.appendChild(link);
+            }
         }
     })
     .catch(function () {
