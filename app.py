@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 
-from flask import Flask, render_template, send_from_directory
+from flask import Flask, render_template, send_from_directory, session, Response
 from flask_login import LoginManager
 
 import config
@@ -14,6 +14,7 @@ from model.Good import Good
 from route import public, auth, admin
 from route.api import api
 from utils.system import get_site_config
+from utils.captcha import generate_captcha_text, generate_captcha_svg
 
 app = Flask(__name__)
 app.config.from_object(config)
@@ -35,7 +36,6 @@ login_manager.login_message_category = 'info'
 
 @login_manager.user_loader
 def load_user(user_id):
-    """Flask-Login 回调函数，根据 user_id 加载用户对象"""
     user = db.session.get(User, int(user_id))
     if user and (user.deleted_at is not None or user.status != 0):
         return None
@@ -71,6 +71,20 @@ def forbidden(e):
 @app.route('/uploads/<path:filename>')
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+
+@app.route('/captcha.svg')
+def captcha():
+    import time
+    text = generate_captcha_text()
+    session['captcha'] = text
+    session['captcha_time'] = int(time.time())
+    svg = generate_captcha_svg(text)
+    resp = Response(svg, mimetype='image/svg+xml')
+    resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    resp.headers['Pragma'] = 'no-cache'
+    resp.headers['Expires'] = '0'
+    return resp
 
 
 def _cleanup_expired_deletions():

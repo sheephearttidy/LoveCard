@@ -1,6 +1,6 @@
 import re
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, session
 from flask_login import login_user, logout_user, login_required, current_user
 from sqlalchemy import desc
 
@@ -8,6 +8,7 @@ from model.Card import Card
 from model.Comment import Comment
 from model.Good import Good
 from model.Images import Images
+from model.InviteCode import InviteCode
 from model.Tags import Tags
 from model.User import User
 from model.db import db
@@ -32,13 +33,29 @@ def register():
     if get_config('siteAllowRegister') == 'false':
         return jsonify(code=403, message='站点已关闭注册'), 403
 
+    import time
+    now = int(time.time())
+    last_attempt = session.get('register_last_attempt', 0)
+    if now - last_attempt < 10:
+        return jsonify(code=429, message='操作过于频繁，请稍后再试'), 429
+    session['register_last_attempt'] = now
+
     data = request.get_json(silent=True) or {}
     username = data.get('username', '').strip()
     email = data.get('email', '').strip()
     password = data.get('password', '')
+    captcha_input = data.get('captcha', '').strip()
+    invite_code_input = data.get('invite_code', '').strip()
 
     if not username or not email or not password:
         return jsonify(code=400, message='用户名、邮箱和密码不能为空'), 400
+
+    captcha_answer = session.pop('captcha', '')
+    captcha_time = session.pop('captcha_time', 0)
+    if not captcha_answer or not captcha_input or captcha_input != captcha_answer:
+        return jsonify(code=400, message='验证码错误'), 400
+    if captcha_time and (now - captcha_time) > 300:
+        return jsonify(code=400, message='验证码已过期，请刷新重试'), 400
 
     if len(username) < 3 or len(username) > 20:
         return jsonify(code=400, message='用户名长度需在 3-20 个字符之间'), 400
@@ -55,13 +72,33 @@ def register():
     if db.session.execute(db.select(User).where(User.username == username)).scalar():
         return jsonify(code=409, message='用户名已被占用'), 409
 
-    user = User(number='0', username=username, email=email, status=0, roles_id=[2])
+    require_invite_code = get_config('siteRequireInviteCode') == 'true'
+    invite = None
+    if require_invite_code:
+        if not invite_code_input:
+            return jsonify(code=400, message='邀请码不能为空'), 400
+        invite = db.session.execute(
+            db.select(InviteCode).where(InviteCode.code == invite_code_input)
+        ).scalar()
+        if not invite or not invite.is_valid:
+            return jsonify(code=400, message='邀请码无效或已过期'), 400
+
+    need_review = get_config('siteRegisterNeedReview') == 'true'
+    initial_status = 2 if need_review else 0
+
+    user = User(number='0', username=username, email=email, status=initial_status, roles_id=[2])
     user.set_password(password)
     db.session.add(user)
     db.session.flush()
     user.number = str(1000000000 + user.id)
+
+    if require_invite_code and invite:
+        invite.used_count += 1
+
     db.session.commit()
 
+    if need_review:
+        return jsonify(code=200, message='注册成功，账号正在审核中', data={'id': user.id, 'username': user.username, 'status': 'pending_review'})
     return jsonify(code=200, message='注册成功', data={'id': user.id, 'username': user.username})
 
 
@@ -77,6 +114,9 @@ def login():
     user = db.session.execute(db.select(User).where(User.email == email)).scalar()
     if not user or not user.check_password(password):
         return jsonify(code=401, message='邮箱或密码错误'), 401
+
+    if user.status == 2:
+        return jsonify(code=403, message='账号正在审核中，请等待管理员通过'), 403
 
     if user.status != 0:
         return jsonify(code=403, message='账号已被禁用'), 403

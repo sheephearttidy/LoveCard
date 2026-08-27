@@ -24,9 +24,10 @@ from model.TagsMap import TagsMap
 from model.System import System
 from model.DeletedUser import DeletedUser
 from model.BanRecord import BanRecord
+from model.InviteCode import InviteCode
 from utils.system import ensure_default_configs, SITE_CONFIG_DEFAULTS
 
-ALL_MODELS = [User, Card, Comment, Good, Images, Tags, TagsMap, System, DeletedUser, BanRecord]
+ALL_MODELS = [User, Card, Comment, Good, Images, Tags, TagsMap, System, DeletedUser, BanRecord, InviteCode]
 
 
 def create_tables():

@@ -167,3 +167,17 @@ input[type="checkbox"]:checked::after {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
+
+.sidebar-submenu a {
+    font-size: 0.7rem;
+    padding: 0.35rem 0.75rem;
+    opacity: 0.8;
+}
+
+.sidebar-submenu a:hover {
+    opacity: 1;
+}
+
+.sidebar-submenu a.active {
+    opacity: 1;
+}

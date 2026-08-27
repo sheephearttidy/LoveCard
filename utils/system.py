@@ -14,6 +14,8 @@ SITE_CONFIG_DEFAULTS = {
     'siteAllowPublish': 'true',
     'siteCardNeedReview': 'true',
     'siteCommentNeedReview': 'true',
+    'siteRequireInviteCode': 'false',
+    'siteRegisterNeedReview': 'false',
 }
 
 SITE_CONFIG_LABELS = {
@@ -28,6 +30,8 @@ SITE_CONFIG_LABELS = {
     'siteAllowPublish': '允许发布',
     'siteCardNeedReview': '卡片需审核',
     'siteCommentNeedReview': '评论需审核',
+    'siteRequireInviteCode': '强制邀请码',
+    'siteRegisterNeedReview': '注册需审核',
 }
 
 SITE_CONFIG_GROUPS = [
@@ -44,7 +48,7 @@ SITE_CONFIG_GROUPS = [
     {
         'title': '功能开关',
         'icon': 'fa-toggle-on',
-        'fields': ['siteAllowRegister', 'siteAllowPublish', 'siteCardNeedReview', 'siteCommentNeedReview'],
+        'fields': ['siteAllowRegister', 'siteAllowPublish', 'siteCardNeedReview', 'siteCommentNeedReview', 'siteRequireInviteCode', 'siteRegisterNeedReview'],
     },
 ]
 
@@ -60,6 +64,8 @@ SITE_CONFIG_HINTS = {
     'siteAllowPublish': 'true=允许发布卡片，false=关闭发布',
     'siteCardNeedReview': 'true=新卡片需审核后才显示，false=直接显示',
     'siteCommentNeedReview': 'true=新评论需审核后才显示，false=直接显示',
+    'siteRequireInviteCode': 'true=注册时必须填写有效邀请码，false=无需邀请码',
+    'siteRegisterNeedReview': 'true=新注册用户需管理员审核后才能登录，false=注册即可登录',
 }
 
 

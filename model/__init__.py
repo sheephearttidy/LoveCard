@@ -10,10 +10,11 @@ from model.Comment import Comment
 from model.DeletedUser import DeletedUser
 from model.Good import Good
 from model.Images import Images
+from model.InviteCode import InviteCode
 from model.System import System
 from model.Tags import Tags
 from model.TagsMap import TagsMap
 from model.User import User
 from model.db import db
 
-__all__ = ['db', 'User', 'Card', 'Comment', 'Good', 'Images', 'System', 'Tags', 'TagsMap', 'DeletedUser', 'BanRecord']
+__all__ = ['db', 'User', 'Card', 'Comment', 'Good', 'Images', 'System', 'Tags', 'TagsMap', 'DeletedUser', 'BanRecord', 'InviteCode']

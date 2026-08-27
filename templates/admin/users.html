@@ -18,6 +18,11 @@
                           {% if status_filter == 0 and role_filter is none %}bg-green-500 text-white{% else %}bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600{% endif %}">
                     正常
                 </a>
+                <a href="/admin/users?status=2"
+                   class="px-2.5 py-1 rounded-md text-xs font-medium transition
+                          {% if status_filter == 2 and role_filter is none %}bg-yellow-500 text-white{% else %}bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600{% endif %}">
+                    待审核
+                </a>
                 <a href="/admin/users?status=1"
                    class="px-2.5 py-1 rounded-md text-xs font-medium transition
                           {% if status_filter == 1 and role_filter is none %}bg-red-500 text-white{% else %}bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600{% endif %}">
@@ -118,6 +123,8 @@
                     <td class="px-3 py-2.5 text-center">
                         {% if user.status == 0 %}
                         <span class="bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 px-1.5 py-0.5 rounded text-[11px]">正常</span>
+                        {% elif user.status == 2 %}
+                        <span class="bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400 px-1.5 py-0.5 rounded text-[11px]">待审核</span>
                         {% else %}
                         <span class="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 px-1.5 py-0.5 rounded text-[11px]">封禁</span>
                         {% endif %}
@@ -126,7 +133,18 @@
                     <td class="px-3 py-2.5 text-center">
                         <div class="flex items-center justify-center flex-wrap gap-0.5">
                             {% if user.id != current_user.id %}
-                            {% if current_user.is_super_admin %}
+                            {% if user.status == 2 %}
+                            <form method="post" action="/admin/pending_users/{{ user.id }}/approve" class="inline">
+                                <button type="submit" class="px-1.5 py-0.5 bg-green-50 dark:bg-green-900/20 text-green-500 rounded hover:opacity-80 transition text-[11px]" title="通过">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                            </form>
+                            <form method="post" action="/admin/pending_users/{{ user.id }}/reject" class="inline">
+                                <button type="submit" class="px-1.5 py-0.5 bg-red-50 dark:bg-red-900/20 text-red-500 rounded hover:opacity-80 transition text-[11px]" title="拒绝">
+                                    <i class="fas fa-xmark"></i>
+                                </button>
+                            </form>
+                            {% elif current_user.is_super_admin %}
                             <form method="post" action="/admin/users/{{ user.id }}/set_role" class="inline">
                                 <select name="role" onchange="if(this.value){this.form.submit()}" class="text-[11px] border border-gray-200 dark:border-gray-600 rounded px-1 py-0.5 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 focus:outline-none">
                                     {% if user.roles_id and 0 in user.roles_id %}

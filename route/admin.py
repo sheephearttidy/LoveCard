@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from flask import Blueprint, request, render_template, redirect, url_for, flash, jsonify, abort
+from flask import Blueprint, request, render_template, redirect, url_for, flash, jsonify, abort, session
 from flask_login import login_required, current_user
 from sqlalchemy import desc, func, or_
 
@@ -10,6 +10,7 @@ from model.Comment import Comment
 from model.DeletedUser import DeletedUser
 from model.Good import Good
 from model.Images import Images
+from model.InviteCode import InviteCode
 from model.Tags import Tags
 from model.TagsMap import TagsMap
 from model.User import User
@@ -56,6 +57,7 @@ def dashboard():
     cards_approved = db.session.execute(db.select(func.count()).select_from(Card).where(Card.status == 1, Card.deleted_at.is_(None))).scalar() or 0
     cards_banned = db.session.execute(db.select(func.count()).select_from(Card).where(Card.status == 3, Card.deleted_at.is_(None))).scalar() or 0
     users_total = db.session.execute(db.select(func.count()).select_from(User)).scalar() or 0
+    users_pending = db.session.execute(db.select(func.count()).select_from(User).where(User.status == 2)).scalar() or 0
     comments_total = db.session.execute(db.select(func.count()).select_from(Comment).where(Comment.deleted_at.is_(None))).scalar() or 0
     goods_total = db.session.execute(db.select(func.count()).select_from(Good)).scalar() or 0
 
@@ -70,7 +72,7 @@ def dashboard():
     return render_template("admin/dashboard.html",
                            cards_total=cards_total, cards_pending=cards_pending,
                            cards_approved=cards_approved, cards_banned=cards_banned,
-                           users_total=users_total,
+                           users_total=users_total, users_pending=users_pending,
                            comments_total=comments_total, goods_total=goods_total,
                            recent_cards=recent_cards, recent_users=recent_users)
 
@@ -798,3 +800,192 @@ def comment_toggle_good(comment_id):
         comment.goods = (comment.goods or 0) + 1
         db.session.commit()
         return jsonify(success=True, liked=True, count=comment.goods)
+
+
+@admin.route('/pending_users')
+@admin_required
+def pending_users_list():
+    page = request.args.get('page', 1, type=int)
+    query = db.select(User).where(User.status == 2).order_by(desc(User.created_at))
+    pagination = db.paginate(query, page=page, per_page=20, error_out=False)
+    users = pagination.items
+    return render_template("admin/pending_users.html", users=users, pagination=pagination)
+
+
+@admin.route('/pending_users/<int:user_id>/approve', methods=['POST'])
+@admin_required
+def pending_user_approve(user_id):
+    user = db.session.get(User, user_id)
+    if not user or user.status != 2:
+        flash('用户不存在或不在审核状态', 'error')
+        return redirect(request.referrer or url_for('admin.pending_users_list'))
+    user.status = 0
+    user.updated_at = datetime.now()
+    db.session.commit()
+    flash(f'用户 {user.username} 已审核通过', 'success')
+    return redirect(request.referrer or url_for('admin.pending_users_list'))
+
+
+@admin.route('/pending_users/<int:user_id>/reject', methods=['POST'])
+@admin_required
+def pending_user_reject(user_id):
+    user = db.session.get(User, user_id)
+    if not user or user.status != 2:
+        flash('用户不存在或不在审核状态', 'error')
+        return redirect(request.referrer or url_for('admin.pending_users_list'))
+    user.status = 1
+    user.updated_at = datetime.now()
+    db.session.commit()
+    flash(f'用户 {user.username} 已拒绝', 'success')
+    return redirect(request.referrer or url_for('admin.pending_users_list'))
+
+
+@admin.route('/pending_users/batch', methods=['POST'])
+@admin_required
+def pending_users_batch():
+    action = request.form.get('batch_action', '').strip()
+    user_ids = request.form.getlist('user_ids', type=int)
+
+    if not user_ids or not action:
+        flash('请选择用户和操作', 'error')
+        return redirect(url_for('admin.pending_users_list'))
+
+    count = 0
+    now = datetime.now()
+    for uid in user_ids:
+        user = db.session.get(User, uid)
+        if not user or user.status != 2:
+            continue
+        if action == 'approve':
+            user.status = 0
+        elif action == 'reject':
+            user.status = 1
+        else:
+            continue
+        user.updated_at = now
+        count += 1
+
+    db.session.commit()
+    action_names = {'approve': '通过', 'reject': '拒绝'}
+    flash(f'已{action_names.get(action, "操作")} {count} 个用户', 'success')
+    return redirect(request.referrer or url_for('admin.pending_users_list'))
+
+
+@admin.route('/invite_codes')
+@super_admin_required
+def invite_codes_list():
+    from sqlalchemy import or_, func as sa_func
+    page = request.args.get('page', 1, type=int)
+    code_filter = request.args.get('filter', 'all')
+
+    valid_cond = (InviteCode.status == 0) & (
+        or_(InviteCode.max_uses == 0, InviteCode.used_count < InviteCode.max_uses)
+    ) & (or_(InviteCode.expires_at.is_(None), InviteCode.expires_at > datetime.now()))
+
+    query = db.select(InviteCode).order_by(desc(InviteCode.created_at))
+    if code_filter == 'unused':
+        query = query.where(valid_cond)
+    elif code_filter == 'used':
+        query = query.where(~valid_cond)
+
+    pagination = db.paginate(query, page=page, per_page=20, error_out=False)
+    codes = pagination.items
+
+    total_all = db.session.execute(db.select(sa_func.count(InviteCode.id))).scalar()
+    total_unused = db.session.execute(db.select(sa_func.count(InviteCode.id)).where(valid_cond)).scalar()
+    total_used = (total_all or 0) - (total_unused or 0)
+
+    generated_codes = session.pop('generated_invite_codes', None)
+
+    return render_template("admin/invite_codes.html", codes=codes, pagination=pagination, code_filter=code_filter, total_all=total_all, total_unused=total_unused, total_used=total_used, generated_codes=generated_codes)
+
+
+@admin.route('/invite_codes/generate', methods=['POST'])
+@super_admin_required
+def invite_codes_generate():
+    import secrets
+    from datetime import timedelta
+    from sqlalchemy.exc import IntegrityError
+
+    count = request.form.get('count', 1, type=int)
+    max_uses = request.form.get('max_uses', 0, type=int)
+    days = request.form.get('expires_days', 0, type=int)
+
+    count = min(max(count, 1), 50)
+    generated_codes = []
+
+    for _ in range(count):
+        for _attempt in range(5):
+            code = secrets.token_urlsafe(12).replace('-', '').replace('_', '').upper()[:10]
+            expires_at = None
+            if days > 0:
+                expires_at = datetime.now() + timedelta(days=days)
+            new_code = InviteCode(
+                code=code,
+                created_by=current_user.id,
+                max_uses=max_uses,
+                expires_at=expires_at,
+            )
+            db.session.add(new_code)
+            try:
+                db.session.flush()
+                generated_codes.append(code)
+                break
+            except IntegrityError:
+                db.session.rollback()
+
+    db.session.commit()
+    session['generated_invite_codes'] = generated_codes
+    flash(f'已生成 {len(generated_codes)} 个邀请码', 'success')
+    return redirect(url_for('admin.invite_codes_list'))
+
+
+@admin.route('/invite_codes/<int:code_id>/toggle_status', methods=['POST'])
+@super_admin_required
+def invite_code_toggle_status(code_id):
+    code = db.session.get(InviteCode, code_id)
+    if code:
+        code.status = 1 if code.status == 0 else 0
+        db.session.commit()
+        flash('邀请码状态已更新', 'success')
+    return redirect(request.referrer or url_for('admin.invite_codes_list'))
+
+
+@admin.route('/invite_codes/<int:code_id>/delete', methods=['POST'])
+@super_admin_required
+def invite_code_delete(code_id):
+    code = db.session.get(InviteCode, code_id)
+    if code:
+        db.session.delete(code)
+        db.session.commit()
+        flash('邀请码已删除', 'success')
+    return redirect(request.referrer or url_for('admin.invite_codes_list'))
+
+
+@admin.route('/invite_codes/export')
+@super_admin_required
+def invite_codes_export():
+    import csv
+    from io import StringIO
+    from flask import Response as FlaskResponse
+
+    codes = db.session.execute(
+        db.select(InviteCode).order_by(desc(InviteCode.created_at))
+    ).scalars().all()
+
+    si = StringIO()
+    writer = csv.writer(si)
+    writer.writerow(['邀请码', '使用次数', '最大使用次数', '有效期', '状态', '创建时间'])
+    for c in codes:
+        status_text = '有效' if c.is_valid else ('已禁用' if c.status != 0 else ('已用完' if c.max_uses > 0 and c.used_count >= c.max_uses else '已过期'))
+        expires_text = c.expires_at.strftime('%Y-%m-%d %H:%M') if c.expires_at else '永久'
+        writer.writerow([c.code, c.used_count, c.max_uses if c.max_uses > 0 else '不限', expires_text, status_text, c.created_at.strftime('%Y-%m-%d %H:%M')])
+
+    output = si.getvalue()
+    si.close()
+
+    return FlaskResponse(
+        output,
+        mimetype='text/csv; charset=utf-8-sig',
+        headers={'Content-Disposition': 'attachment; filename=invite_codes.csv'}
+    )

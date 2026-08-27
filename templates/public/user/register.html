@@ -60,6 +60,29 @@
                            class="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-800 dark:text-gray-200 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition text-sm sm:text-base bg-white dark:bg-gray-700">
                 </div>
 
+                <div class="mb-4 sm:mb-5">
+                    <label for="captcha" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">验证码</label>
+                    <div class="flex items-center gap-2">
+                        <input type="text" id="captcha" name="captcha"
+                               placeholder="请输入验证码"
+                               required autocomplete="off"
+                               class="flex-1 px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-800 dark:text-gray-200 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition text-sm sm:text-base bg-white dark:bg-gray-700">
+                        <img src="/captcha.svg" alt="验证码" id="captchaImg"
+                             class="h-10 sm:h-11 rounded-lg cursor-pointer border border-gray-200 dark:border-gray-600 flex-shrink-0"
+                             onclick="this.src='/captcha.svg?t='+Date.now()" title="点击刷新">
+                    </div>
+                </div>
+
+                {% if require_invite_code %}
+                <div class="mb-4 sm:mb-5">
+                    <label for="invite_code" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">邀请码</label>
+                    <input type="text" id="invite_code" name="invite_code"
+                           placeholder="请输入邀请码"
+                           required
+                           class="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-800 dark:text-gray-200 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition text-sm sm:text-base bg-white dark:bg-gray-700">
+                </div>
+                {% endif %}
+
                 <div class="mb-5 sm:mb-6">
                     <label class="inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="agree" name="agree" value="1"

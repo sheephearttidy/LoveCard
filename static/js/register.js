@@ -6,6 +6,9 @@ document.getElementById('registerForm').addEventListener('submit', function (e) 
     var email = document.getElementById('email').value.trim();
     var password = document.getElementById('password').value;
     var confirmPassword = document.getElementById('confirmPassword').value;
+    var captcha = document.getElementById('captcha').value.trim();
+    var inviteCodeEl = document.getElementById('invite_code');
+    var inviteCode = inviteCodeEl ? inviteCodeEl.value.trim() : '';
     var agree = document.getElementById('agree').checked;
     var errors = [];
 
@@ -31,6 +34,14 @@ document.getElementById('registerForm').addEventListener('submit', function (e) 
         errors.push('两次输入的密码不一致');
     }
 
+    if (!captcha) {
+        errors.push('验证码不能为空');
+    }
+
+    if (inviteCodeEl && !inviteCode) {
+        errors.push('邀请码不能为空');
+    }
+
     if (!agree) {
         errors.push('请先阅读并同意服务条款和隐私政策');
     }
@@ -50,20 +61,29 @@ document.getElementById('registerForm').addEventListener('submit', function (e) 
     })
     .then(function (res) { return res.json(); })
     .then(function (data) {
+        var captchaImg = document.getElementById('captchaImg');
+        if (captchaImg) captchaImg.src = '/captcha.svg?t=' + Date.now();
+        document.getElementById('captcha').value = '';
+
         if (data.success) {
             errorBox.style.display = 'block';
             errorBox.className = 'mb-4 p-3 rounded-lg bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-300 text-sm';
-            var countdown = 3;
-            errorBox.textContent = '注册成功，' + countdown + ' 秒后跳转到登录页';
-            var timer = setInterval(function () {
-                countdown--;
-                if (countdown <= 0) {
-                    clearInterval(timer);
-                    window.location.href = '/login';
-                } else {
-                    errorBox.textContent = '注册成功，' + countdown + ' 秒后跳转到登录页';
-                }
-            }, 1000);
+
+            if (data.message.indexOf('审核') !== -1) {
+                errorBox.textContent = data.message;
+            } else {
+                var countdown = 3;
+                errorBox.textContent = '注册成功，' + countdown + ' 秒后跳转到登录页';
+                var timer = setInterval(function () {
+                    countdown--;
+                    if (countdown <= 0) {
+                        clearInterval(timer);
+                        window.location.href = '/login';
+                    } else {
+                        errorBox.textContent = '注册成功，' + countdown + ' 秒后跳转到登录页';
+                    }
+                }, 1000);
+            }
         } else {
             errorBox.className = 'mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-300 text-sm';
             errorBox.textContent = data.message;

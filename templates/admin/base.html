@@ -63,21 +63,35 @@
             </a>
 
             <div class="sidebar-section">用户</div>
-            <a href="/admin/users" class="{% if '/users' in request.path %}active{% endif %}">
+            <a href="/admin/users" class="{% if '/users' in request.path and '/pending' not in request.path and '/deleted' not in request.path %}active{% endif %}">
                 <i class="fas fa-users w-4 mr-2 text-center"></i>用户管理
+            </a>
+            <a href="/admin/pending_users" class="{% if '/pending_users' in request.path %}active{% endif %}">
+                <i class="fas fa-user-clock w-4 mr-2 text-center"></i>注册审核
             </a>
             <a href="/admin/ban_records" class="{% if '/ban_records' in request.path %}active{% endif %}">
                 <i class="fas fa-gavel w-4 mr-2 text-center"></i>封禁公示
             </a>
-
             {% if current_user.is_super_admin %}
-            <div class="sidebar-section">系统</div>
-            <a href="/admin/settings" class="{% if '/settings' in request.path %}active{% endif %}">
-                <i class="fas fa-gear w-4 mr-2 text-center"></i>站点配置
-            </a>
             <a href="/admin/deleted_users" class="{% if '/deleted_users' in request.path %}active{% endif %}">
                 <i class="fas fa-user-slash w-4 mr-2 text-center"></i>已注销用户
             </a>
+            {% endif %}
+
+            {% if current_user.is_super_admin %}
+            <div class="sidebar-section">系统</div>
+            <a href="/admin/invite_codes" class="{% if '/invite_codes' in request.path %}active{% endif %}">
+                <i class="fas fa-ticket w-4 mr-2 text-center"></i>邀请码
+            </a>
+            <button type="button" class="sidebar-dropdown w-full flex items-center justify-between px-3 py-[0.45rem] rounded-[0.4rem] text-xs font-medium transition hover:bg-white/[0.06] hover:text-gray-200 {% if '/settings' in request.path %}text-gray-200{% else %}text-gray-400{% endif %}" data-target="sysMenu">
+                <span class="flex items-center"><i class="fas fa-gear w-4 mr-2 text-center"></i>站点配置</span>
+                <i class="fas fa-chevron-down text-[9px] transition-transform duration-200 sidebar-arrow {% if '/settings' in request.path %}rotate-180{% endif %}"></i>
+            </button>
+            <div id="sysMenu" class="sidebar-submenu pl-3 space-y-0.5 overflow-hidden transition-all duration-200 {% if '/settings' in request.path %}max-h-40{% else %}max-h-0{% endif %}">
+                <a href="/admin/settings" class="{% if '/settings' in request.path %}active{% endif %}">
+                    <i class="fas fa-sliders w-4 mr-2 text-center"></i>基本设置
+                </a>
+            </div>
             {% endif %}
         </nav>
 
@@ -136,6 +150,23 @@
 <div id="adminSidebarOverlay" class="admin-sidebar-overlay"></div>
 
 <script src="{{ url_for('static', filename='js/admin-main.js') }}"></script>
+<script>
+document.querySelectorAll('.sidebar-dropdown').forEach(function(btn){
+    btn.addEventListener('click', function(){
+        var target = document.getElementById(this.dataset.target);
+        var arrow = this.querySelector('.sidebar-arrow');
+        if(target){
+            if(target.style.maxHeight && target.style.maxHeight !== '0px'){
+                target.style.maxHeight = '0px';
+                if(arrow) arrow.classList.remove('rotate-180');
+            } else {
+                target.style.maxHeight = target.scrollHeight + 'px';
+                if(arrow) arrow.classList.add('rotate-180');
+            }
+        }
+    });
+});
+</script>
 {% block extra_js %}{% endblock %}
 <script>
 (function(){

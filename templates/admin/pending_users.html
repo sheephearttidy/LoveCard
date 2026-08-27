@@ -1,0 +1,119 @@
+{% extends "admin/base.html" %}
+
+{% block title %}注册审核{% endblock %}
+{% block page_title %}注册审核{% endblock %}
+
+{% block content %}
+<div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700/50">
+    <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-700/50 flex items-center justify-between">
+        <span class="text-xs text-gray-400 dark:text-gray-500">待审核用户</span>
+        {% if pagination %}
+        <span class="text-[11px] text-gray-400 dark:text-gray-500">共 {{ pagination.total }} 人</span>
+        {% endif %}
+    </div>
+
+    {% if users %}
+    <form id="batchForm" method="post" action="/admin/pending_users/batch">
+    <div class="px-3.5 py-2 border-b border-gray-100 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-700/20 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+            <label class="inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="selectAll" class="w-3.5 h-3.5 rounded border-gray-300 dark:border-gray-600 text-primary-500 focus:ring-primary-500 bg-white dark:bg-gray-700">
+                <span class="ml-1.5 text-[11px] text-gray-500 dark:text-gray-400">全选</span>
+            </label>
+            <select name="batch_action" class="text-[11px] border border-gray-200 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 focus:outline-none">
+                <option value="">批量操作</option>
+                <option value="approve">批量通过</option>
+                <option value="reject">批量拒绝</option>
+            </select>
+            <button type="submit" class="px-2.5 py-1 bg-primary-500 text-white rounded text-[11px] hover:bg-primary-600 transition">执行</button>
+        </div>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-xs">
+            <thead class="bg-gray-50/50 dark:bg-gray-700/20 text-gray-500 dark:text-gray-400 text-[11px] uppercase">
+                <tr>
+                    <th class="px-3 py-2.5 text-left w-8"></th>
+                    <th class="px-3 py-2.5 text-left">ID</th>
+                    <th class="px-3 py-2.5 text-left">用户名</th>
+                    <th class="px-3 py-2.5 text-left">邮箱</th>
+                    <th class="px-3 py-2.5 text-left">注册时间</th>
+                    <th class="px-3 py-2.5 text-center">操作</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50 dark:divide-gray-700/30">
+                {% for user in users %}
+                <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-700/20 transition">
+                    <td class="px-3 py-2.5">
+                        <input type="checkbox" name="user_ids" value="{{ user.id }}" class="row-check w-3.5 h-3.5 rounded border-gray-300 dark:border-gray-600 text-primary-500 focus:ring-primary-500 bg-white dark:bg-gray-700">
+                    </td>
+                    <td class="px-3 py-2.5 text-gray-400 dark:text-gray-500">{{ user.id }}</td>
+                    <td class="px-3 py-2.5">
+                        <span class="text-gray-600 dark:text-gray-400">{{ user.username }}</span>
+                    </td>
+                    <td class="px-3 py-2.5 text-gray-500 dark:text-gray-400 text-[11px]">{{ user.email }}</td>
+                    <td class="px-3 py-2.5 text-gray-400 dark:text-gray-500 text-[11px] whitespace-nowrap">{{ user.created_at.strftime('%m-%d %H:%M') }}</td>
+                    <td class="px-3 py-2.5 text-center">
+                        <div class="flex items-center justify-center gap-0.5">
+                            <button type="button" onclick="singleAction('/admin/pending_users/{{ user.id }}/approve')" class="px-2 py-0.5 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded hover:opacity-80 transition text-[11px]">
+                                <i class="fas fa-check mr-1"></i>通过
+                            </button>
+                            <button type="button" onclick="singleAction('/admin/pending_users/{{ user.id }}/reject')" class="px-2 py-0.5 bg-red-50 dark:bg-red-900/20 text-red-500 rounded hover:opacity-80 transition text-[11px]">
+                                <i class="fas fa-xmark mr-1"></i>拒绝
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    </form>
+
+    {% if pagination and pagination.pages > 1 %}
+    <div class="px-4 py-3 border-t border-gray-100 dark:border-gray-700/50 flex justify-center items-center gap-1">
+        {% if pagination.has_prev %}
+        <a href="/admin/pending_users?page=1" class="px-2 py-0.5 border border-gray-200 dark:border-gray-600 rounded text-[11px] text-gray-500 dark:text-gray-400 hover:border-primary-300 transition">首页</a>
+        <a href="/admin/pending_users?page={{ pagination.prev_num }}" class="px-2 py-0.5 border border-gray-200 dark:border-gray-600 rounded text-[11px] text-gray-500 dark:text-gray-400 hover:border-primary-300 transition">上一页</a>
+        {% endif %}
+        {% set start_page = [1, pagination.page - 2]|max %}
+        {% set end_page = [pagination.pages, pagination.page + 2]|min %}
+        {% for p in range(start_page, end_page + 1) %}
+        {% if p == pagination.page %}
+        <span class="px-2 py-0.5 bg-primary-500 text-white rounded text-[11px]">{{ p }}</span>
+        {% else %}
+        <a href="/admin/pending_users?page={{ p }}" class="px-2 py-0.5 border border-gray-200 dark:border-gray-600 rounded text-[11px] text-gray-500 dark:text-gray-400 hover:border-primary-300 transition">{{ p }}</a>
+        {% endif %}
+        {% endfor %}
+        {% if pagination.has_next %}
+        <a href="/admin/pending_users?page={{ pagination.next_num }}" class="px-2 py-0.5 border border-gray-200 dark:border-gray-600 rounded text-[11px] text-gray-500 dark:text-gray-400 hover:border-primary-300 transition">下一页</a>
+        <a href="/admin/pending_users?page={{ pagination.pages }}" class="px-2 py-0.5 border border-gray-200 dark:border-gray-600 rounded text-[11px] text-gray-500 dark:text-gray-400 hover:border-primary-300 transition">末页</a>
+        {% endif %}
+        <span class="text-[11px] text-gray-400 dark:text-gray-500 ml-1.5">{{ pagination.page }} / {{ pagination.pages }}</span>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="px-4 py-14 text-center text-gray-300 dark:text-gray-600">
+        <i class="fas fa-user-check text-3xl mb-2"></i>
+        <p class="text-xs">暂无待审核用户</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('selectAll') && document.getElementById('selectAll').addEventListener('change', function() {
+    document.querySelectorAll('.row-check').forEach(function(cb) { cb.checked = this.checked; }.bind(this));
+});
+
+function singleAction(url) {
+    var f = document.createElement('form');
+    f.method = 'post';
+    f.action = url;
+    document.body.appendChild(f);
+    f.submit();
+}
+</script>
+{% endblock %}
