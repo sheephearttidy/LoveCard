@@ -1,0 +1,90 @@
+{% extends "admin/base.html" %}
+
+{% block title %}图片管理{% endblock %}
+{% block page_title %}图片管理{% endblock %}
+
+{% block content %}
+<div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700/50">
+    <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-700/50">
+        <form method="get" class="flex flex-col sm:flex-row sm:items-center gap-2.5">
+            <div class="flex flex-wrap items-center gap-1.5">
+                <a href="/admin/images"
+                   class="px-2.5 py-1 rounded-md text-xs font-medium transition
+                          {% if not aid_filter and not orphan_only %}bg-primary-500 text-white{% else %}bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600{% endif %}">
+                    全部 ({{ total }})
+                </a>
+                <a href="/admin/images?orphan=1"
+                   class="px-2.5 py-1 rounded-md text-xs font-medium transition
+                          {% if orphan_only %}bg-orange-500 text-white{% else %}bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600{% endif %}">
+                    孤立图片 ({{ orphan_count }})
+                </a>
+                <a href="/admin/images?aid=1"
+                   class="px-2.5 py-1 rounded-md text-xs font-medium transition
+                          {% if aid_filter == 1 %}bg-blue-500 text-white{% else %}bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600{% endif %}">
+                    卡片图片
+                </a>
+                <a href="/admin/images?aid=2"
+                   class="px-2.5 py-1 rounded-md text-xs font-medium transition
+                          {% if aid_filter == 2 %}bg-green-500 text-white{% else %}bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600{% endif %}">
+                    评论图片
+                </a>
+            </div>
+            <div class="sm:ml-auto flex items-center gap-1.5">
+                {% if orphan_count > 0 %}
+                <form method="post" action="/admin/images/clean_orphan" onsubmit="return confirm('确认清理所有孤立图片？')" class="inline">
+                    <button type="submit" class="px-2.5 py-1 bg-orange-500 text-white rounded-md text-xs hover:bg-orange-600 transition">
+                        <i class="fas fa-broom mr-1"></i>清理孤立
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    {% if images %}
+    <div class="p-3">
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5">
+            {% for img in images %}
+            <div class="group relative rounded-lg overflow-hidden border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50">
+                <a href="{{ img.url }}" target="_blank" class="block">
+                    <img src="{{ img.url }}" alt="图片{{ img.id }}" class="w-full h-28 sm:h-32 object-cover" loading="lazy">
+                </a>
+                <div class="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition flex items-end justify-between p-1.5 opacity-0 group-hover:opacity-100">
+                    <div class="text-[10px] text-white/80">
+                        <span class="bg-black/40 px-1 rounded">ID:{{ img.id }}</span>
+                        <span class="bg-black/40 px-1 rounded ml-0.5">aid:{{ img.aid }}</span>
+                    </div>
+                    <form method="post" action="/admin/images/{{ img.id }}/delete" onsubmit="return confirm('确认删除此图片？')" class="inline">
+                        <button type="submit" class="px-1.5 py-0.5 bg-red-500/80 text-white rounded text-[11px] hover:bg-red-600 transition">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </form>
+                </div>
+                <div class="px-1.5 py-1 text-[10px] text-gray-400 dark:text-gray-500 truncate">
+                    {% if img.user %}{{ img.user.display_name }}{% else %}-{% endif %} · {{ img.created_at.strftime('%m-%d') }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% if pagination and pagination.pages > 1 %}
+    <div class="px-4 py-3 border-t border-gray-100 dark:border-gray-700/50 flex justify-center items-center gap-1">
+        {% if pagination.has_prev %}
+        <a href="?page={{ pagination.prev_num }}{% if aid_filter %}&aid={{ aid_filter }}{% endif %}{% if orphan_only %}&orphan=1{% endif %}" class="px-2 py-0.5 border border-gray-200 dark:border-gray-600 rounded text-[11px] text-gray-500 dark:text-gray-400 hover:border-primary-300 transition">上一页</a>
+        {% endif %}
+        <span class="text-[11px] text-gray-400 dark:text-gray-500">{{ pagination.page }} / {{ pagination.pages }}</span>
+        {% if pagination.has_next %}
+        <a href="?page={{ pagination.next_num }}{% if aid_filter %}&aid={{ aid_filter }}{% endif %}{% if orphan_only %}&orphan=1{% endif %}" class="px-2 py-0.5 border border-gray-200 dark:border-gray-600 rounded text-[11px] text-gray-500 dark:text-gray-400 hover:border-primary-300 transition">下一页</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="px-4 py-14 text-center text-gray-300 dark:text-gray-600">
+        <i class="fas fa-images text-3xl mb-2"></i>
+        <p class="text-xs">暂无图片</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

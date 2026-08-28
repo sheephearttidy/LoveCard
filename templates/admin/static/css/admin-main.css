@@ -1,0 +1,145 @@
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: "Segoe UI", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    line-height: 1.6;
+}
+
+.admin-sidebar {
+    width: 13rem;
+    background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+    color: #94a3b8;
+    flex-shrink: 0;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-right: 1px solid rgba(255,255,255,0.05);
+}
+
+@media (max-width: 767px) {
+    .admin-sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        z-index: 50;
+        transform: translateX(-100%);
+    }
+
+    .admin-sidebar.open {
+        transform: translateX(0);
+    }
+}
+
+.admin-sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    z-index: 49;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+
+.admin-sidebar-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.admin-sidebar a {
+    display: flex;
+    align-items: center;
+    padding: 0.45rem 0.75rem;
+    border-radius: 0.4rem;
+    transition: all 0.15s;
+    text-decoration: none;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.admin-sidebar a:hover {
+    background: rgba(255,255,255,0.06);
+    color: #e2e8f0;
+}
+
+.admin-sidebar a.active {
+    background: rgba(102, 126, 234, 0.2);
+    color: #a3a3fc;
+    font-weight: 600;
+}
+
+.admin-sidebar .sidebar-section {
+    padding: 0 0.75rem;
+    margin-top: 0.6rem;
+    margin-bottom: 0.2rem;
+    font-size: 0.6rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #475569;
+}
+
+.admin-content {
+    padding: 1.25rem;
+}
+
+@media (max-width: 640px) {
+    .admin-content {
+        padding: 0.75rem;
+    }
+}
+
+.admin-header {
+    height: 2.75rem;
+    padding: 0 1.25rem;
+    position: sticky;
+    top: 0;
+    z-index: 40;
+}
+
+@media (max-width: 640px) {
+    .admin-header {
+        padding: 0 0.75rem;
+    }
+}
+
+input[type="checkbox"] {
+    accent-color: #667eea;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.flash-msg {
+    animation: flashIn 0.3s ease-out;
+}
+
+@keyframes flashIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.admin-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.sidebar-submenu a {
+    font-size: 0.7rem;
+    padding: 0.35rem 0.75rem;
+    opacity: 0.8;
+}
+
+.sidebar-submenu a:hover {
+    opacity: 1;
+}
+
+.sidebar-submenu a.active {
+    opacity: 1;
+}

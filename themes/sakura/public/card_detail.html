@@ -46,7 +46,7 @@
             </div>
             {% endif %}
         </div>
-        <div style="font-size:1rem;line-height:1.8;white-space:pre-wrap;margin-bottom:20px;color:var(--text)">{{ card.content }}</div>
+        <div class="card-content markdown-body" style="font-size:1rem;line-height:1.8;margin-bottom:20px;color:var(--text)">{{ card.content | markdown | safe }}</div>
         {% if images %}
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px">
             {% for img in images %}
@@ -141,7 +141,7 @@
         btn.addEventListener('click',function(e){
             e.preventDefault();e.stopPropagation();
             var cardId=this.dataset.cardId;if(!cardId)return;
-            var fd=new FormData();fd.append('csrf_token','{{ csrf_token }}');
+            var fd=new FormData();
             fetch('/good/'+cardId,{method:'POST',body:fd,headers:{'X-Requested-With':'XMLHttpRequest'}})
             .then(function(r){if(!r.ok)return r.text().then(function(t){throw new Error(t)});return r.json()})
             .then(function(data){
@@ -165,8 +165,8 @@
     }
 })();
 function toggleCommentGood(el,cid){
-    var fd=new FormData();fd.append('csrf_token','{{ csrf_token }}');
-    fetch('/comment_good/'+cid,{method:'POST',body:fd,headers:{'X-Requested-With':'XMLHttpRequest'}})
+    var fd=new FormData();
+    fetch('/comment/'+cid+'/good',{method:'POST',body:fd,headers:{'X-Requested-With':'XMLHttpRequest'}})
     .then(function(r){return r.json()})
     .then(function(data){
         if(data.success){var s=el.querySelector('.comment-goods-count');if(s)s.textContent=data.count;if(data.liked)el.style.color='var(--pink)';else el.style.color='var(--text-muted)';}

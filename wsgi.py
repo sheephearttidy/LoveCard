@@ -5,4 +5,4 @@ if __name__ == '__main__':
     with application.app_context():
         cleanup_expired_records()
     start_cleanup_scheduler(application)
-    application.run(debug=False, host='0.0.0.0', port=5000)
+    application.run(debug=True, host='0.0.0.0', port=5000)

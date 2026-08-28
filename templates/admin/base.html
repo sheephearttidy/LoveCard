@@ -59,6 +59,12 @@
             <a href="/admin/tags" class="{% if '/tags' in request.path %}active{% endif %}">
                 <i class="fas fa-tags w-4 mr-2 text-center"></i>标签管理
             </a>
+            <a href="/admin/images" class="{% if '/images' in request.path %}active{% endif %}">
+                <i class="fas fa-images w-4 mr-2 text-center"></i>图片管理
+            </a>
+            <a href="/admin/notifications" class="{% if '/notifications' in request.path %}active{% endif %}">
+                <i class="fas fa-bell w-4 mr-2 text-center"></i>通知管理
+            </a>
 
             <div class="sidebar-section">用户</div>
             <a href="/admin/users" class="{% if '/users' in request.path and '/pending' not in request.path and '/deleted' not in request.path %}active{% endif %}">
@@ -81,8 +87,14 @@
 
             {% if current_user.is_super_admin %}
             <div class="sidebar-section">系统</div>
+            <a href="/admin/rate_limits" class="{% if '/rate_limits' in request.path %}active{% endif %}">
+                <i class="fas fa-shield-halved w-4 mr-2 text-center"></i>频率限制
+            </a>
             <a href="/admin/invite_codes" class="{% if '/invite_codes' in request.path %}active{% endif %}">
                 <i class="fas fa-ticket w-4 mr-2 text-center"></i>邀请码
+            </a>
+            <a href="/admin/system_info" class="{% if '/system_info' in request.path %}active{% endif %}">
+                <i class="fas fa-circle-info w-4 mr-2 text-center"></i>系统信息
             </a>
             <button type="button" class="sidebar-dropdown w-full flex items-center justify-between px-3 py-[0.45rem] rounded-[0.4rem] text-xs font-medium transition hover:bg-white/[0.06] hover:text-gray-200 {% if '/settings' in request.path %}text-gray-200{% else %}text-gray-400{% endif %}" data-target="sysMenu">
                 <span class="flex items-center"><i class="fas fa-gear w-4 mr-2 text-center"></i>站点配置</span>
@@ -181,17 +193,6 @@ document.querySelectorAll('.sidebar-dropdown').forEach(function(btn){
 });
 </script>
 {% block extra_js %}{% endblock %}
-<script>
-(function(){
-    document.querySelectorAll('form[method="post"], form[method="POST"]').forEach(function(f){
-        if(!f.querySelector('input[name="csrf_token"]')){
-            var i=document.createElement('input');
-            i.type='hidden';i.name='csrf_token';i.value='{{ csrf_token }}';
-            f.appendChild(i);
-        }
-    });
-})();
-</script>
 <script>
 (function(){
     var toggle=document.getElementById('adminDarkToggle');

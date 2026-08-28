@@ -112,9 +112,6 @@ function singleAction(url) {
     var f = document.createElement('form');
     f.method = 'post';
     f.action = url;
-    var csrf = document.createElement('input');
-    csrf.type = 'hidden'; csrf.name = 'csrf_token'; csrf.value = '{{ csrf_token }}';
-    f.appendChild(csrf);
     document.body.appendChild(f);
     f.submit();
 }

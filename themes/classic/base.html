@@ -151,16 +151,5 @@
 
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     {% block extra_js %}{% endblock %}
-    <script>
-    (function(){
-        document.querySelectorAll('form[method="post"], form[method="POST"]').forEach(function(f){
-            if(!f.querySelector('input[name="csrf_token"]')){
-                var i=document.createElement('input');
-                i.type='hidden';i.name='csrf_token';i.value='{{ csrf_token }}';
-                f.appendChild(i);
-            }
-        });
-    })();
-    </script>
 </body>
 </html>

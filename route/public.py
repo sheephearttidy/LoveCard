@@ -18,6 +18,7 @@ from model.User import User
 from model.db import db
 from utils.system import get_config
 from utils.upload import allowed_file, save_upload
+from utils.markdown_utils import render_markdown
 from utils.notification import notify_new_comment, notify_admins, get_unread_count
 from utils.theme import render_themed
 
@@ -61,7 +62,7 @@ def index():
         conditions.append(Card.user_id.in_(author_subq))
         query = query.where(or_(*conditions))
 
-    query = query.order_by(desc(Card.is_top), Card.created_at.asc())
+    query = query.order_by(desc(Card.is_top), desc(Card.created_at))
 
     pagination = db.paginate(query, page=page, per_page=per_page, error_out=False)
     cards = pagination.items
@@ -190,6 +191,7 @@ def publish():
 
     if request.method == 'POST':
         content = request.form.get('content', '').strip()
+        target = request.form.get('target', '').strip()
         is_anonymous = request.form.get('is_anonymous') == '1'
 
         if not content:
@@ -218,6 +220,10 @@ def publish():
         need_review = get_config('siteCardNeedReview') != 'false'
         initial_status = 0 if need_review else 1
 
+        card_data = {'anonymous': is_anonymous}
+        if target:
+            card_data['target'] = target
+
         new_card = Card(
             user_id=current_user.id,
             content=content,
@@ -225,7 +231,7 @@ def publish():
             tags=tag_ids if tag_ids else None,
             status=initial_status,
             is_top=0,
-            data={'anonymous': is_anonymous}
+            data=card_data
         )
         db.session.add(new_card)
         db.session.flush()
@@ -715,3 +721,12 @@ def notification_read_all():
 def notification_count():
     count = get_unread_count(current_user.id)
     return jsonify(count=count)
+
+
+@public.route('/preview', methods=['POST'])
+def markdown_preview():
+    content = request.get_json(silent=True).get('content', '') if request.is_json else ''
+    if len(content) > 2000:
+        return jsonify(html='', error='内容超过 2000 字符限制'), 400
+    html = render_markdown(content)
+    return jsonify(html=html)

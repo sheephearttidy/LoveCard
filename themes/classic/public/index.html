@@ -32,7 +32,7 @@
     </div>
 </div>
 
-<div class="max-w-6xl mx-auto px-4 py-6 sm:py-8">
+<div class="max-w-4xl mx-auto px-4 py-6 sm:py-8">
     {% if tags %}
     <div class="flex flex-wrap gap-2 mb-5 sm:mb-6">
         <a href="/"
@@ -80,73 +80,91 @@
     </form>
 
     {% if cards %}
-    <div class="masonry">
+    <div class="space-y-3">
         {% for card in cards %}
-        <div class="masonry-item">
-            <a href="/card/{{ card.id }}" class="group block bg-white dark:bg-gray-800 rounded-2xl shadow-sm card-hover overflow-hidden border border-gray-100 dark:border-gray-700/50">
-                {% if card.cover and card.cover.strip() %}
-                <div class="relative overflow-hidden">
-                    <img src="{{ card.cover }}" alt="封面" class="w-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
-                    {% if card.is_top %}
-                    <span class="absolute top-3 left-3 bg-red-500/90 backdrop-blur-sm text-white text-xs font-semibold px-2.5 py-1 rounded-lg shadow-sm">
-                        <i class="fas fa-thumbtack mr-1"></i>置顶
-                    </span>
+        <a href="/card/{{ card.id }}" class="group block bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700/50 hover:border-primary-200 dark:hover:border-primary-800/50 hover:shadow-md transition-all duration-200">
+            <div class="flex items-start gap-3 sm:gap-4 p-4 sm:p-5">
+                <div class="flex-shrink-0">
+                    {% if card.data and card.data.get('anonymous') %}
+                    <div class="w-9 h-9 sm:w-10 sm:h-10 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                        <i class="fas fa-user-secret text-gray-400 dark:text-gray-500 text-sm"></i>
+                    </div>
+                    {% else %}
+                    <div class="w-9 h-9 sm:w-10 sm:h-10 bg-primary-50 dark:bg-primary-900/30 rounded-full flex items-center justify-center overflow-hidden">
+                        {% if card.author and card.author.status == 0 and card.author.deleted_at is none and card.author.avatar %}
+                        <img src="{{ card.author.avatar }}" class="w-full h-full object-cover" alt="">
+                        {% else %}
+                        <i class="fas fa-user text-primary-400 text-sm"></i>
+                        {% endif %}
+                    </div>
                     {% endif %}
+                </div>
+
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 mb-1">
+                        {% if card.data and card.data.get('anonymous') %}
+                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400">匿名用户</span>
+                        {% elif card.author and card.author.status == 0 and card.author.deleted_at is none %}
+                            {% if card.author.roles_id and 0 in card.author.roles_id %}
+                            <span class="text-sm font-semibold text-red-500 dark:text-red-400">{{ card.author.display_name }}</span>
+                            {% elif card.author.roles_id and 1 in card.author.roles_id %}
+                            <span class="text-sm font-semibold text-blue-500 dark:text-blue-400">{{ card.author.display_name }}</span>
+                            {% else %}
+                            <span class="text-sm font-medium text-gray-800 dark:text-gray-200">{{ card.author.display_name }}</span>
+                            {% endif %}
+                        {% elif card.author %}
+                        <span class="text-sm text-gray-400 dark:text-gray-500">已注销用户</span>
+                        {% else %}
+                        <span class="text-sm text-gray-400 dark:text-gray-500">未知</span>
+                        {% endif %}
+
+                        {% if card.is_top %}
+                        <span class="inline-flex items-center bg-red-50 dark:bg-red-900/30 text-red-500 text-[10px] font-semibold px-1.5 py-0.5 rounded">
+                            <i class="fas fa-thumbtack mr-0.5" style="font-size:8px"></i>置顶
+                        </span>
+                        {% endif %}
+
+                        <span class="text-[11px] text-gray-300 dark:text-gray-600">·</span>
+                        <span class="text-xs text-gray-400 dark:text-gray-500">{{ card.created_at.strftime('%m-%d %H:%M') }}</span>
+                    </div>
+
+                    {% if card.data and card.data.get('target') %}
+                    <div class="flex items-center gap-1.5 mb-1.5">
+                        <i class="fas fa-heart text-pink-400" style="font-size:10px"></i>
+                        <span class="text-sm text-pink-500 dark:text-pink-400 font-medium">{{ card.data.get('target') }}</span>
+                    </div>
+                    {% endif %}
+
+                    <div class="card-text markdown-body text-gray-700 dark:text-gray-300 text-sm leading-relaxed mb-2 card-preview">
+                        {{ card.content | markdown | safe }}
+                    </div>
+
+                    {% if card.tags %}
+                    <div class="flex flex-wrap gap-1 mb-2">
+                        {% for tag_id in card.tags %}
+                        {% for tag in tags %}
+                        {% if tag.id == tag_id %}
+                        <span class="px-1.5 py-0.5 rounded text-[10px] font-medium bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400">{{ tag.name }}</span>
+                        {% endif %}
+                        {% endfor %}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <div class="flex items-center gap-4 text-xs text-gray-400 dark:text-gray-500">
+                        <span class="flex items-center gap-1"><i class="fas fa-heart text-pink-300" style="font-size:10px"></i>{{ card.good }}</span>
+                        <span class="flex items-center gap-1"><i class="fas fa-comment text-blue-300" style="font-size:10px"></i>{{ card.comments }}</span>
+                        <span class="flex items-center gap-1"><i class="fas fa-eye" style="font-size:10px"></i>{{ card.views or 0 }}</span>
+                    </div>
+                </div>
+
+                {% if card.cover and card.cover.strip() %}
+                <div class="flex-shrink-0 hidden sm:block">
+                    <img src="{{ card.cover }}" alt="" class="w-28 h-20 sm:w-32 sm:h-24 object-cover rounded-lg border border-gray-100 dark:border-gray-700/50 group-hover:opacity-80 transition" loading="lazy">
                 </div>
                 {% endif %}
-                <div class="p-4 sm:p-5">
-                    {% if card.is_top and not (card.cover and card.cover.strip()) %}
-                    <span class="inline-flex items-center bg-red-50 dark:bg-red-900/30 text-red-500 text-xs font-semibold px-2 py-0.5 rounded mb-2">
-                        <i class="fas fa-thumbtack mr-1"></i>置顶
-                    </span>
-                    {% endif %}
-                    <p class="text-gray-800 dark:text-gray-200 text-sm sm:text-base leading-relaxed mb-3">
-                        {{ card.content[:200] }}{% if card.content|length > 200 %}...{% endif %}
-                    </p>
-                    <div class="flex items-center justify-between text-xs text-gray-400 dark:text-gray-500 mb-3">
-                        <div class="flex items-center space-x-1.5 min-w-0">
-                            {% if card.data and card.data.get('anonymous') %}
-                            <div class="w-5 h-5 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center flex-shrink-0">
-                                <i class="fas fa-user-secret text-gray-400" style="font-size:9px"></i>
-                            </div>
-                            <span class="truncate">匿名</span>
-                            {% else %}
-                            <div class="w-5 h-5 bg-primary-50 dark:bg-primary-900/30 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
-                                {% if card.author and card.author.status == 0 and card.author.deleted_at is none and card.author.avatar %}
-                                <img src="{{ card.author.avatar }}" class="w-full h-full object-cover" alt="">
-                                {% else %}
-                                <i class="fas fa-user text-primary-400" style="font-size:9px"></i>
-                                {% endif %}
-                            </div>
-                            {% if card.author and card.author.status == 0 and card.author.deleted_at is none %}
-                                {% if card.author.roles_id and 0 in card.author.roles_id %}
-                                <span class="truncate text-red-500 dark:text-red-400 font-semibold">{{ card.author.display_name }}</span>
-                                {% elif card.author.roles_id and 1 in card.author.roles_id %}
-                                <span class="truncate text-blue-500 dark:text-blue-400 font-semibold">{{ card.author.display_name }}</span>
-                                {% else %}
-                                <span class="truncate">{{ card.author.display_name }}</span>
-                                {% endif %}
-                            {% elif card.author %}
-                            <span class="truncate text-gray-400 dark:text-gray-500">已注销用户</span>
-                            {% else %}
-                            <span class="truncate">未知</span>
-                            {% endif %}
-                            {% endif %}
-                        </div>
-                        <span class="flex-shrink-0 ml-2">{{ card.created_at.strftime('%m-%d %H:%M') }}</span>
-                    </div>
-                    <div class="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700/50 text-xs text-gray-400 dark:text-gray-500">
-                        <div class="flex items-center space-x-3">
-                            <span class="flex items-center"><i class="fas fa-heart mr-1 text-pink-400"></i>{{ card.good }}</span>
-                            <span class="flex items-center"><i class="fas fa-comment mr-1 text-blue-400"></i>{{ card.comments }}</span>
-                        </div>
-                        <span class="text-primary-500 group-hover:text-primary-600 font-medium transition">
-                            查看 <i class="fas fa-arrow-right ml-0.5" style="font-size:9px"></i>
-                        </span>
-                    </div>
-                </div>
-            </a>
-        </div>
+            </div>
+        </a>
         {% endfor %}
     </div>
 

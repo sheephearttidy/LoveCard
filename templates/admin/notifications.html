@@ -1,0 +1,140 @@
+{% extends "admin/base.html" %}
+
+{% block title %}通知管理{% endblock %}
+{% block page_title %}通知管理{% endblock %}
+
+{% block content %}
+<div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700/50">
+    <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-700/50">
+        <form method="get" class="flex flex-col sm:flex-row sm:items-center gap-2.5">
+            <div class="flex flex-wrap items-center gap-1.5">
+                <a href="/admin/notifications"
+                   class="px-2.5 py-1 rounded-md text-xs font-medium transition {% if not type_filter and not read_filter %}bg-primary-500 text-white{% else %}bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600{% endif %}">
+                    全部 ({{ total }})
+                </a>
+                <a href="/admin/notifications?read=unread"
+                   class="px-2.5 py-1 rounded-md text-xs font-medium transition {% if read_filter == 'unread' %}bg-yellow-500 text-white{% else %}bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400 hover:bg-yellow-100 dark:hover:bg-yellow-900/30{% endif %}">
+                    未读 ({{ unread }})
+                </a>
+                <a href="/admin/notifications?read=read"
+                   class="px-2.5 py-1 rounded-md text-xs font-medium transition {% if read_filter == 'read' %}bg-green-500 text-white{% else %}bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30{% endif %}">
+                    已读
+                </a>
+            </div>
+            <div class="flex items-center gap-1.5 sm:ml-auto">
+                {% if type_list %}
+                <select name="type" onchange="this.form.submit()" class="px-2 py-1 border border-gray-200 dark:border-gray-600 rounded-md text-xs bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none">
+                    <option value="">全部类型</option>
+                    {% for t in type_list %}
+                    <option value="{{ t }}" {% if type_filter == t %}selected{% endif %}>{{ t }}</option>
+                    {% endfor %}
+                </select>
+                {% endif %}
+                <input type="text" name="user_search" value="{{ user_search or '' }}" placeholder="搜索用户..."
+                       class="px-2.5 py-1 border border-gray-200 dark:border-gray-600 rounded-md text-xs bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-primary-500 w-28">
+                {% if read_filter %}<input type="hidden" name="read" value="{{ read_filter }}">{% endif %}
+                <button type="submit" class="px-2.5 py-1 bg-primary-500 text-white rounded-md text-xs hover:bg-primary-600 transition">
+                    <i class="fas fa-search"></i>
+                </button>
+                <a href="/admin/notifications/send" class="px-2.5 py-1 bg-green-500 text-white rounded-md text-xs hover:bg-green-600 transition">
+                    <i class="fas fa-paper-plane mr-1"></i>发送
+                </a>
+            </div>
+        </form>
+    </div>
+
+    {% if notifications %}
+    <form method="post" action="/admin/notifications/batch_delete">
+        <div class="px-3.5 py-2 border-b border-gray-100 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-700/20 flex flex-wrap items-center gap-2">
+            <label class="inline-flex items-center text-[11px] text-gray-500 dark:text-gray-400 cursor-pointer">
+                <input type="checkbox" id="selectAll" class="mr-1 rounded border-gray-300 dark:border-gray-600 text-primary-500 focus:ring-primary-500">
+                全选
+            </label>
+            <button type="submit" class="px-2 py-0.5 bg-red-500 text-white rounded text-[11px] hover:bg-red-600 transition" onclick="return confirm('确认删除选中的通知？')">
+                批量删除
+            </button>
+            {% if pagination %}
+            <span class="ml-auto text-[11px] text-gray-400 dark:text-gray-500">共 {{ pagination.total }} 条</span>
+            {% endif %}
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-xs">
+                <thead class="bg-gray-50/50 dark:bg-gray-700/20 text-gray-500 dark:text-gray-400 text-[11px] uppercase">
+                    <tr>
+                        <th class="px-3 py-2.5 text-center w-8"></th>
+                        <th class="px-3 py-2.5 text-left">ID</th>
+                        <th class="px-3 py-2.5 text-left">用户</th>
+                        <th class="px-3 py-2.5 text-left">类型</th>
+                        <th class="px-3 py-2.5 text-left">标题</th>
+                        <th class="px-3 py-2.5 text-left">内容</th>
+                        <th class="px-3 py-2.5 text-center">已读</th>
+                        <th class="px-3 py-2.5 text-left">时间</th>
+                        <th class="px-3 py-2.5 text-center">操作</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50 dark:divide-gray-700/30">
+                    {% for n in notifications %}
+                    <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-700/20 transition {% if not n.is_read %}bg-blue-50/30 dark:bg-blue-900/5{% endif %}">
+                        <td class="px-3 py-2.5 text-center">
+                            <input type="checkbox" name="notification_ids" value="{{ n.id }}" class="row-check rounded border-gray-300 dark:border-gray-600 text-primary-500 focus:ring-primary-500">
+                        </td>
+                        <td class="px-3 py-2.5 text-gray-400 dark:text-gray-500">{{ n.id }}</td>
+                        <td class="px-3 py-2.5 text-gray-600 dark:text-gray-400">{{ n.user.display_name if n.user else '-' }}</td>
+                        <td class="px-3 py-2.5">
+                            <span class="bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 px-1.5 py-0.5 rounded text-[11px]">{{ n.type }}</span>
+                        </td>
+                        <td class="px-3 py-2.5 text-gray-700 dark:text-gray-300 font-medium">{{ n.title }}</td>
+                        <td class="px-3 py-2.5 text-gray-500 dark:text-gray-400 max-w-xs truncate">{{ n.content[:50] }}</td>
+                        <td class="px-3 py-2.5 text-center">
+                            {% if n.is_read %}
+                            <span class="text-green-500"><i class="fas fa-check"></i></span>
+                            {% else %}
+                            <span class="text-yellow-500"><i class="fas fa-circle text-[8px]"></i></span>
+                            {% endif %}
+                        </td>
+                        <td class="px-3 py-2.5 text-gray-400 dark:text-gray-500 text-[11px] whitespace-nowrap">{{ n.created_at.strftime('%m-%d %H:%M') }}</td>
+                        <td class="px-3 py-2.5 text-center">
+                            <form method="post" action="/admin/notifications/{{ n.id }}/delete" onsubmit="return confirm('确认删除？')" class="inline">
+                                <button type="submit" class="px-1.5 py-0.5 bg-red-50 dark:bg-red-900/20 text-red-400 rounded hover:opacity-80 transition text-[11px]" title="删除">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </form>
+
+    {% if pagination and pagination.pages > 1 %}
+    <div class="px-4 py-3 border-t border-gray-100 dark:border-gray-700/50 flex justify-center items-center gap-1">
+        {% if pagination.has_prev %}
+        <a href="?page={{ pagination.prev_num }}{% if type_filter %}&type={{ type_filter }}{% endif %}{% if user_search %}&user_search={{ user_search }}{% endif %}" class="px-2 py-0.5 border border-gray-200 dark:border-gray-600 rounded text-[11px] text-gray-500 dark:text-gray-400 hover:border-primary-300 transition">上一页</a>
+        {% endif %}
+        <span class="text-[11px] text-gray-400 dark:text-gray-500">{{ pagination.page }} / {{ pagination.pages }}</span>
+        {% if pagination.has_next %}
+        <a href="?page={{ pagination.next_num }}{% if type_filter %}&type={{ type_filter }}{% endif %}{% if user_search %}&user_search={{ user_search }}{% endif %}" class="px-2 py-0.5 border border-gray-200 dark:border-gray-600 rounded text-[11px] text-gray-500 dark:text-gray-400 hover:border-primary-300 transition">下一页</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="px-4 py-14 text-center text-gray-300 dark:text-gray-600">
+        <i class="fas fa-bell text-3xl mb-2"></i>
+        <p class="text-xs">暂无通知</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function(){
+    var sa=document.getElementById('selectAll');
+    var rc=document.querySelectorAll('.row-check');
+    if(sa){sa.addEventListener('change',function(){rc.forEach(function(c){c.checked=sa.checked})})}
+})();
+</script>
+{% endblock %}

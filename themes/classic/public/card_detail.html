@@ -53,8 +53,16 @@
                 </span>
             </div>
 
-            <div class="text-gray-800 dark:text-gray-200 text-base sm:text-lg leading-relaxed whitespace-pre-wrap mb-5 sm:mb-6">
-                {{ card.content }}
+            {% if card.data and card.data.get('target') %}
+            <div class="flex items-center gap-2 mb-4 sm:mb-5 p-3 bg-pink-50 dark:bg-pink-900/20 rounded-xl">
+                <i class="fas fa-heart text-pink-400"></i>
+                <span class="text-sm sm:text-base text-gray-500 dark:text-gray-400">表白</span>
+                <span class="text-base sm:text-lg font-semibold text-pink-500 dark:text-pink-400">{{ card.data.get('target') }}</span>
+            </div>
+            {% endif %}
+
+            <div class="card-content markdown-body text-gray-800 dark:text-gray-200 text-base sm:text-lg leading-relaxed mb-5 sm:mb-6">
+                {{ card.content | markdown | safe }}
             </div>
 
             {% if images %}
@@ -169,7 +177,6 @@
             var cardId = this.dataset.cardId;
             if(!cardId) return;
             var fd = new FormData();
-            fd.append('csrf_token', '{{ csrf_token }}');
             fetch('/good/' + cardId, {method:'POST', body:fd, headers:{'X-Requested-With':'XMLHttpRequest'}})
             .then(function(r){
                 if(!r.ok) return r.text().then(function(t){throw new Error(t)});
@@ -229,7 +236,6 @@
 
 function toggleCommentGood(btn, commentId) {
     var fd = new FormData();
-    fd.append('csrf_token', '{{ csrf_token }}');
     fetch('/comment/' + commentId + '/good', {method:'POST', body:fd, headers:{'X-Requested-With':'XMLHttpRequest'}})
     .then(function(r){
         if(!r.ok) return r.text().then(function(t){throw new Error(t)});

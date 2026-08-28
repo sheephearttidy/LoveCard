@@ -65,7 +65,6 @@ def login():
             return jsonify(success=False, message="邮箱未验证，请先验证邮箱后再登录", need_verify=True)
 
         clear_attempts(ip)
-        session['csrf_token'] = uuid.uuid4().hex
         login_user(user, remember=remember)
         return jsonify(success=True, message="登录成功")
 

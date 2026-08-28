@@ -93,7 +93,7 @@
                     </div>
                     {% endif %}
                 </div>
-                <p class="card-text">{{ card.content[:200] }}{% if card.content|length > 200 %}...{% endif %}</p>
+                <div class="card-text markdown-body card-preview">{{ card.content | markdown | safe }}</div>
                 {% if card.tags %}
                 <div class="card-tags">
                     {% for tag_id in card.tags %}

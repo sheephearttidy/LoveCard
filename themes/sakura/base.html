@@ -5,6 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>{% block title %}{{ site_config.siteName }}{% endblock %}</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0f0ff', 100: '#e0e0ff', 200: '#c7c7fe', 300: '#a3a3fc',
+                            400: '#8080f8', 500: '#667eea', 600: '#5a67d8', 700: '#4c51bf',
+                            800: '#434190', 900: '#3c366b',
+                        },
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/markdown.css') }}">
     <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700;800&display=swap');
 :root{--bg:#faf5ff;--bg-pattern:#f3e8ff;--surface:rgba(255,255,255,0.72);--surface-solid:#fff;--border:rgba(168,130,255,0.15);--border-strong:rgba(168,130,255,0.3);--text:#2d1b4e;--text-secondary:#6b5280;--text-muted:#9b8ab5;--pink:#ec4899;--pink-soft:#fce7f3;--pink-glow:rgba(236,72,153,0.2);--violet:#8b5cf6;--violet-soft:#ede9fe;--violet-glow:rgba(139,92,246,0.15);--blue:#6366f1;--blue-soft:#eef2ff;--green:#10b981;--green-soft:#ecfdf5;--orange:#f59e0b;--orange-soft:#fffbeb;--red:#ef4444;--red-soft:#fef2f2;--radius:20px;--radius-md:14px;--radius-sm:10px;--shadow-sm:0 2px 8px rgba(139,92,246,0.06);--shadow-md:0 8px 30px rgba(139,92,246,0.1);--shadow-lg:0 16px 50px rgba(139,92,246,0.15);--glass:blur(20px) saturate(180%)}
@@ -53,7 +71,8 @@ input,textarea,select{font:inherit;color:inherit}
 .search-inline input::placeholder{color:var(--text-muted)}
 .search-inline input:focus{border-color:var(--violet);box-shadow:0 0 0 4px var(--violet-glow);width:260px}
 .search-inline i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:0.75rem}
-.feed{display:flex;flex-direction:column;gap:16px;margin-bottom:48px}
+.feed{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:48px}
+@media(max-width:768px){.feed{grid-template-columns:1fr}}
 .card{background:var(--surface);backdrop-filter:var(--glass);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:all 0.3s}
 .card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);border-color:var(--border-strong)}
 .card-banner{display:flex;align-items:center;gap:6px;padding:10px 20px;background:var(--pink-soft);font-size:0.75rem;font-weight:600;color:var(--pink)}
@@ -66,7 +85,15 @@ input,textarea,select{font:inherit;color:inherit}
 .card-author-name.admin{color:var(--violet)}
 .card-author-name.anon{color:var(--text-muted);font-style:italic}
 .card-author-time{font-size:0.75rem;color:var(--text-muted)}
-.card-text{font-size:0.95rem;line-height:1.7;margin-bottom:14px;color:var(--text)}
+.card-text{font-size:0.95rem;line-height:1.7;margin-bottom:14px;color:var(--text);overflow:hidden;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical}
+.card-text.markdown-body h1,.card-text.markdown-body h2,.card-text.markdown-body h3{font-size:1em;font-weight:600;margin:0.3em 0;padding:0;border:none}
+.card-text.markdown-body blockquote{margin:0.4em 0;padding:0.3em 0.8em;font-size:0.9em}
+.card-text.markdown-body pre{margin:0.4em 0;padding:0.6em;font-size:0.85em}
+.card-text.markdown-body code{font-size:0.85em}
+.card-text.markdown-body p{margin:0.3em 0}
+.card-text.markdown-body ul,.card-text.markdown-body ol{margin:0.3em 0;padding-left:1.5em}
+.card-text.markdown-body img{max-height:120px;object-fit:cover}
+.card-text.markdown-body hr{margin:0.4em 0}
 .card-tags{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
 .card-tag{padding:3px 12px;border-radius:50px;font-size:0.7rem;font-weight:500;background:var(--violet-soft);color:var(--violet)}
 .card-actions{display:flex;align-items:center;gap:4px;padding-top:14px;border-top:1px solid var(--border)}
@@ -260,17 +287,6 @@ textarea.field-input{resize:none;min-height:120px}
             updateIcon();
         });
     }
-})();
-</script>
-<script>
-(function(){
-    document.querySelectorAll('form[method="post"], form[method="POST"]').forEach(function(f){
-        if(!f.querySelector('input[name="csrf_token"]')){
-            var i=document.createElement('input');
-            i.type='hidden';i.name='csrf_token';i.value='{{ csrf_token }}';
-            f.appendChild(i);
-        }
-    });
 })();
 </script>
 </body>

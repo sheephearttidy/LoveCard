@@ -1,0 +1,86 @@
+{% extends "admin/base.html" %}
+
+{% block title %}频率限制{% endblock %}
+{% block page_title %}频率限制{% endblock %}
+
+{% block content %}
+<div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700/50">
+    <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-700/50">
+        <form method="get" class="flex flex-col sm:flex-row sm:items-center gap-2.5">
+            <div class="flex flex-wrap items-center gap-1.5">
+                {% if action_types %}
+                <select name="action" onchange="this.form.submit()" class="px-2 py-1 border border-gray-200 dark:border-gray-600 rounded-md text-xs bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none">
+                    <option value="">全部操作</option>
+                    {% for at in action_types %}
+                    <option value="{{ at }}" {% if action_filter == at %}selected{% endif %}>{{ at }}</option>
+                    {% endfor %}
+                </select>
+                {% endif %}
+                <input type="text" name="ip" value="{{ ip_search or '' }}" placeholder="搜索IP..."
+                       class="px-2.5 py-1 border border-gray-200 dark:border-gray-600 rounded-md text-xs bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-primary-500 w-32">
+                <button type="submit" class="px-2.5 py-1 bg-primary-500 text-white rounded-md text-xs hover:bg-primary-600 transition">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+            <div class="sm:ml-auto flex items-center gap-1.5">
+                <span class="text-[11px] text-gray-400 dark:text-gray-500">共 {{ total }} 条</span>
+                <form method="post" action="/admin/rate_limits/cleanup" class="inline">
+                    <div class="flex items-center gap-1.5">
+                        <input type="number" name="days" value="30" min="1" max="365"
+                               class="w-14 px-1.5 py-0.5 border border-gray-200 dark:border-gray-600 rounded text-[11px] bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none">
+                        <span class="text-[11px] text-gray-400 dark:text-gray-500">天前</span>
+                        <button type="submit" class="px-2 py-0.5 bg-orange-500 text-white rounded text-[11px] hover:bg-orange-600 transition" onclick="return confirm('确认清理？')">
+                            <i class="fas fa-broom mr-0.5"></i>清理
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </form>
+    </div>
+
+    {% if records %}
+    <div class="overflow-x-auto">
+        <table class="w-full text-xs">
+            <thead class="bg-gray-50/50 dark:bg-gray-700/20 text-gray-500 dark:text-gray-400 text-[11px] uppercase">
+                <tr>
+                    <th class="px-3 py-2.5 text-left">ID</th>
+                    <th class="px-3 py-2.5 text-left">IP</th>
+                    <th class="px-3 py-2.5 text-left">操作</th>
+                    <th class="px-3 py-2.5 text-left">时间</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50 dark:divide-gray-700/30">
+                {% for r in records %}
+                <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-700/20 transition">
+                    <td class="px-3 py-2.5 text-gray-400 dark:text-gray-500">{{ r.id }}</td>
+                    <td class="px-3 py-2.5 text-gray-600 dark:text-gray-400 font-mono">{{ r.ip }}</td>
+                    <td class="px-3 py-2.5">
+                        <span class="bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 px-1.5 py-0.5 rounded text-[11px]">{{ r.action }}</span>
+                    </td>
+                    <td class="px-3 py-2.5 text-gray-400 dark:text-gray-500 text-[11px] whitespace-nowrap">{{ r.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if pagination and pagination.pages > 1 %}
+    <div class="px-4 py-3 border-t border-gray-100 dark:border-gray-700/50 flex justify-center items-center gap-1">
+        {% if pagination.has_prev %}
+        <a href="?page={{ pagination.prev_num }}{% if action_filter %}&action={{ action_filter }}{% endif %}{% if ip_search %}&ip={{ ip_search }}{% endif %}" class="px-2 py-0.5 border border-gray-200 dark:border-gray-600 rounded text-[11px] text-gray-500 dark:text-gray-400 hover:border-primary-300 transition">上一页</a>
+        {% endif %}
+        <span class="text-[11px] text-gray-400 dark:text-gray-500">{{ pagination.page }} / {{ pagination.pages }}</span>
+        {% if pagination.has_next %}
+        <a href="?page={{ pagination.next_num }}{% if action_filter %}&action={{ action_filter }}{% endif %}{% if ip_search %}&ip={{ ip_search }}{% endif %}" class="px-2 py-0.5 border border-gray-200 dark:border-gray-600 rounded text-[11px] text-gray-500 dark:text-gray-400 hover:border-primary-300 transition">下一页</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="px-4 py-14 text-center text-gray-300 dark:text-gray-600">
+        <i class="fas fa-shield-halved text-3xl mb-2"></i>
+        <p class="text-xs">暂无频率限制记录</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

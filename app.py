@@ -17,6 +17,7 @@ from model.User import User
 from route import public, auth, admin
 from route.api import api
 from utils.captcha import generate_captcha_text, generate_captcha_svg
+from utils.markdown_utils import render_markdown, strip_markdown
 from utils.system import get_site_config
 from utils.theme import setup_theme_loader, render_themed
 
@@ -77,9 +78,6 @@ def inject_site_config():
         from utils.system import SITE_CONFIG_DEFAULTS
         cfg = dict(SITE_CONFIG_DEFAULTS)
         ctx = {'site_config': cfg}
-    if 'csrf_token' not in session:
-        session['csrf_token'] = uuid.uuid4().hex
-    ctx['csrf_token'] = session['csrf_token']
     ctx['site_theme'] = cfg.get('siteTheme', 'classic')
     if current_user.is_authenticated:
         try:
@@ -98,6 +96,10 @@ app.register_blueprint(auth)
 app.register_blueprint(admin)
 app.register_blueprint(api)
 
+# Jinja2 过滤器
+app.jinja_env.filters['markdown'] = render_markdown
+app.jinja_env.filters['strip_markdown'] = strip_markdown
+
 
 @app.after_request
 def set_security_headers(response):
@@ -108,25 +110,6 @@ def set_security_headers(response):
     if os.environ.get('FLASK_ENV') == 'production':
         response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
     return response
-
-
-@app.before_request
-def verify_csrf():
-    if request.method != 'POST':
-        return
-    if request.blueprint == 'api':
-        api_token = request.headers.get('X-API-Token')
-        if api_token:
-            from utils.system import get_config
-            expected = get_config('apiToken') or ''
-            if expected and hmac.compare_digest(api_token, expected):
-                return
-    token = session.get('csrf_token')
-    form_token = request.form.get('csrf_token')
-    header_token = request.headers.get('X-CSRF-Token')
-    if token and ((form_token and hmac.compare_digest(form_token, token)) or (header_token and hmac.compare_digest(header_token, token))):
-        return
-    abort(403)
 
 
 @app.errorhandler(404)

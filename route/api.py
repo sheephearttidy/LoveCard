@@ -173,8 +173,6 @@ def login():
         return jsonify(code=403, message='邮箱未验证，请先验证邮箱后再登录', need_verify=True), 403
 
     clear_attempts(ip)
-    import uuid as _uuid
-    session['csrf_token'] = _uuid.uuid4().hex
     login_user(user, remember=True)
     return jsonify(code=200, message='登录成功', data=_user_info(user))
 

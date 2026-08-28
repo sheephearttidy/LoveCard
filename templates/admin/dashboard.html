@@ -13,6 +13,7 @@
         </div>
         <p class="text-xl font-bold text-gray-800 dark:text-white">{{ cards_total }}</p>
         <p class="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">卡片总数</p>
+        {% if cards_today %}<p class="text-[10px] text-blue-400 mt-1">今日 +{{ cards_today }}</p>{% endif %}
     </div>
     <div class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700/50 transition hover:shadow-sm">
         <div class="flex items-center justify-between mb-2">
@@ -40,6 +41,7 @@
         </div>
         <p class="text-xl font-bold text-gray-800 dark:text-white">{{ users_total }}</p>
         <p class="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">用户总数</p>
+        {% if users_today %}<p class="text-[10px] text-purple-400 mt-1">今日 +{{ users_today }}</p>{% endif %}
     </div>
     <div class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700/50 transition hover:shadow-sm">
         <div class="flex items-center justify-between mb-2">
@@ -49,6 +51,7 @@
         </div>
         <p class="text-xl font-bold text-gray-800 dark:text-white">{{ comments_total }}</p>
         <p class="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">评论总数</p>
+        {% if comments_today %}<p class="text-[10px] text-indigo-400 mt-1">今日 +{{ comments_today }}</p>{% endif %}
     </div>
     <div class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700/50 transition hover:shadow-sm">
         <div class="flex items-center justify-between mb-2">
@@ -149,4 +152,26 @@
         </div>
     </div>
 </div>
+
+{% if current_user.is_super_admin %}
+<div class="mt-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700/50 p-4">
+    <h3 class="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-3">
+        <i class="fas fa-download mr-1.5 text-gray-400"></i>数据导出
+    </h3>
+    <div class="flex flex-wrap gap-2">
+        <a href="/admin/export/cards" class="px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg text-xs font-medium hover:opacity-80 transition">
+            <i class="fas fa-note-sticky mr-1"></i>导出卡片
+        </a>
+        <a href="/admin/export/users" class="px-3 py-1.5 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 rounded-lg text-xs font-medium hover:opacity-80 transition">
+            <i class="fas fa-users mr-1"></i>导出用户
+        </a>
+        <a href="/admin/export/comments" class="px-3 py-1.5 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-lg text-xs font-medium hover:opacity-80 transition">
+            <i class="fas fa-comments mr-1"></i>导出评论
+        </a>
+        <a href="/admin/export/audit_logs" class="px-3 py-1.5 bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400 rounded-lg text-xs font-medium hover:opacity-80 transition">
+            <i class="fas fa-clipboard-list mr-1"></i>导出审计日志
+        </a>
+    </div>
+</div>
+{% endif %}
 {% endblock %}

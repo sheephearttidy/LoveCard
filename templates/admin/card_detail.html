@@ -52,8 +52,16 @@
                 </div>
                 {% endif %}
 
-                <div class="text-gray-800 dark:text-gray-200 text-sm leading-relaxed whitespace-pre-wrap break-words">
-                    {{ card.content }}
+                {% if card.data and card.data.get('target') %}
+                <div class="flex items-center gap-1.5 mb-3 text-sm">
+                    <i class="fas fa-heart text-pink-400" style="font-size:11px"></i>
+                    <span class="text-gray-500 dark:text-gray-400">表白</span>
+                    <span class="font-medium text-pink-500 dark:text-pink-400">{{ card.data.get('target') }}</span>
+                </div>
+                {% endif %}
+
+                <div class="card-content markdown-body text-gray-800 dark:text-gray-200 text-sm leading-relaxed break-words">
+                    {{ card.content | markdown | safe }}
                 </div>
 
                 {% if tags %}
@@ -229,6 +237,11 @@
             {% endif %}
         </div>
 
+        <a href="/admin/cards/{{ card.id }}/edit" class="block bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700/50 p-3 hover:border-primary-300 dark:hover:border-primary-600 transition text-center">
+            <i class="fas fa-pen text-primary-500 mr-1.5"></i>
+            <span class="text-xs text-primary-500 font-medium">编辑卡片</span>
+        </a>
+
         <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700/50 p-4">
             <h3 class="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-3">
                 <i class="fas fa-gavel mr-1.5 text-orange-500"></i>审核操作
@@ -246,8 +259,11 @@
                     </button>
                 </form>
                 {% elif card.status == 1 %}
-                <form method="post" action="/admin/cards/{{ card.id }}/ban">
-                    <button type="submit" class="w-full px-3 py-1.5 bg-orange-500 text-white rounded-lg text-xs font-medium hover:bg-orange-600 transition flex items-center justify-center gap-1.5" onclick="return confirm('确认封禁该卡片？')">
+                <form method="post" action="/admin/cards/{{ card.id }}/ban" onsubmit="var r=this.querySelector('[name=ban_reason]');if(!r.value){r.style.display='block';r.focus();return false}return confirm('确认封禁该卡片？')">
+                    <div class="mb-1.5 hidden">
+                        <input type="text" name="ban_reason" placeholder="封禁原因（可选）" class="w-full px-2.5 py-1 border border-gray-200 dark:border-gray-600 rounded-lg text-xs bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                    </div>
+                    <button type="button" onclick="var f=this.closest('form');var r=f.querySelector('[name=ban_reason]');r.parentElement.classList.remove('hidden');r.focus()" class="w-full px-3 py-1.5 bg-orange-500 text-white rounded-lg text-xs font-medium hover:bg-orange-600 transition flex items-center justify-center gap-1.5">
                         <i class="fas fa-ban"></i>封禁卡片
                     </button>
                 </form>
@@ -272,7 +288,7 @@
                 </form>
 
                 {% if card.author and card.author.id != current_user.id and card.status == 1 %}
-                <form method="post" action="/admin/cards/ban_user/{{ card.author.id }}" onclick="return confirm('确认封禁该用户所有已通过卡片？')">
+                <form method="post" action="/admin/cards/ban_user/{{ card.author.id }}" onsubmit="return confirm('确认封禁该用户所有已通过卡片？')">
                     <button type="submit" class="w-full px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-medium hover:bg-red-700 transition flex items-center justify-center gap-1.5">
                         <i class="fas fa-user-slash"></i>封禁该用户所有卡片
                     </button>
